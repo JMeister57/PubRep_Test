@@ -1,0 +1,34 @@
+﻿<UserControl
+    x:Class="BPMM_App.BPMMControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BPMM_App"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Canvas Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <Grid x:Name="bpmmObject" Width="200" Height="200" Background="Aquamarine" ManipulationMode="All" ManipulationDelta="UserControl_ManipulationDelta">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="8*"/>
+                <RowDefinition Height="10"/>
+            </Grid.RowDefinitions>
+            <Thumb x:Name="ThumbTopRight" Grid.Row="0" Background="White" Height="10" Width="10"  HorizontalAlignment="Right" DragDelta="ThumbTopRight_DragDelta" PointerReleased="Thumb_PointerReleased" />
+            <Thumb x:Name="ThumbTopLeft" Grid.Row="0" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbTopLeft_DragDelta"  PointerReleased="Thumb_PointerReleased" />
+
+            <TextBox x:Name="header" Grid.Row="1" Text="{Binding Path=Title, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" Margin="10,0,10,5" />
+            <TextBox x:Name="description" Grid.Row="2" Text="{Binding Path=Description, Mode=TwoWay}" PlaceholderText="description" TextWrapping="Wrap" AcceptsReturn="True" Margin="10,0" />
+
+            <Thumb x:Name="ThumbBottomRight" Grid.Row="3" Background="White" Height="10" Width="10" HorizontalAlignment="Right" DragDelta="ThumbBottomRight_DragDelta" PointerReleased="Thumb_PointerReleased" />
+            <Thumb x:Name="ThumbBottomLeft" Grid.Row="3" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbBottomLeft_DragDelta" PointerReleased="Thumb_PointerReleased" />
+
+            <Grid.RenderTransform>
+                <CompositeTransform/>
+            </Grid.RenderTransform>
+        </Grid>
+    </Canvas>
+</UserControl>
