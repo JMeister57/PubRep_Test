@@ -21,14 +21,17 @@ namespace BPMM_App
 {
     public partial class BPMMControl : UserControl
     {
-
         private const int MIN_SIZE = 100;
 
         public BPMM_Object.Type type;
-        private bool resizing;
         public BPMM_ViewModel viewModel;
-        
+        private bool resizing;
 
+        public event PointerEventHandler AssociationEvent;
+        public BPMMControl()
+        {
+            this.InitializeComponent();
+        }
         public BPMMControl(BPMM_Object obj)
         {
             this.InitializeComponent();
@@ -37,12 +40,81 @@ namespace BPMM_App
             DataContext = this.viewModel;
         }
 
-        public BPMMControl(BPMMControl c)
+        #region linking
+        public bool linkableWith(BPMMControl control)
         {
-            InitializeComponent();
-            this.bpmmObject.Height = c.bpmmObject.Height;
-            this.bpmmObject.Width = c.bpmmObject.Height;
+            switch (type)
+            {
+                case BPMM_Object.Type.VISION:
+                    return control.type == BPMM_Object.Type.GOAL || control.type == BPMM_Object.Type.MISSION
+                        || control.type == BPMM_Object.Type.INFLUENCER;
+                case BPMM_Object.Type.GOAL:
+                    return control.type == BPMM_Object.Type.MISSION || control.type == BPMM_Object.Type.OBJECTIVE
+                        || control.type == BPMM_Object.Type.GOAL || control.type == BPMM_Object.Type.ASSESSMENT
+                        || control.type == BPMM_Object.Type.STRATEGY;
+                case BPMM_Object.Type.OBJECTIVE:
+                    return control.type == BPMM_Object.Type.GOAL || control.type == BPMM_Object.Type.OBJECTIVE
+                        || control.type == BPMM_Object.Type.ASSESSMENT || control.type == BPMM_Object.Type.TACTIC;
+                case BPMM_Object.Type.MISSION:
+                    return control.type == BPMM_Object.Type.STRATEGY || control.type == BPMM_Object.Type.ASSESSMENT;
+                case BPMM_Object.Type.STRATEGY:
+                    return control.type == BPMM_Object.Type.MISSION || control.type == BPMM_Object.Type.TACTIC
+                        || control.type == BPMM_Object.Type.STRATEGY || control.type == BPMM_Object.Type.ASSESSMENT;
+                case BPMM_Object.Type.TACTIC:
+                    return control.type == BPMM_Object.Type.STRATEGY || control.type == BPMM_Object.Type.TACTIC
+                        || control.type == BPMM_Object.Type.BUSINESS_RULE || control.type == BPMM_Object.Type.ASSESSMENT;
+                case BPMM_Object.Type.BUSINESS_POLICY:
+                    return control.type == BPMM_Object.Type.BUSINESS_POLICY || control.type == BPMM_Object.Type.ASSESSMENT;
+                case BPMM_Object.Type.BUSINESS_RULE:
+                    return control.type == BPMM_Object.Type.TACTIC || control.type == BPMM_Object.Type.BUSINESS_POLICY;
+                case BPMM_Object.Type.INFLUENCER:
+                    return control.type == BPMM_Object.Type.ASSESSMENT;
+                case BPMM_Object.Type.ASSESSMENT:
+                    return true;
+                default:
+                    return false;
+            }
         }
+
+        public bool linkWith(BPMMControl control)
+        {
+            switch (type)
+            {
+                case BPMM_Object.Type.VISION:
+                    ((Vision)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.GOAL:
+                    ((Goal)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.OBJECTIVE:
+                    ((Objective)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.MISSION:
+                    ((Mission)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.STRATEGY:
+                    ((Strategy)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.TACTIC:
+                    ((Tactic)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.BUSINESS_POLICY:
+                    ((BusinessPolicy)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.BUSINESS_RULE:
+                    ((BusinessRule)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.INFLUENCER:
+                    ((Influencer)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                case BPMM_Object.Type.ASSESSMENT:
+                    ((Assessment)viewModel.linkedObject).linkWith(control.viewModel.linkedObject);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        #endregion
 
         // drag
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -57,7 +129,7 @@ namespace BPMM_App
                 e.Handled = true;
             }
 
-            var ct = (CompositeTransform)bpmmObject.RenderTransform;
+            var ct = (CompositeTransform)container.RenderTransform;
             ct.TranslateX += e.Delta.Translation.X; 
             ct.TranslateY += e.Delta.Translation.Y;
         }
@@ -108,47 +180,57 @@ namespace BPMM_App
             resizing = false;
         }
         # endregion
-    }
 
-    public class BPMM_ViewModel : INotifyPropertyChanged
-    {
-        public BPMM_Object linkedObject;
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public BPMM_ViewModel(BPMM_Object obj)
+        #region viewmodel
+        public class BPMM_ViewModel : INotifyPropertyChanged
         {
-            linkedObject = obj;
-        }
+            public BPMM_Object linkedObject;
+            public event PropertyChangedEventHandler PropertyChanged;
 
-        # region getters/setters
-        public string Title
-        {
-            get { return linkedObject.title; }
-            set
+            public BPMM_ViewModel(BPMM_Object obj)
             {
-                linkedObject.title = value;
-                OnPropertyChanged("Title");
+                linkedObject = obj;
+            }
+
+            # region getters/setters
+            public string Title
+            {
+                get { return linkedObject.title; }
+                set
+                {
+                    linkedObject.title = value;
+                    OnPropertyChanged("Title");
+                }
+            }
+
+            public string Description
+            {
+                get { return linkedObject.description; }
+                set
+                {
+                    linkedObject.description = value;
+                    OnPropertyChanged("Description");
+                }
+            }
+            # endregion
+
+            protected void OnPropertyChanged(string name)
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(name));
+                }
+            }
+
+        }
+        #endregion
+
+        private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (AssociationEvent != null)
+            {
+                AssociationEvent(this, e);
             }
         }
-
-        public string Description
-        {
-            get { return linkedObject.description; }
-            set
-            {
-                linkedObject.description = value;
-                OnPropertyChanged("Description");
-            }
-        }
-        # endregion
-
-        protected void OnPropertyChanged(string name)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
-        }
-
     }
 }

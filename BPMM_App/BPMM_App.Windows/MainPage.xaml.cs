@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.Storage;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI;
 
 namespace BPMM_App
 {
@@ -23,6 +25,10 @@ namespace BPMM_App
     {      
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
+        bool associating;
+
+        private AssociationControl currentLine;
+        private BPMMControl sourceControl;
 
         public ObservableDictionary DefaultViewModel
         {
@@ -41,6 +47,7 @@ namespace BPMM_App
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
+            associating = false;
         }
 
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
@@ -127,6 +134,8 @@ namespace BPMM_App
                 BPMMControl control = new BPMMControl(obj);
                 control.type = type;
                 control.viewModel.Title = title;
+                control.AssociationEvent += OnAssociationStart;
+                control.PointerReleased += OnAssociationRequest;
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
                 Canvas.SetTop(control, pos.Y);
@@ -146,6 +155,71 @@ namespace BPMM_App
             else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.BUSINESS_RULE); }
             else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.INFLUENCER); }
             else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.ASSESSMENT); }
+            else if (e.Items[0].Equals(association)) { e.Data.Properties.Add("Item", "Association"); }
+        }
+
+        public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
+        {
+            sourceControl = (BPMMControl) sender;
+            Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
+            currentLine = new AssociationControl(p, e.GetCurrentPoint((UIElement)sender).Position);
+            workspace.Children.Add(currentLine);
+            associating = true;
+        }
+
+        private void workspace_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (associating)
+            {
+                Point target = e.GetCurrentPoint((UIElement)sender).Position;
+                target.X -= 5;
+                target.Y -= 5;
+                currentLine.updateEndPoint(target);
+            }
+        }
+
+        private void workspace_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (associating)
+            {
+                associating = false;
+                workspace.Children.Remove(currentLine);
+                currentLine = null;
+            }
+        }
+
+        public void OnAssociationRequest(object sender, PointerRoutedEventArgs e)
+        {    
+            if (currentLine == null)
+            {
+                Debug.WriteLine("no start point detected");
+                associating = false;
+                return;
+            }
+
+            BPMMControl target = (BPMMControl)sender;
+            Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
+
+            if (currentLine.viewModel.Points[0].Equals(p))
+            {
+                Debug.WriteLine("Cannot pull association to itself.");
+                workspace.Children.Remove(currentLine);
+                currentLine = null;
+                associating = false;
+                return;
+            }
+            if (sourceControl.linkableWith(target))
+            {
+                sourceControl.linkWith(target);
+                currentLine.updateEndPoint(p);
+                associating = false;
+            }
+            else
+            {
+                Debug.WriteLine("Object from type {0} cannot be linked with object from type {1}", sourceControl.type, target.type);
+                workspace.Children.Remove(currentLine);
+                currentLine = null;
+            }
         }
     }
 }
