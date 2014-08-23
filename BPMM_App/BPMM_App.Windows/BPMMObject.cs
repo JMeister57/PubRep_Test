@@ -14,17 +14,20 @@ namespace BPMM_App
             VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT
         }
 
-        public static List<String> State = new List<String>(new String[] { "created", "approved", "denied", "duplicate" });
+        public static List<String> States = new List<String>(new String[] { "created", "approved", "denied", "duplicate" });
+
         String author;
         DateTime creationDate;
         public String title;
         public String description;
         List<String> references;
+        String state;
 
         public BPMM_Object()
         {
             author = "Tieni";
             creationDate = DateTime.Now;
+            state = "created";
         }
 
         public abstract bool linkWith(BPMM_Object targetObj);

@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace BPMM_App
 {
@@ -175,6 +176,15 @@ namespace BPMM_App
             bpmmObject.Height += yChange;
         }
 
+
+        private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (AssociationEvent != null)
+            {
+                AssociationEvent(this, e);
+            }
+        }
+
         private void Thumb_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             resizing = false;
@@ -185,11 +195,14 @@ namespace BPMM_App
         public class BPMM_ViewModel : INotifyPropertyChanged
         {
             public BPMM_Object linkedObject;
+            private ObservableCollection<String> states;
+
             public event PropertyChangedEventHandler PropertyChanged;
 
             public BPMM_ViewModel(BPMM_Object obj)
             {
                 linkedObject = obj;
+                States = new ObservableCollection<String>(BPMM_Object.States);
             }
 
             # region getters/setters
@@ -212,6 +225,20 @@ namespace BPMM_App
                     OnPropertyChanged("Description");
                 }
             }
+
+            public ObservableCollection<String> States
+            {
+                get { return states; }
+                set
+                {
+                    states = value;
+                    OnPropertyChanged("States");
+                }
+            }
+            public String DefaultState
+            {
+                get { return states[0]; }
+            }
             # endregion
 
             protected void OnPropertyChanged(string name)
@@ -224,13 +251,5 @@ namespace BPMM_App
 
         }
         #endregion
-
-        private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (AssociationEvent != null)
-            {
-                AssociationEvent(this, e);
-            }
-        }
     }
 }
