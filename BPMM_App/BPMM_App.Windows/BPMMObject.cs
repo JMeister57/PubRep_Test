@@ -14,6 +14,7 @@ namespace BPMM_App
             VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT
         }
 
+        public static List<String> State = new List<String>(new String[] { "created", "approved", "denied", "duplicate" });
         String author;
         DateTime creationDate;
         public String title;
@@ -302,8 +303,11 @@ namespace BPMM_App
     // Influencers
     public class Influencer : BPMM_Object
     {
-        static List<String> externalInfluencers;
-        static List<String> internalInfluencers;
+        static List<String> externalInfluencers =
+            new List<String>(new String[] { "Competitor", "Customer", "Environment", "Partner", "Regulation", "Supplier", "Technology" });
+        static List<String> internalInfluencers =
+            new List<String>(new String[] { "Assumption", "Corporate Value, explicit", "Corporate Value, implicit", "Habit",
+                                            "Infrastructure", "Issue", "Management Prerogative", "Resource" });
         
         String source;
         String type;
