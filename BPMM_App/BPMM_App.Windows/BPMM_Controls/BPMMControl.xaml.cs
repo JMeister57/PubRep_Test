@@ -24,6 +24,7 @@ namespace BPMM_App
     {
         private const int MIN_SIZE = 100;
 
+        ComboBox influencerCombo;
         public BPMM_Object.Type type;
         public BPMM_ViewModel viewModel;
         private bool resizing;
@@ -40,7 +41,32 @@ namespace BPMM_App
             this.InitializeComponent();
             resizing = false;
             viewModel = new BPMM_ViewModel(obj);
-            DataContext = this.viewModel;
+            DataContext = viewModel;
+            
+            if (obj is Influencer)
+            { // add row for the influence type combobox
+                influencerCombo = new ComboBox();
+                influencerCombo.DataContext = viewModel;
+                Binding items = new Binding() { Source = viewModel.InfluencerTypes };
+                BindingOperations.SetBinding(influencerCombo, ComboBox.ItemsSourceProperty, items);
+                influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
+                influencerCombo.Margin = new Thickness(10, 0, 10, 2);
+
+                bpmmObject.Height = 240;
+                RowDefinition row = new RowDefinition();
+                row.Height = new GridLength(1.4, GridUnitType.Star);
+                bpmmObject.RowDefinitions.Insert(2, row);
+                Grid.SetRow(header, 1);
+                Grid.SetRow(influencerCombo, 2);
+                Grid.SetRow(description, 3);
+                Grid.SetRow(stateCombo, 4);
+                Grid.SetRow(ThumbBottomLeft, 5);
+                Grid.SetRow(ThumbBottomRight, 5);
+                bpmmObject.Children.Add(influencerCombo);
+                bpmmObject.RowDefinitions[1].Height = new GridLength(1.8, GridUnitType.Star);
+                bpmmObject.RowDefinitions[3].Height = new GridLength(5.3, GridUnitType.Star);
+                bpmmObject.RowDefinitions[4].Height = new GridLength(1.4, GridUnitType.Star);
+            }
         }
 
         #region linking
@@ -118,6 +144,20 @@ namespace BPMM_App
             }
         }
         #endregion
+
+        private void influencerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems[0].ToString() == BPMM_ViewModel.internalSep
+                || e.AddedItems[0].ToString() == BPMM_ViewModel.externalSep)
+            {
+                if (e.RemovedItems.Count == 0)
+                {
+                    influencerCombo.SelectedIndex = -1;
+                    return;
+                }
+                influencerCombo.SelectedItem = e.RemovedItems[0];
+            }
+        }
 
         // drag
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -202,6 +242,9 @@ namespace BPMM_App
         {
             public BPMM_Object linkedObject;
             private ObservableCollection<String> states;
+            private ObservableCollection<String> influencerTypes;
+            public const String externalSep = "--- External: ---";
+            public const String internalSep = "--- Internal: ---";
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -209,6 +252,16 @@ namespace BPMM_App
             {
                 linkedObject = obj;
                 States = new ObservableCollection<String>(BPMM_Object.States);
+
+                if (obj is Influencer)
+                {
+                    List<String> types = new List<String>();
+                    types.Add(externalSep);
+                    types.AddRange(Influencer.externalInfluencers);
+                    types.Add(internalSep);
+                    types.AddRange(Influencer.internalInfluencers);
+                    InfluencerTypes = new ObservableCollection<String>(types);
+                }
             }
 
             # region getters/setters
@@ -219,6 +272,16 @@ namespace BPMM_App
                 {
                     linkedObject.title = value;
                     OnPropertyChanged("Title");
+                }
+            }
+
+            public ObservableCollection<String> InfluencerTypes
+            {
+                get { return influencerTypes; }
+                set
+                {
+                    influencerTypes = value;
+                    OnPropertyChanged("InfluencerTypes");
                 }
             }
 

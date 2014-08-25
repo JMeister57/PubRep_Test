@@ -28,7 +28,7 @@ namespace BPMM_App
         
         bool associating;
         private AssociationControl currentLine;
-        private object sourceControl;
+        private BPMMControl sourceControl;
 
         public ObservableDictionary DefaultViewModel
         {
@@ -121,17 +121,9 @@ namespace BPMM_App
                         title = "Rule";
                         break;
                     case BPMM_Object.Type.INFLUENCER:
-                        Influencer influencer = new Influencer();
+                        obj = (BPMM_Object)new Influencer();
                         title = "Influencer";
-                        InfluencerControl iControl = new InfluencerControl(influencer);
-                        iControl.viewModel.Title = title;
-                        iControl.AssociationEvent += OnAssociationStart;
-                        iControl.PointerReleased += OnAssociationRequest;
-                        Point p = e.GetPosition(workspace);
-                        Canvas.SetLeft(iControl, p.X);
-                        Canvas.SetTop(iControl, p.Y);
-                        workspace.Children.Add(iControl);
-                        return;
+                        break;
                     case BPMM_Object.Type.ASSESSMENT:
                         obj = (BPMM_Object) new Assessment();
                         title = "Assessment";
@@ -168,15 +160,10 @@ namespace BPMM_App
 
         public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
         {
-            sourceControl = sender;
-            Point p = (sourceControl is InfluencerControl)?
-                new Point(Canvas.GetLeft((InfluencerControl)sourceControl), Canvas.GetTop((InfluencerControl)sourceControl)) :
-                new Point(Canvas.GetLeft((BPMMControl)sourceControl), Canvas.GetTop((BPMMControl)sourceControl));
+            sourceControl = (BPMMControl)sender;
+            Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
             currentLine = new AssociationControl(p, e.GetCurrentPoint((UIElement)sender).Position);
-            if (sourceControl is InfluencerControl == false)
-            {
-                ((BPMMControl)sourceControl).MovedEvent += currentLine.sourceMoved;
-            }
+            sourceControl.MovedEvent += currentLine.sourceMoved;
             workspace.Children.Add(currentLine);
             associating = true;
         }
@@ -205,9 +192,7 @@ namespace BPMM_App
         public void OnAssociationRequest(object sender, PointerRoutedEventArgs e)
         {    
             if (currentLine == null)
-            {
-                Debug.WriteLine("no start point detected");
-                associating = false;
+            { // case: simple clickon control
                 return;
             }
 
@@ -215,40 +200,26 @@ namespace BPMM_App
             Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
 
             if (currentLine.viewModel.Points[0].Equals(p))
-            {
+            { // case: association to itself
                 Debug.WriteLine("Cannot pull association to itself.");
                 workspace.Children.Remove(currentLine);
-                currentLine = null;
-                associating = false;
-                return;
             }
 
-            if (sourceControl is InfluencerControl)
-            {
-                if (((InfluencerControl)sourceControl).linkableWith(target))
-                {
-                    ((InfluencerControl)sourceControl).linkWith(target);
-                    currentLine.updateEndPoint(p);
-                    associating = false;
-                    sourceControl = null;
-                    currentLine = null;
-                }
-            }
-            else if (((BPMMControl)sourceControl).linkableWith(target))
-            {
-                ((BPMMControl)sourceControl).linkWith(target);
+            else if ((sourceControl).linkableWith(target))
+            { // case: allowed association
+                sourceControl.linkWith(target);
                 currentLine.updateEndPoint(p);
-                ((BPMMControl)target).MovedEvent += currentLine.targetMoved;
-                associating = false;
+                target.MovedEvent += currentLine.targetMoved;
                 sourceControl = null;
-                currentLine = null;
             }
             else
-            {
+            { // case: misfitting BPMM objects
                 Debug.WriteLine("these two objects cannot be linked");
                 workspace.Children.Remove(currentLine);
-                currentLine = null;
             }
+            sourceControl = null;
+            currentLine = null;
+            associating = false;
         }
     }
 }
