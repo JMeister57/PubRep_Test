@@ -39,6 +39,24 @@ namespace BPMM_App
             updateBoxPosition(points[0], p);
         }
 
+        public void targetMoved(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Point p = points[1];
+            p.X += e.Delta.Translation.X;
+            p.Y += e.Delta.Translation.Y;
+            points[1] = p;
+            updateBoxPosition(points[0], points[1]);
+        }
+
+        public void sourceMoved(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Point p = points[0];
+            p.X += e.Delta.Translation.X;
+            p.Y += e.Delta.Translation.Y;
+            points[0] = p;
+            updateBoxPosition(points[0], points[1]);
+        }
+
         private void updateBoxPosition(Point source, Point target)
         {
             if (Double.IsNaN(descriptionBox.Width)) {

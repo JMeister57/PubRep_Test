@@ -29,10 +29,12 @@ namespace BPMM_App
         private bool resizing;
 
         public event PointerEventHandler AssociationEvent;
+        public event ManipulationDeltaEventHandler MovedEvent;
         public BPMMControl()
         {
             this.InitializeComponent();
         }
+        
         public BPMMControl(BPMM_Object obj)
         {
             this.InitializeComponent();
@@ -133,6 +135,10 @@ namespace BPMM_App
             var ct = (CompositeTransform)container.RenderTransform;
             ct.TranslateX += e.Delta.Translation.X; 
             ct.TranslateY += e.Delta.Translation.Y;
+            if (MovedEvent != null)
+            {
+                MovedEvent(this, e);
+            }
         }
 
         #region resize

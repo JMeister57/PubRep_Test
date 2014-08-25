@@ -25,8 +25,8 @@ namespace BPMM_App
     {      
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
+        
         bool associating;
-
         private AssociationControl currentLine;
         private object sourceControl;
 
@@ -173,6 +173,10 @@ namespace BPMM_App
                 new Point(Canvas.GetLeft((InfluencerControl)sourceControl), Canvas.GetTop((InfluencerControl)sourceControl)) :
                 new Point(Canvas.GetLeft((BPMMControl)sourceControl), Canvas.GetTop((BPMMControl)sourceControl));
             currentLine = new AssociationControl(p, e.GetCurrentPoint((UIElement)sender).Position);
+            if (sourceControl is InfluencerControl == false)
+            {
+                ((BPMMControl)sourceControl).MovedEvent += currentLine.sourceMoved;
+            }
             workspace.Children.Add(currentLine);
             associating = true;
         }
@@ -234,6 +238,7 @@ namespace BPMM_App
             {
                 ((BPMMControl)sourceControl).linkWith(target);
                 currentLine.updateEndPoint(p);
+                ((BPMMControl)target).MovedEvent += currentLine.targetMoved;
                 associating = false;
                 sourceControl = null;
                 currentLine = null;
