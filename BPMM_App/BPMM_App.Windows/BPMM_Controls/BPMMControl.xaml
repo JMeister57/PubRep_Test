@@ -15,7 +15,7 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Grid x:Name="bpmmObject" x:FieldModifier="public" Grid.Column="0" Width="200" Height="200" Background="LightBlue" ManipulationMode="All" ManipulationDelta="UserControl_ManipulationDelta">
+            <Grid x:Name="bpmmObject" x:FieldModifier="public" Grid.Column="0" Width="200" Height="200" Background="LightBlue" PointerPressed="UserControl_PointerPressed" PointerMoved="UserControl_PointerMoved" PointerReleased="UserControl_PointerReleased">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10"/>
                     <RowDefinition Height="2*"/>

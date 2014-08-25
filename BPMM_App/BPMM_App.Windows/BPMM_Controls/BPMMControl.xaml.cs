@@ -17,12 +17,16 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using Windows.UI.Input;
 
 namespace BPMM_App
 {
     public partial class BPMMControl : UserControl
     {
         private const int MIN_SIZE = 100;
+        
+        protected bool isDragging;
+        private PointerPoint offset;
 
         ComboBox influencerCombo;
         public BPMM_Object.Type type;
@@ -30,7 +34,7 @@ namespace BPMM_App
         private bool resizing;
 
         public event PointerEventHandler AssociationEvent;
-        public event ManipulationDeltaEventHandler MovedEvent;
+        public event PointerEventHandler MovedEvent;
         public BPMMControl()
         {
             this.InitializeComponent();
@@ -160,24 +164,38 @@ namespace BPMM_App
         }
 
         // drag
-        private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (resizing)
-            {
-                return;
-            }
-            if (e.IsInertial) // disable inertia, we don't want any flicking
-            {
-                e.Complete();
-                e.Handled = true;
-            }
+            isDragging = true;
+            offset = e.GetCurrentPoint(this);
+            bpmmObject.CapturePointer(e.Pointer);
+        }
 
-            var ct = (CompositeTransform)container.RenderTransform;
-            ct.TranslateX += e.Delta.Translation.X; 
-            ct.TranslateY += e.Delta.Translation.Y;
-            if (MovedEvent != null)
+        private void UserControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (isDragging)
             {
-                MovedEvent(this, e);
+                PointerPoint currPos = e.GetCurrentPoint(Parent as UIElement);
+                double prevPosX = Canvas.GetLeft(this);
+                double prevPosY = Canvas.GetTop(this);
+
+                double newPosX = currPos.Position.X - offset.Position.X;
+                double newPosY = currPos.Position.Y - offset.Position.Y;
+                Canvas.SetLeft(this, newPosX);
+                Canvas.SetTop(this, newPosY);
+                if (MovedEvent != null)
+                {
+                    MovedEvent(this, e);
+                }
+            }
+        }
+
+        private void UserControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (isDragging)
+            {
+                isDragging = false;
+                bpmmObject.ReleasePointerCapture(e.Pointer);
             }
         }
 
