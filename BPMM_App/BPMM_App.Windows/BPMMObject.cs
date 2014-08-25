@@ -306,9 +306,9 @@ namespace BPMM_App
     // Influencers
     public class Influencer : BPMM_Object
     {
-        static List<String> externalInfluencers =
+        public static List<String> externalInfluencers =
             new List<String>(new String[] { "Competitor", "Customer", "Environment", "Partner", "Regulation", "Supplier", "Technology" });
-        static List<String> internalInfluencers =
+        public static List<String> internalInfluencers =
             new List<String>(new String[] { "Assumption", "Corporate Value, explicit", "Corporate Value, implicit", "Habit",
                                             "Infrastructure", "Issue", "Management Prerogative", "Resource" });
         

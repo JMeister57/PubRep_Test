@@ -28,7 +28,7 @@ namespace BPMM_App
         bool associating;
 
         private AssociationControl currentLine;
-        private BPMMControl sourceControl;
+        private object sourceControl;
 
         public ObservableDictionary DefaultViewModel
         {
@@ -121,9 +121,17 @@ namespace BPMM_App
                         title = "Rule";
                         break;
                     case BPMM_Object.Type.INFLUENCER:
-                        obj = (BPMM_Object) new Influencer();
+                        Influencer influencer = new Influencer();
                         title = "Influencer";
-                        break;
+                        InfluencerControl iControl = new InfluencerControl(influencer);
+                        iControl.viewModel.Title = title;
+                        iControl.AssociationEvent += OnAssociationStart;
+                        iControl.PointerReleased += OnAssociationRequest;
+                        Point p = e.GetPosition(workspace);
+                        Canvas.SetLeft(iControl, p.X);
+                        Canvas.SetTop(iControl, p.Y);
+                        workspace.Children.Add(iControl);
+                        return;
                     case BPMM_Object.Type.ASSESSMENT:
                         obj = (BPMM_Object) new Assessment();
                         title = "Assessment";
@@ -160,8 +168,10 @@ namespace BPMM_App
 
         public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
         {
-            sourceControl = (BPMMControl) sender;
-            Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
+            sourceControl = sender;
+            Point p = (sourceControl is InfluencerControl)?
+                new Point(Canvas.GetLeft((InfluencerControl)sourceControl), Canvas.GetTop((InfluencerControl)sourceControl)) :
+                new Point(Canvas.GetLeft((BPMMControl)sourceControl), Canvas.GetTop((BPMMControl)sourceControl));
             currentLine = new AssociationControl(p, e.GetCurrentPoint((UIElement)sender).Position);
             workspace.Children.Add(currentLine);
             associating = true;
@@ -208,15 +218,29 @@ namespace BPMM_App
                 associating = false;
                 return;
             }
-            if (sourceControl.linkableWith(target))
+
+            if (sourceControl is InfluencerControl)
             {
-                sourceControl.linkWith(target);
+                if (((InfluencerControl)sourceControl).linkableWith(target))
+                {
+                    ((InfluencerControl)sourceControl).linkWith(target);
+                    currentLine.updateEndPoint(p);
+                    associating = false;
+                    sourceControl = null;
+                    currentLine = null;
+                }
+            }
+            else if (((BPMMControl)sourceControl).linkableWith(target))
+            {
+                ((BPMMControl)sourceControl).linkWith(target);
                 currentLine.updateEndPoint(p);
                 associating = false;
+                sourceControl = null;
+                currentLine = null;
             }
             else
             {
-                Debug.WriteLine("Object from type {0} cannot be linked with object from type {1}", sourceControl.type, target.type);
+                Debug.WriteLine("these two objects cannot be linked");
                 workspace.Children.Remove(currentLine);
                 currentLine = null;
             }
