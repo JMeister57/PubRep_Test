@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Navigation;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using Windows.UI.Input;
+using Windows.System;
+using Windows.UI.Popups;
+using Windows.UI.Core;
 
 namespace BPMM_App
 {
@@ -31,10 +34,11 @@ namespace BPMM_App
         ComboBox influencerCombo;
         public BPMM_Object.Type type;
         public BPMM_ViewModel viewModel;
-        private bool resizing;
 
         public event PointerEventHandler AssociationEvent;
         public event PointerEventHandler MovedEvent;
+        public event EventHandler DeleteEvent;
+
         public BPMMControl()
         {
             this.InitializeComponent();
@@ -43,7 +47,6 @@ namespace BPMM_App
         public BPMMControl(BPMM_Object obj)
         {
             this.InitializeComponent();
-            resizing = false;
             viewModel = new BPMM_ViewModel(obj);
             DataContext = viewModel;
             
@@ -163,7 +166,7 @@ namespace BPMM_App
             }
         }
 
-        // drag
+        #region dragging
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             isDragging = true;
@@ -198,11 +201,41 @@ namespace BPMM_App
                 bpmmObject.ReleasePointerCapture(e.Pointer);
             }
         }
+        #endregion
+
+        private async void UserControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var menu = new PopupMenu();
+            menu.Commands.Add(new UICommand("Delete BPMM Object"));
+
+            var response = await menu.ShowForSelectionAsync(MenuPos());
+            if (response != null && response.Label == "Delete BPMM Object")
+            {
+                MessageDialog affirmationPopup = new MessageDialog("", string.Format("Really Delete {0}?", viewModel.Title));
+                affirmationPopup.Commands.Add(new UICommand("Ok"));
+                affirmationPopup.Commands.Add(new UICommand("Cancel"));
+                var response2 = await affirmationPopup.ShowAsync();
+                if (response2 != null && response2.Label == "Ok")
+                {
+                    if (DeleteEvent != null)
+                    {
+                        DeleteEvent(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+
+        private Rect MenuPos()
+        {
+            GeneralTransform transform = TransformToVisual(null);
+            Point pointTransformed = transform.TransformPoint(new Point(0, 0));
+            Debug.WriteLine("point: {0}, {1}, ActualSize: {2}, {3}", pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
+            return new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
+        }
 
         #region resize
         private void ThumbTopLeft_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            resizing = true;
             double xChange = bpmmObject.Width - e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
             double yChange = bpmmObject.Height - e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
             bpmmObject.Width -= xChange;
@@ -213,7 +246,6 @@ namespace BPMM_App
 
         private void ThumbTopRight_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            resizing = true;
             double xChange = bpmmObject.Width + e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
             double yChange = bpmmObject.Height - e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
             bpmmObject.Width += xChange;
@@ -223,7 +255,6 @@ namespace BPMM_App
 
         private void ThumbBottomLeft_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            resizing = true;
             double xChange = bpmmObject.Width - e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
             double yChange = bpmmObject.Height + e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
             bpmmObject.Width -= xChange;
@@ -233,7 +264,6 @@ namespace BPMM_App
 
         private void ThumbBottomRight_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            resizing = true;
             double xChange = bpmmObject.Width + e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
             double yChange = bpmmObject.Height + e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
             bpmmObject.Width += xChange;
@@ -247,11 +277,6 @@ namespace BPMM_App
             {
                 AssociationEvent(this, e);
             }
-        }
-
-        private void Thumb_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            resizing = false;
         }
         # endregion
 

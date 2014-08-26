@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    RightTapped="UserControl_RightTapped">
 
     <Canvas Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
         <Grid x:Name="container">
@@ -15,7 +16,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Grid x:Name="bpmmObject" x:FieldModifier="public" Grid.Column="0" Width="200" Height="200" Background="LightBlue" PointerPressed="UserControl_PointerPressed" PointerMoved="UserControl_PointerMoved" PointerReleased="UserControl_PointerReleased">
+            <Grid x:Name="bpmmObject" x:FieldModifier="public" Grid.Column="0" Width="200" Height="200" Background="LightBlue"
+                  PointerPressed="UserControl_PointerPressed" PointerMoved="UserControl_PointerMoved" PointerReleased="UserControl_PointerReleased">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10"/>
                     <RowDefinition Height="2*"/>
@@ -23,16 +25,16 @@
                     <RowDefinition Height="2*"/>
                     <RowDefinition Height="10"/>
                 </Grid.RowDefinitions>
-                <Thumb x:Name="ThumbTopRight" Grid.Row="0" Background="White" Height="10" Width="10"  HorizontalAlignment="Right" DragDelta="ThumbTopRight_DragDelta" PointerReleased="Thumb_PointerReleased" />
-                <Thumb x:Name="ThumbTopLeft" Grid.Row="0" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbTopLeft_DragDelta"  PointerReleased="Thumb_PointerReleased" />
+                <Thumb x:Name="ThumbTopRight" Grid.Row="0" Background="White" Height="10" Width="10"  HorizontalAlignment="Right" DragDelta="ThumbTopRight_DragDelta" />
+                <Thumb x:Name="ThumbTopLeft" Grid.Row="0" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbTopLeft_DragDelta"  />
 
                 <TextBox x:Name="header" Grid.Row="1" Text="{Binding Path=Title, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" Margin="10,0,10,5" />
                 <TextBox x:Name="description" Grid.Row="2" Text="{Binding Path=Description, Mode=TwoWay}" PlaceholderText="description" TextWrapping="Wrap" AcceptsReturn="True" Margin="10,0" />
                 
                 <ComboBox x:Name="stateCombo" Grid.Row="3" ItemsSource="{Binding Path=States}" SelectedItem="{Binding Path=DefaultState}" Margin="10, 4, 10, 0" />
 
-                <Thumb x:Name="ThumbBottomRight" Grid.Row="4" Background="White" Height="10" Width="10" HorizontalAlignment="Right" DragDelta="ThumbBottomRight_DragDelta" PointerReleased="Thumb_PointerReleased" />
-                <Thumb x:Name="ThumbBottomLeft" Grid.Row="4" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbBottomLeft_DragDelta" PointerReleased="Thumb_PointerReleased" />
+                <Thumb x:Name="ThumbBottomRight" Grid.Row="4" Background="White" Height="10" Width="10" HorizontalAlignment="Right" DragDelta="ThumbBottomRight_DragDelta" />
+                <Thumb x:Name="ThumbBottomLeft" Grid.Row="4" Background="White" Height="10" Width="10" HorizontalAlignment="Left" DragDelta="ThumbBottomLeft_DragDelta" />
             </Grid>
             <Rectangle x:Name="anchor" x:FieldModifier="public" Grid.Column="1" VerticalAlignment="Top" Height="15" Width="15" Canvas.Left="200" Stroke="Black" Fill="White" PointerPressed="anchor_PointerPressed"/>
 

@@ -16,6 +16,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Diagnostics;
+using Windows.System;
+using Windows.UI.Popups;
 
 namespace BPMM_App
 {
@@ -24,17 +26,25 @@ namespace BPMM_App
         public PointCollection points = new PointCollection();
         public String description;
 
+        private BPMMControl sourceControl;
+        private BPMMControl targetControl;
+
         public Line_ViewModel viewModel;
-        public AssociationControl(Point source, Point target)
+
+        public event EventHandler DeleteEvent;
+
+        public AssociationControl(BPMMControl sourceControl, Point source, Point target)
         {
             this.InitializeComponent();
             viewModel = new Line_ViewModel(this, source, target);
             updateBoxPosition(source, target);
+            this.sourceControl = sourceControl;
             DataContext = viewModel;
         }
 
-        public void updateEndPoint(Point p)
+        public void updateEndPoint(BPMMControl targetControl, Point p)
         {
+            this.targetControl = targetControl;
             points[1] = p;
             updateBoxPosition(points[0], p);
         }
@@ -82,6 +92,14 @@ namespace BPMM_App
             Canvas.SetTop(descriptionBox, yOffset);
         }
 
+        public void Delete(object sender, EventArgs e)
+        {
+            if (DeleteEvent != null)
+            {
+                DeleteEvent(this, e);
+            }
+        }
+
         public class Line_ViewModel : INotifyPropertyChanged
         {
             private AssociationControl parent;
@@ -117,6 +135,41 @@ namespace BPMM_App
                 }
             }
 
+        }
+
+        private void UserControl_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case VirtualKey.Delete:
+                    Delete(sender, EventArgs.Empty);
+                    return;
+            }
+        }
+
+        private void UserControl_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Focus(FocusState.Pointer);
+        }
+
+        private async void UserControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var menu = new PopupMenu();
+            menu.Commands.Add(new UICommand("Delete Association"));
+
+            GeneralTransform transform = descriptionBox.TransformToVisual(null);
+            Point pointTransformed = transform.TransformPoint(new Point(0, 0));
+            Debug.WriteLine("point: {0}, {1}, ActualSize: {2}, {3}", pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
+            Rect rect = new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
+            var response = await menu.ShowForSelectionAsync(rect);
+            if (response != null && response.Label == "Delete Association")
+            {
+                if (DeleteEvent != null)
+                {
+                    DeleteEvent(this, EventArgs.Empty);
+                }
+
+            }
         }
     }
 }

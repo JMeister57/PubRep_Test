@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Storage;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI;
+using Windows.UI.Popups;
 
 namespace BPMM_App
 {
@@ -136,6 +137,7 @@ namespace BPMM_App
                 control.viewModel.Title = title;
                 control.AssociationEvent += OnAssociationStart;
                 control.PointerReleased += OnAssociationRequest;
+                control.DeleteEvent += DeleteControl;
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
                 Canvas.SetTop(control, pos.Y);
@@ -157,13 +159,15 @@ namespace BPMM_App
             else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.ASSESSMENT); }
             else if (e.Items[0].Equals(association)) { e.Data.Properties.Add("Item", "Association"); }
         }
-
+        #region association drawing
         public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
         {
             sourceControl = (BPMMControl)sender;
             Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
-            currentLine = new AssociationControl(p, e.GetCurrentPoint((UIElement)sender).Position);
+            currentLine = new AssociationControl(sourceControl, p, e.GetCurrentPoint((UIElement)sender).Position);
             sourceControl.MovedEvent += currentLine.sourceMoved;
+            sourceControl.DeleteEvent += currentLine.Delete;
+            currentLine.DeleteEvent += DeleteAssociation;
             workspace.Children.Add(currentLine);
             associating = true;
         }
@@ -175,7 +179,7 @@ namespace BPMM_App
                 Point target = e.GetCurrentPoint((UIElement)sender).Position;
                 target.X -= 5;
                 target.Y -= 5;
-                currentLine.updateEndPoint(target);
+                currentLine.updateEndPoint(null, target);
             }
         }
 
@@ -208,8 +212,9 @@ namespace BPMM_App
             else if ((sourceControl).linkableWith(target))
             { // case: allowed association
                 sourceControl.linkWith(target);
-                currentLine.updateEndPoint(p);
+                currentLine.updateEndPoint(target, p);
                 target.MovedEvent += currentLine.targetMoved;
+                target.DeleteEvent += currentLine.Delete;
                 sourceControl = null;
             }
             else
@@ -220,6 +225,17 @@ namespace BPMM_App
             sourceControl = null;
             currentLine = null;
             associating = false;
+        }
+        #endregion
+        
+        public void DeleteControl(object sender, EventArgs e)
+        {
+            workspace.Children.Remove((BPMMControl)sender);
+        }
+
+        public void DeleteAssociation(object sender, EventArgs e)
+        {
+            workspace.Children.Remove((AssociationControl)sender);
         }
     }
 }
