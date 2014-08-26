@@ -30,6 +30,10 @@ namespace BPMM_App
         bool associating;
         private AssociationControl currentLine;
         private BPMMControl sourceControl;
+        
+        private bool selecting;
+        private Point selectionStartPoint;
+        private Rectangle selectionBox;
 
         public ObservableDictionary DefaultViewModel
         {
@@ -172,29 +176,8 @@ namespace BPMM_App
             associating = true;
         }
 
-        private void workspace_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            if (associating)
-            {
-                Point target = e.GetCurrentPoint((UIElement)sender).Position;
-                target.X -= 5;
-                target.Y -= 5;
-                currentLine.updateEndPoint(null, target);
-            }
-        }
-
-        private void workspace_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (associating)
-            {
-                associating = false;
-                workspace.Children.Remove(currentLine);
-                currentLine = null;
-            }
-        }
-
         public void OnAssociationRequest(object sender, PointerRoutedEventArgs e)
-        {    
+        {
             if (currentLine == null)
             { // case: simple clickon control
                 return;
@@ -227,6 +210,74 @@ namespace BPMM_App
             associating = false;
         }
         #endregion
+
+        private void workspace_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            selecting = true;
+            selectionStartPoint = e.GetCurrentPoint(workspace).Position;
+            selectionBox = new Rectangle()
+            {
+                Width = Math.Abs(selectionStartPoint.X - selectionStartPoint.X),
+                Height = Math.Abs(selectionStartPoint.Y - selectionStartPoint.Y),
+                Fill = new SolidColorBrush(Colors.Blue),
+                Stroke = new SolidColorBrush(Colors.Blue) { Opacity = 1 },
+                StrokeThickness = 4,
+                Opacity = 0.2
+            };
+            Canvas.SetLeft(selectionBox, selectionStartPoint.X);
+            Canvas.SetTop(selectionBox, selectionStartPoint.Y);
+            workspace.Children.Add(selectionBox);
+            workspace.CapturePointer(e.Pointer);
+        }
+
+        private void workspace_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (associating)
+            {
+                Point target = e.GetCurrentPoint((UIElement)sender).Position;
+                target.X -= 5;
+                target.Y -= 5;
+                currentLine.updateEndPoint(null, target);
+            }
+            else if (selecting)
+            {
+                Point currPoint = e.GetCurrentPoint(workspace).Position;
+                currPoint.X = (currPoint.X > workspace.Width) ? workspace.Width
+                                                                : (currPoint.X < 0) ? 0 : currPoint.X;
+                currPoint.Y = (currPoint.Y > workspace.Height) ? workspace.Height
+                                                                : (currPoint.Y < 0) ? 0 : currPoint.Y;
+                if (currPoint.X < selectionStartPoint.X)
+                {
+                    Canvas.SetLeft(selectionBox, currPoint.X);
+                }
+                if (currPoint.Y < selectionStartPoint.Y)
+                {
+                    Canvas.SetTop(selectionBox, currPoint.Y);
+                }
+                selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
+                selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
+            }
+        }
+
+        private void workspace_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (associating)
+            {
+                associating = false;
+                workspace.Children.Remove(currentLine);
+                currentLine = null;
+            }
+
+            else if (selecting)
+            {
+                Point currPoint = e.GetCurrentPoint(workspace).Position;
+                selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
+                selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
+                workspace.Children.Remove(selectionBox);
+                selecting = false;
+                workspace.ReleasePointerCapture(e.Pointer);
+            }
+        }
         
         public void DeleteControl(object sender, EventArgs e)
         {

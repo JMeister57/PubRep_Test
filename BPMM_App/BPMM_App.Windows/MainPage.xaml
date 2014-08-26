@@ -43,10 +43,11 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                      Header="Toolbar" Background="#FFFCFFDB" FontSize="24" >
+                      Header="Toolbar" Background="#FFFCFFDB" FontSize="24">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Height" Value="50" />
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <Image x:Name="visionIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Vision"/>
@@ -62,7 +63,7 @@
                 <Image x:Name="association" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Association"/>
             </ListView>
             <Canvas Grid.Column="1" x:Name="workspace" Background="Beige" AllowDrop="True"
-                    Drop="StackPanel_Drop" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased"/>
+                    Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased"/>
         </Grid>
     </Grid>
 </Page>
