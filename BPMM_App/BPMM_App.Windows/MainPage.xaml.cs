@@ -29,7 +29,7 @@ namespace BPMM_App
         
         bool associating;
         private AssociationControl currentLine;
-        private BPMMControl sourceControl;
+        private BaseControl sourceControl;
         
         private bool selecting;
         private Point selectionStartPoint;
@@ -87,7 +87,19 @@ namespace BPMM_App
         {
             object item;
             if (e.Data.Properties.TryGetValue("Item", out item))
-            {   
+            {
+                if (item is BPMM_Object.Type == false)
+                {
+                    NoteControl note = new NoteControl();
+                    note.AssociationEvent += OnAssociationStart;
+                    note.PointerReleased += OnAssociationRequest;
+                    note.DeleteEvent += DeleteControl;
+                    Point point = e.GetPosition(workspace);
+                    Canvas.SetLeft(note, point.X);
+                    Canvas.SetTop(note, point.Y);
+                    workspace.Children.Add(note);
+                    return;
+                }
                 BPMM_Object.Type type = (BPMM_Object.Type)item;
                 BPMM_Object obj;
                 String title;
@@ -161,12 +173,12 @@ namespace BPMM_App
             else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.BUSINESS_RULE); }
             else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.INFLUENCER); }
             else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.ASSESSMENT); }
-            else if (e.Items[0].Equals(association)) { e.Data.Properties.Add("Item", "Association"); }
+            else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", "Note"); }
         }
         #region association drawing
         public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
         {
-            sourceControl = (BPMMControl)sender;
+            sourceControl = (BaseControl)sender;
             Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
             currentLine = new AssociationControl(sourceControl, p, e.GetCurrentPoint((UIElement)sender).Position);
             sourceControl.MovedEvent += currentLine.sourceMoved;
@@ -183,18 +195,18 @@ namespace BPMM_App
                 return;
             }
 
-            BPMMControl target = (BPMMControl)sender;
+            BaseControl target = (BaseControl)sender;
             Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
 
             if (currentLine.viewModel.Points[0].Equals(p))
             { // case: association to itself
                 Debug.WriteLine("Cannot pull association to itself.");
                 workspace.Children.Remove(currentLine);
+                return;
             }
-
-            else if ((sourceControl).linkableWith(target))
+            bool linked = (sourceControl is BPMMControl)? ((BPMMControl)sourceControl).LinkWith(target) : ((NoteControl)sourceControl).LinkWith(target);
+            if (linked)
             { // case: allowed association
-                sourceControl.linkWith(target);
                 currentLine.updateEndPoint(target, p);
                 target.MovedEvent += currentLine.targetMoved;
                 target.DeleteEvent += currentLine.Delete;
@@ -213,6 +225,11 @@ namespace BPMM_App
 
         private void workspace_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (associating)
+            {
+                associating = false;
+                return;
+            } 
             selecting = true;
             selectionStartPoint = e.GetCurrentPoint(workspace).Position;
             selectionBox = new Rectangle()
@@ -281,7 +298,7 @@ namespace BPMM_App
         
         public void DeleteControl(object sender, EventArgs e)
         {
-            workspace.Children.Remove((BPMMControl)sender);
+            workspace.Children.Remove((BaseControl)sender);
         }
 
         public void DeleteAssociation(object sender, EventArgs e)

@@ -26,14 +26,14 @@ namespace BPMM_App
         public PointCollection points = new PointCollection();
         public String description;
 
-        private BPMMControl sourceControl;
-        private BPMMControl targetControl;
+        private BaseControl sourceControl;
+        private BaseControl targetControl;
 
         public Line_ViewModel viewModel;
 
         public event EventHandler DeleteEvent;
 
-        public AssociationControl(BPMMControl sourceControl, Point source, Point target)
+        public AssociationControl(BaseControl sourceControl, Point source, Point target)
         {
             this.InitializeComponent();
             viewModel = new Line_ViewModel(this, source, target);
@@ -42,7 +42,7 @@ namespace BPMM_App
             DataContext = viewModel;
         }
 
-        public void updateEndPoint(BPMMControl targetControl, Point p)
+        public void updateEndPoint(BaseControl targetControl, Point p)
         {
             this.targetControl = targetControl;
             points[1] = p;

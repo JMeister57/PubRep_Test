@@ -106,10 +106,10 @@
     <Compile Include="BPMM_Controls\Association.xaml.cs">
       <DependentUpon>Association.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BPMM_Controls\BPMMControl.xaml.cs">
-      <DependentUpon>BPMMControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="BPMMObject.cs" />
+    <Compile Include="BPMM_Controls\BaseControl.cs" />
+    <Compile Include="BPMM_Controls\BPMMControl.cs" />
+    <Compile Include="BPMM_Controls\NoteControl.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -132,10 +132,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="BPMM_Controls\Association.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="BPMM_Controls\BPMMControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

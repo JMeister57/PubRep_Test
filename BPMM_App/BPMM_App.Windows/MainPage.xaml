@@ -60,7 +60,7 @@
                 <Image x:Name="ruleIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Rule"/>
                 <Image x:Name="influencerIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Influencer"/>
                 <Image x:Name="assessmentIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Assessment"/>
-                <Image x:Name="association" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Association"/>
+                <Image x:Name="note" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
             </ListView>
             <Canvas Grid.Column="1" x:Name="workspace" Background="Beige" AllowDrop="True"
                     Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased"/>
