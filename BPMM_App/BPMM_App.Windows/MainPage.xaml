@@ -41,15 +41,19 @@
             <TextBlock Grid.Row="0" Grid.Column="1" x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" />
             <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10, 5">
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10, 5" PointerReleased="Save_Pressed">
                 <SymbolIcon Symbol="Save" ToolTipService.ToolTip="Save diagram"/>
             </Border>
             <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60, 5" PointerReleased="Export_Pressed">
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60, 5" PointerReleased="Load_Pressed">
+                <SymbolIcon Symbol="OpenFile" ToolTipService.ToolTip="Load Diagram"/>
+            </Border>
+            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="110, 5" PointerReleased="Export_Pressed">
                 <SymbolIcon Symbol="SaveLocal" ToolTipService.ToolTip="Export to image"/>
             </Border>
             <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="110, 5" PointerReleased="Clear_Pressed">
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160, 5" PointerReleased="Clear_Pressed">
                 <SymbolIcon Symbol="Delete" ToolTipService.ToolTip="Clear workspace"/>
             </Border>
         </Grid>

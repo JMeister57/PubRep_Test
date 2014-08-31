@@ -21,15 +21,18 @@ using Windows.UI.Input;
 using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Core;
+using Windows.Data.Json;
 
 namespace BPMM_App
 {
     public class BPMMControl : BaseControl
     {
-        public BPMM_Object.Type type;
         public BPMM_ViewModel viewModel;
 
-        public BPMMControl(BPMM_Object obj)
+        private ComboBox stateCombo;
+        private ComboBox influencerCombo;
+
+        public BPMMControl(BPMM_Object obj) : base()
         {
             viewModel = new BPMM_ViewModel(obj);
             DataContext = viewModel;
@@ -50,7 +53,7 @@ namespace BPMM_App
             var descriptionBinding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
             descriptionBox.SetBinding(TextBox.TextProperty, descriptionBinding);
 
-            var stateCombo = new ComboBox();
+            stateCombo = new ComboBox();
             Binding statesBinding = new Binding() { Source = viewModel.States };
             Binding defaultBinding = new Binding() { Source = viewModel.DefaultState };
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
@@ -60,7 +63,7 @@ namespace BPMM_App
 
             if (obj is Influencer)
             {
-                ComboBox influencerCombo = new ComboBox() { Margin = new Thickness(0, 0, 0, 2) };
+                influencerCombo = new ComboBox() { Margin = new Thickness(0, 0, 0, 2) };
                 var influencerBinding = new Binding() { Source = viewModel.InfluencerTypes };
                 influencerCombo.SetBinding(ComboBox.ItemsSourceProperty, influencerBinding);
                 influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
@@ -101,8 +104,8 @@ namespace BPMM_App
             {
                 return false;
             }
-            var targetType = ((BPMMControl)target).type;
-            switch (type)
+            var targetType = ((BPMMControl)target).type();
+            switch (type())
             {
                 case BPMM_Object.Type.VISION:
                     return targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.MISSION
@@ -142,7 +145,7 @@ namespace BPMM_App
                 return false;
             }
             var linkedObject = ((BPMMControl)target).viewModel.linkedObject;
-            switch (type)
+            switch (type())
             {
                 case BPMM_Object.Type.VISION:
                     ((Vision)viewModel.linkedObject).linkWith(linkedObject);
@@ -194,6 +197,119 @@ namespace BPMM_App
             }
         }
 
+        public override JsonObject serialize()
+        {
+            var controlEntry = base.serialize();
+            controlEntry.Add("title", JsonValue.CreateStringValue(viewModel.Title));
+            if (viewModel.Description != null)
+            {
+                controlEntry.Add("description", JsonValue.CreateStringValue(viewModel.Description));
+            }
+            controlEntry.Add("type", JsonValue.CreateNumberValue((int)type()));
+            controlEntry.Add("state", JsonValue.CreateNumberValue(stateCombo.SelectedIndex));
+            if (viewModel.linkedObject is Influencer)
+            {
+                controlEntry.Add("influencer", JsonValue.CreateNumberValue(influencerCombo.SelectedIndex));
+            }
+            return controlEntry;
+        }
+
+        public static BPMMControl deserialize(JsonObject input)
+        {
+            try
+            {
+                var value = input.GetNamedNumber("type", -1);
+                if (value == -1)
+                {
+                    return null;
+                }
+                var type = (BPMM_Object.Type)value;
+                BPMM_Object obj =
+                (type == BPMM_Object.Type.VISION) ? (BPMM_Object)new Vision() :
+                (type == BPMM_Object.Type.GOAL) ? (BPMM_Object)new Goal() :
+                (type == BPMM_Object.Type.OBJECTIVE) ? (BPMM_Object)new Objective() :
+                (type == BPMM_Object.Type.MISSION) ? (BPMM_Object)new Mission() :
+                (type == BPMM_Object.Type.STRATEGY) ? (BPMM_Object)new Strategy() :
+                (type == BPMM_Object.Type.TACTIC) ? (BPMM_Object)new Tactic() :
+                (type == BPMM_Object.Type.BUSINESS_POLICY) ? (BPMM_Object)new BusinessPolicy() :
+                (type == BPMM_Object.Type.BUSINESS_RULE) ? (BPMM_Object)new BusinessRule() :
+                (type == BPMM_Object.Type.INFLUENCER) ? (BPMM_Object)new Influencer() :
+                (BPMM_Object)new Assessment();
+
+                var control = new BPMMControl(obj);
+                var title = input.GetNamedString("title", "");
+                if (title.Length > 0)
+                {
+                    control.viewModel.Title = title;
+                }
+                var description = input.GetNamedString("description", "");
+                if (description.Length > 0)
+                {
+                    control.viewModel.Description = description;
+                }
+                var state = input.GetNamedNumber("state", -1);
+                if (state != -1)
+                {
+                    control.stateCombo.SelectedIndex = (int)state;
+                }
+                var influencer = input.GetNamedNumber("influencer", -1);
+                if (influencer != -1)
+                {
+                    control.influencerCombo.SelectedIndex = (int)influencer;
+                }
+                Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
+                Canvas.SetTop(control, input.GetNamedNumber("y", 0));
+                return control;
+            }
+            catch (InvalidCastException)
+            {
+                return null;
+            }
+        }
+
+        public BPMM_Object.Type type()
+        {
+            if (viewModel.linkedObject is Vision)
+            {
+                return BPMM_Object.Type.VISION;
+            }
+            else if (viewModel.linkedObject is Goal)
+            {
+                return BPMM_Object.Type.GOAL;
+            }
+            else if (viewModel.linkedObject is Objective)
+            {
+                return BPMM_Object.Type.OBJECTIVE;
+            }
+            if (viewModel.linkedObject is Mission)
+            {
+                return BPMM_Object.Type.MISSION;
+            }
+            if (viewModel.linkedObject is Strategy)
+            {
+                return BPMM_Object.Type.STRATEGY;
+            }
+            if (viewModel.linkedObject is Tactic)
+            {
+                return BPMM_Object.Type.TACTIC;
+            }
+            if (viewModel.linkedObject is BusinessPolicy)
+            {
+                return BPMM_Object.Type.BUSINESS_POLICY;
+            }
+            if (viewModel.linkedObject is BusinessRule)
+            {
+                return BPMM_Object.Type.BUSINESS_RULE;
+            }
+            if (viewModel.linkedObject is Influencer)
+            {
+                return BPMM_Object.Type.INFLUENCER;
+            }
+            else
+            {
+                return BPMM_Object.Type.ASSESSMENT;
+            }
+        }
         #region viewmodel
         public class BPMM_ViewModel : INotifyPropertyChanged
         {

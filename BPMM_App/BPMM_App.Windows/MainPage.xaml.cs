@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Pickers;
+using Windows.Data.Json;
+using Windows.Storage.Streams;
 
 namespace BPMM_App
 {
@@ -72,7 +74,6 @@ namespace BPMM_App
 
         private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
         {
-
         }
 
         #region NavigationHelper-Registrierung
@@ -153,7 +154,6 @@ namespace BPMM_App
                         return;
                 }
                 BPMMControl control = new BPMMControl(obj);
-                control.type = type;
                 control.viewModel.Title = title;
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
@@ -312,14 +312,121 @@ namespace BPMM_App
             workspace.Children.Remove((AssociationControl)sender);
         }
 
+        private string serialize()
+        {
+            var root = new JsonObject();
+            var bpmmArray = new JsonArray();
+            var noteArray = new JsonArray();
+            var associationArray = new JsonArray();
+            foreach (var child in workspace.Children)
+            {
+                if (child is BPMMControl)
+                {
+                    bpmmArray.Add(((BPMMControl)child).serialize());
+                }
+                else if (child is NoteControl)
+                {
+                    noteArray.Add(((NoteControl)child).serialize());
+                }
+                else if (child is AssociationControl)
+                {
+                    associationArray.Add(((AssociationControl)child).serialize());
+                }
+            }
+            root.Add("bpmms", bpmmArray);
+            root.Add("notes", noteArray);
+            root.Add("associations", associationArray);
+            return root.Stringify();
+        }
+
+        private bool deserialize(string input)
+        {
+            JsonObject data;
+            if (JsonObject.TryParse(input, out data) == false)
+            {
+                return false;
+            }
+
+            var bpmmArray = data.GetNamedArray("bpmms", null);
+            foreach(var entry in bpmmArray)
+            {
+                var control = BPMMControl.deserialize(entry.GetObject());
+                if (control != null)
+                {
+                    workspace.Children.Add(control);
+                }
+            }
+            var noteArray = data.GetNamedArray("notes", null);
+            foreach (var entry in noteArray)
+            {
+                var note = NoteControl.deserialize(entry.GetObject());
+                if (note != null)
+                {
+                    workspace.Children.Add(note);
+                }
+            }
+
+            return true;
+        }
+
+        private async void Save_Pressed(object sender, PointerRoutedEventArgs e)
+        {
+            var fileSaver = new FileSavePicker();
+            fileSaver.FileTypeChoices.Add("BPMM", new List<String>{ ".json" });
+            var file = await fileSaver.PickSaveFileAsync();
+            if (file != null)
+            {
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    using (var outputStream = fileStream.GetOutputStreamAt(0))
+                    {
+                        using (var dataWriter = new DataWriter(outputStream))
+                        {
+                            dataWriter.WriteString(serialize());
+                            await dataWriter.StoreAsync();
+                            dataWriter.DetachStream();
+                        }
+                        await outputStream.FlushAsync();
+                    }
+                }
+                MessageDialog infoPopup = new MessageDialog(String.Format("Saved to file {0}", file.Path), "Saved successfully!");
+                await infoPopup.ShowAsync();
+            }
+        }
+
+        private async void Load_Pressed(object sender, PointerRoutedEventArgs e )
+        {
+            var fileOpener = new FileOpenPicker();
+            fileOpener.FileTypeFilter.Add(".json");
+            var file = await fileOpener.PickSingleFileAsync();
+            if (file != null)
+            {
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    using (var inputStream = fileStream.GetInputStreamAt(0))
+                    {
+                        using (var streamReader = new StreamReader(inputStream.AsStreamForRead()))
+                        {
+                            string dataString = await streamReader.ReadToEndAsync();
+                            if (deserialize(dataString) == false)
+                            {
+                                MessageDialog infoPopup = new MessageDialog(String.Format("Path: {0}. Invalid Json!", file.Path), "Failed to load diagram!");
+                                await infoPopup.ShowAsync();
+                            }
+                            
+                        }
+                        inputStream.Dispose();
+                    }
+                }
+            }
+        }
 
         private async Task<string> ExportPNG()
         {
             var renderTargetBitmap = new RenderTargetBitmap();
             await renderTargetBitmap.RenderAsync(workspace);
             var pixelBuffer = await renderTargetBitmap.GetPixelsAsync();
- 
-            //var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("myfirstxamlexport.png", CreationCollisionOption.ReplaceExisting);
+
             var fileSaver = new FileSavePicker();
             fileSaver.FileTypeChoices.Add("Image", new List<String>{".png", ".jpeg", ".jpg", ".bmp", ".gif", ".tiff"});
             var file = await fileSaver.PickSaveFileAsync();

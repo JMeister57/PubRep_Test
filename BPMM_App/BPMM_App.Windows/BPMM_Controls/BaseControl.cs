@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Data.Json;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Input;
@@ -20,7 +21,9 @@ namespace BPMM_App
     public abstract class BaseControl : UserControl
     {
         private const int MIN_SIZE = 100;
+        private static int max_id = 0;
 
+        public int id;
         protected Grid frame;
         Grid contentGrid;
         protected bool isDragging;
@@ -33,6 +36,7 @@ namespace BPMM_App
 
         public BaseControl()
         {
+            id = ++max_id;
             RightTapped += BaseControl_RightTapped;
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue) };
@@ -110,6 +114,16 @@ namespace BPMM_App
 
         public abstract bool linkableWith(BaseControl target);
         public abstract bool LinkWith(BaseControl target);
+        
+        public virtual JsonObject serialize()
+        {
+            var controlEntry = new JsonObject();
+            controlEntry.Add("x", JsonValue.CreateNumberValue(Canvas.GetLeft(this)));
+            controlEntry.Add("y", JsonValue.CreateNumberValue(Canvas.GetTop(this)));
+            controlEntry.Add("width", JsonValue.CreateNumberValue(ActualWidth));
+            controlEntry.Add("height", JsonValue.CreateNumberValue(ActualHeight));
+            return controlEntry;
+        }
 
         protected void setContent(FrameworkElement element)
         {

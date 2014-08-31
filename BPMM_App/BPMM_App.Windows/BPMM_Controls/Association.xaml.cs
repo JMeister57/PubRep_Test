@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Navigation;
 using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Popups;
+using Windows.Data.Json;
 
 namespace BPMM_App
 {
@@ -26,8 +27,8 @@ namespace BPMM_App
         public PointCollection points = new PointCollection();
         public String description;
 
-        private BaseControl sourceControl;
-        private BaseControl targetControl;
+        private int sourceId;
+        private int targetId;
 
         public Line_ViewModel viewModel;
 
@@ -35,16 +36,19 @@ namespace BPMM_App
 
         public AssociationControl(BaseControl sourceControl, Point source, Point target)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             viewModel = new Line_ViewModel(this, source, target);
             updateBoxPosition(source, target);
-            this.sourceControl = sourceControl;
+            sourceId = sourceControl.id;
             DataContext = viewModel;
         }
 
         public void updateEndPoint(BaseControl targetControl, Point p)
         {
-            this.targetControl = targetControl;
+            if (targetControl != null)
+            {
+                targetId = targetControl.id;
+            }
             points[1] = p;
             updateBoxPosition(points[0], p);
         }
@@ -170,6 +174,29 @@ namespace BPMM_App
                 }
 
             }
+        }
+
+        public JsonObject serialize()
+        {
+            var associationEntry = new JsonObject();
+            associationEntry.Add("source", JsonValue.CreateNumberValue(sourceId));
+            associationEntry.Add("target", JsonValue.CreateNumberValue(targetId));
+            JsonArray pointsEntry = new JsonArray();
+            int i = 0;
+            foreach(var point in viewModel.Points) 
+            {
+                var pointEntry = new JsonObject();
+                pointEntry.Add("index", JsonValue.CreateNumberValue(i++));
+                pointEntry.Add("x", JsonValue.CreateNumberValue(point.X));
+                pointEntry.Add("y", JsonValue.CreateNumberValue(point.Y));
+                pointsEntry.Add(pointEntry);
+            }
+            associationEntry.Add("points", pointsEntry);
+            return associationEntry;
+        }
+
+        public static AssociationControl deserialize(JsonObject input)
+        {
         }
     }
 }
