@@ -95,8 +95,8 @@ namespace BPMM_App
                 if (item is BPMM_Object.Type == false)
                 {
                     NoteControl note = new NoteControl();
-                    note.AssociationEvent += OnAssociationStart;
-                    note.PointerReleased += OnAssociationRequest;
+                    note.AssociationStartEvent += OnAssociationStart;
+                    note.AssociationEndEvent += OnAssociationRequest;
                     note.DeleteEvent += DeleteControl;
                     Point point = e.GetPosition(workspace);
                     Canvas.SetLeft(note, point.X);
@@ -155,8 +155,8 @@ namespace BPMM_App
                 BPMMControl control = new BPMMControl(obj);
                 control.type = type;
                 control.viewModel.Title = title;
-                control.AssociationEvent += OnAssociationStart;
-                control.PointerReleased += OnAssociationRequest;
+                control.AssociationStartEvent += OnAssociationStart;
+                control.AssociationEndEvent += OnAssociationRequest;
                 control.DeleteEvent += DeleteControl;
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
@@ -192,7 +192,7 @@ namespace BPMM_App
             associating = true;
         }
 
-        public void OnAssociationRequest(object sender, PointerRoutedEventArgs e)
+        public void OnAssociationRequest(object sender, EventArgs e)
         {
             if (currentLine == null)
             { // case: simple clickon control
@@ -232,6 +232,8 @@ namespace BPMM_App
             if (associating)
             {
                 associating = false;
+                workspace.Children.Remove(currentLine);
+                currentLine = null;
                 return;
             } 
             selecting = true;

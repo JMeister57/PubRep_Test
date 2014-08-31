@@ -27,7 +27,8 @@ namespace BPMM_App
         private PointerPoint offset;
 
         public event PointerEventHandler MovedEvent;
-        public event PointerEventHandler AssociationEvent;
+        public event PointerEventHandler AssociationStartEvent;
+        public event EventHandler AssociationEndEvent;
         public event EventHandler DeleteEvent;
 
         public BaseControl()
@@ -182,6 +183,13 @@ namespace BPMM_App
                 isDragging = false;
                 frame.ReleasePointerCapture(e.Pointer);
             }
+            else
+            {
+                if (AssociationEndEvent != null)
+                {
+                    AssociationEndEvent(this, EventArgs.Empty);
+                }
+            }
             e.Handled = true;
         }
         #endregion
@@ -226,9 +234,9 @@ namespace BPMM_App
 
         private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (AssociationEvent != null)
+            if (AssociationStartEvent != null)
             {
-                AssociationEvent(this, e);
+                AssociationStartEvent(this, e);
                 e.Handled = true;
             }
         }
