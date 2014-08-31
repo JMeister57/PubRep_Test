@@ -143,7 +143,6 @@ namespace BPMM_App
         {
             GeneralTransform transform = TransformToVisual(null);
             Point pointTransformed = transform.TransformPoint(new Point(0, 0));
-            Debug.WriteLine("point: {0}, {1}, ActualSize: {2}, {3}", pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
             return new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
         }
 

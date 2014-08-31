@@ -27,14 +27,31 @@
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="backButton" Margin="39,59,39,0" Command="{Binding NavigationHelper.GoBackCommand, ElementName=pageRoot}"
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" x:Name="backButton" Command="{Binding NavigationHelper.GoBackCommand, ElementName=pageRoot}"
                         Style="{StaticResource NavigationBackButtonNormalStyle}"
-                        VerticalAlignment="Top"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
                         AutomationProperties.Name="Back"
                         AutomationProperties.AutomationId="BackButton"
-                        AutomationProperties.ItemType="Navigation Button"/>
-            <TextBlock x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
-                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40" />
+                        AutomationProperties.ItemType="Navigation Button" />
+            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" 
+                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" />
+            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10, 5">
+                <SymbolIcon Symbol="Save" ToolTipService.ToolTip="Save diagram"/>
+            </Border>
+            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60, 5" PointerReleased="Export_Pressed">
+                <SymbolIcon Symbol="SaveLocal" ToolTipService.ToolTip="Export to image"/>
+            </Border>
+            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="110, 5" PointerReleased="Clear_Pressed">
+                <SymbolIcon Symbol="Delete" ToolTipService.ToolTip="Clear workspace"/>
+            </Border>
         </Grid>
         
         <Grid Grid.Row="1">

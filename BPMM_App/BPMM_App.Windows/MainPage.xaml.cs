@@ -18,6 +18,10 @@ using Windows.Storage;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI;
 using Windows.UI.Popups;
+using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Pickers;
 
 namespace BPMM_App
 {
@@ -304,6 +308,61 @@ namespace BPMM_App
         public void DeleteAssociation(object sender, EventArgs e)
         {
             workspace.Children.Remove((AssociationControl)sender);
+        }
+
+
+        private async Task<string> ExportPNG()
+        {
+            var renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync(workspace);
+            var pixelBuffer = await renderTargetBitmap.GetPixelsAsync();
+ 
+            //var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("myfirstxamlexport.png", CreationCollisionOption.ReplaceExisting);
+            var fileSaver = new FileSavePicker();
+            fileSaver.FileTypeChoices.Add("Image", new List<String>{".png", ".jpeg", ".jpg", ".bmp", ".gif", ".tiff"});
+            var file = await fileSaver.PickSaveFileAsync();
+            if (file != null)
+            { // see: http://loekvandenouweland.com/index.php/2013/12/save-xaml-as-png-in-a-windows-store-app/
+                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoderId = (file.FileType == "jpeg" || file.FileType == "jpg") ? BitmapEncoder.JpegEncoderId
+                        : (file.FileType == "bmp") ? BitmapEncoder.BmpEncoderId
+                        : (file.FileType == "gif") ? BitmapEncoder.GifEncoderId
+                        : (file.FileType == "tiff") ? BitmapEncoder.TiffEncoderId
+                        : BitmapEncoder.PngEncoderId; // default
+                    var encoder = await BitmapEncoder.CreateAsync(encoderId, stream);
+                    encoder.SetPixelData(BitmapPixelFormat.Bgra8,
+                                         BitmapAlphaMode.Ignore,
+                                         (uint)renderTargetBitmap.PixelWidth,
+                                         (uint)renderTargetBitmap.PixelHeight, 96d, 96d,
+                                         pixelBuffer.ToArray());
+                    await encoder.FlushAsync();
+                }
+                return file.Path;
+            }
+            return null;
+        }
+
+        private async void Export_Pressed(object sender, PointerRoutedEventArgs e)
+        {
+            var path = await ExportPNG();
+            if (path != null)
+            {
+                MessageDialog infoPopup = new MessageDialog(String.Format("Saved to file {0}", path), "Saved successfully");
+                await infoPopup.ShowAsync();
+            }
+        }
+
+        private async void Clear_Pressed(object sender, PointerRoutedEventArgs e)
+        {
+            MessageDialog confirmDialog = new MessageDialog("", String.Format("Really clear workspace?"));
+            confirmDialog.Commands.Add(new UICommand("Yes"));
+            confirmDialog.Commands.Add(new UICommand("Cancel"));
+            var result = await confirmDialog.ShowAsync();
+            if (result.Label == "Yes")
+            {
+                workspace.Children.Clear();
+            }
         }
     }
 }
