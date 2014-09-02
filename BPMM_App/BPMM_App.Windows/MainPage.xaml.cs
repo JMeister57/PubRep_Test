@@ -43,6 +43,8 @@ namespace BPMM_App
         private Point selectionStartPoint;
         private Rectangle selectionBox;
 
+        double warningsPaneSize = 100;
+
         public ObservableDictionary DefaultViewModel
         {
             get { return this.defaultViewModel; }
@@ -539,6 +541,26 @@ namespace BPMM_App
             if (result.Label == "Yes")
             {
                 workspace.Children.Clear();
+            }
+        }
+
+        private void warnings_tab_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var warningsRow = warnings_grid.RowDefinitions[1];
+            var newHeight = Math.Min(Math.Max(warningsRow.ActualHeight - e.Delta.Translation.Y, 0), workspace.ActualHeight - warnings_tab.ActualHeight);
+            warningsRow.Height = new GridLength(newHeight, GridUnitType.Pixel);
+            warningsPaneSize = newHeight;
+        }
+
+        private void minimize_button_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (warnings_grid.RowDefinitions[1].ActualHeight != 0)
+            {
+                warnings_grid.RowDefinitions[1].Height = new GridLength(0, GridUnitType.Pixel);
+            }
+            else
+            {
+                warnings_grid.RowDefinitions[1].Height = new GridLength(warningsPaneSize, GridUnitType.Pixel);
             }
         }
     }

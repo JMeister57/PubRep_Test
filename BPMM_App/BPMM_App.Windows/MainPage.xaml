@@ -85,6 +85,28 @@
             </ListView>
             <Canvas Grid.Column="1" x:Name="workspace" Background="Beige" AllowDrop="True"
                     Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased"/>
+            
+            <Grid x:Name="warnings_grid" Grid.Column="1" VerticalAlignment="Bottom">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="warnings_tab" Background="Aqua"
+                        ManipulationDelta="warnings_tab_ManipulationDelta" ManipulationMode="TranslateY">
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Left" Margin="10, 0">Warnings</TextBlock>
+                    <SymbolIcon x:Name="minimize_button" Symbol="Sort" HorizontalAlignment="Right" Margin="10, 0" Tapped="minimize_button_Tapped"/>
+                    <SymbolIcon x:Name="refresh_button" Symbol="Refresh" HorizontalAlignment="Right" Margin="50, 0"/>
+                </Grid>
+                <ScrollViewer x:Name="warnings_scrollview" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Aqua" BorderThickness="3" Background="WhiteSmoke"
+                              HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ListView x:Name="warnings_listview">
+                    </ListView>
+                </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
