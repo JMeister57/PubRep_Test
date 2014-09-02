@@ -170,12 +170,12 @@ namespace BPMM_App
         public JsonObject serialize()
         {
             var associationEntry = new JsonObject();
-            associationEntry.Add("relation", JsonValue.CreateStringValue(viewModel.Description));
+            associationEntry.Add("relation", JsonValue.CreateStringValue(Description));
             associationEntry.Add("source", JsonValue.CreateNumberValue(sourceId));
             associationEntry.Add("target", JsonValue.CreateNumberValue(targetId));
             JsonArray pointsEntry = new JsonArray();
             int i = 0;
-            foreach (var point in viewModel.Points)
+            foreach (var point in Points)
             {
                 var pointEntry = new JsonObject();
                 pointEntry.Add("index", JsonValue.CreateNumberValue(i++));
@@ -227,11 +227,11 @@ namespace BPMM_App
             var association = new AssociationControl(source, points[0], points[points.Count - 1]);
             association.targetId = target.id;
 
-            association.viewModel.Description = input.GetNamedString("relation", "");
+            association.Description = input.GetNamedString("relation", "");
 
             for (int i = 0; i < points.Count; ++i)
             {
-                association.viewModel.Points[i] = points[i];
+                association.Points[i] = points[i];
             }
             return association;
         }

@@ -476,7 +476,9 @@ namespace BPMM_App
                             string dataString = await streamReader.ReadToEndAsync();
                             if (deserialize(dataString) == false)
                             {
-                                MessageDialog infoPopup = new MessageDialog(String.Format("Path: {0}. Not all entities could be loaded.", file.Path), "Failed to load complete diagram.");
+                                MessageDialog infoPopup = new MessageDialog(
+                                        String.Format("Path: {0}. Not all entities could be loaded.", file.Path),
+                                        "Failed to load complete diagram.");
                                 await infoPopup.ShowAsync();
                             }
                             
