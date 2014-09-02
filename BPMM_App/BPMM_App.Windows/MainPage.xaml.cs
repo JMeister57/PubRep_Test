@@ -32,7 +32,9 @@ namespace BPMM_App
     {      
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
-        
+
+        public static List<BaseControl> controls = new List<BaseControl>();
+
         bool associating;
         private AssociationControl currentLine;
         private BaseControl sourceControl;
@@ -95,7 +97,7 @@ namespace BPMM_App
             {
                 if (item is BPMM_Object.Type == false)
                 {
-                    NoteControl note = new NoteControl();
+                    NoteControl note = addNote();
                     note.AssociationStartEvent += OnAssociationStart;
                     note.AssociationEndEvent += OnAssociationRequest;
                     note.DeleteEvent += DeleteControl;
@@ -153,7 +155,7 @@ namespace BPMM_App
                     default:
                         return;
                 }
-                BPMMControl control = new BPMMControl(obj);
+                BPMMControl control = addBPMMControl(obj);
                 control.viewModel.Title = title;
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
@@ -163,6 +165,45 @@ namespace BPMM_App
                 Canvas.SetTop(control, pos.Y);
                 workspace.Children.Add(control);                
             }
+        }
+
+
+        private BPMMControl addBPMMControl(BPMM_Object obj)
+        {
+            var control = new BPMMControl(obj);
+            controls.Add(control);
+            return control;
+        }
+
+        private NoteControl addNote()
+        {
+            var note = new NoteControl();
+            controls.Add(note);
+            return note;
+        }
+
+        private void delete(BaseControl control)
+        {
+            for (int i = 0; i < controls.Count; ++i)
+            {
+                if (controls[i] == control)
+                {
+                    controls.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        public static BaseControl getControl(int id)
+        {
+            foreach (var control in controls)
+            {
+                if (control.id == id)
+                {
+                    return control;
+                }
+            }
+            return null;
         }
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -305,6 +346,7 @@ namespace BPMM_App
         public void DeleteControl(object sender, EventArgs e)
         {
             workspace.Children.Remove((BaseControl)sender);
+            delete((BaseControl)sender);
         }
 
         public void DeleteAssociation(object sender, EventArgs e)
@@ -336,11 +378,13 @@ namespace BPMM_App
             root.Add("bpmms", bpmmArray);
             root.Add("notes", noteArray);
             root.Add("associations", associationArray);
+            Debug.WriteLine(root.Stringify());
             return root.Stringify();
         }
 
         private bool deserialize(string input)
         {
+            Debug.WriteLine(input);
             JsonObject data;
             if (JsonObject.TryParse(input, out data) == false)
             {
@@ -354,6 +398,7 @@ namespace BPMM_App
                 if (control != null)
                 {
                     workspace.Children.Add(control);
+                    controls.Add(control);
                 }
             }
             var noteArray = data.GetNamedArray("notes", null);
@@ -363,9 +408,28 @@ namespace BPMM_App
                 if (note != null)
                 {
                     workspace.Children.Add(note);
+                    controls.Add(note);
                 }
             }
-
+            var associationArray = data.GetNamedArray("associations", null);
+            foreach (var entry in associationArray)
+            {
+                var association = AssociationControl.deserialize(entry.GetObject());
+                if (association != null)
+                {
+                    workspace.Children.Add(association);
+                    var source = getControl(association.sourceId);
+                    var target = getControl(association.targetId);
+                    if (source == null || target == null)
+                    {
+                        return false;
+                    }
+                    source.MovedEvent += association.sourceMoved;
+                    target.MovedEvent += association.targetMoved;
+                    source.DeleteEvent += association.Delete;
+                    target.DeleteEvent += association.Delete;
+                }
+            }
             return true;
         }
 
@@ -376,8 +440,10 @@ namespace BPMM_App
             var file = await fileSaver.PickSaveFileAsync();
             if (file != null)
             {
+                
                 using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
+                    fileStream.Size = 0;
                     using (var outputStream = fileStream.GetOutputStreamAt(0))
                     {
                         using (var dataWriter = new DataWriter(outputStream))
@@ -410,7 +476,7 @@ namespace BPMM_App
                             string dataString = await streamReader.ReadToEndAsync();
                             if (deserialize(dataString) == false)
                             {
-                                MessageDialog infoPopup = new MessageDialog(String.Format("Path: {0}. Invalid Json!", file.Path), "Failed to load diagram!");
+                                MessageDialog infoPopup = new MessageDialog(String.Format("Path: {0}. Not all entities could be loaded.", file.Path), "Failed to load complete diagram.");
                                 await infoPopup.ShowAsync();
                             }
                             

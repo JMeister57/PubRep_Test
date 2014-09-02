@@ -27,8 +27,8 @@ namespace BPMM_App
         public PointCollection points = new PointCollection();
         public String description;
 
-        private int sourceId;
-        private int targetId;
+        public int sourceId;
+        public int targetId;
 
         public Line_ViewModel viewModel;
 
@@ -104,43 +104,6 @@ namespace BPMM_App
             }
         }
 
-        public class Line_ViewModel : INotifyPropertyChanged
-        {
-            private AssociationControl parent;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            public Line_ViewModel(AssociationControl parent, Point source, Point target)
-            {
-                this.parent = parent;
-                Points.Add(source);
-                Points.Add(target);
-                Description = "[relation]";
-            }
-
-            # region getters/setters
-            public PointCollection Points
-            {
-                get { return parent.points; }
-            }
-
-            public String Description
-            {
-                set { parent.description = value; }
-                get { return parent.description; }
-            }
-            # endregion
-
-            protected void OnPropertyChanged(string name)
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(name));
-                }
-            }
-
-        }
-
         private void UserControl_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             switch (e.Key)
@@ -179,11 +142,12 @@ namespace BPMM_App
         public JsonObject serialize()
         {
             var associationEntry = new JsonObject();
+            associationEntry.Add("relation", JsonValue.CreateStringValue(viewModel.Description));
             associationEntry.Add("source", JsonValue.CreateNumberValue(sourceId));
             associationEntry.Add("target", JsonValue.CreateNumberValue(targetId));
             JsonArray pointsEntry = new JsonArray();
             int i = 0;
-            foreach(var point in viewModel.Points) 
+            foreach (var point in viewModel.Points)
             {
                 var pointEntry = new JsonObject();
                 pointEntry.Add("index", JsonValue.CreateNumberValue(i++));
@@ -197,6 +161,92 @@ namespace BPMM_App
 
         public static AssociationControl deserialize(JsonObject input)
         {
+            var sourceId = (int)input.GetNamedNumber("source", -1);
+            var targetId = (int)input.GetNamedNumber("target", -1);
+            if (sourceId == -1 || targetId == -1)
+            {
+                return null;
+            }
+            var source = MainPage.getControl(sourceId);
+            var target = MainPage.getControl(targetId);
+            if (source == null || target == null)
+            {
+                return null;
+            }
+            var pointsArray = input.GetNamedArray("points", null);
+            if (pointsArray == null)
+            {
+                return null;
+            }
+            List<Point> points = new List<Point>();
+            pointsArray.OrderBy(x => x.GetObject().GetNamedNumber("index"));
+            foreach (var entry in pointsArray)
+            {
+                var pointEntry = entry.GetObject();
+                var index = pointEntry.GetNamedNumber("index", -1);
+                if (index == -1)
+                {
+                    return null;
+                }
+                var x = pointEntry.GetNamedNumber("x", -1);
+                var y = pointEntry.GetNamedNumber("y", -1);
+                if (x == -1 || y == -1)
+                {
+                    return null;
+                }
+                points.Add(new Point(x, y));
+            }
+            var association = new AssociationControl(source, points[0], points[points.Count - 1]);
+            association.targetId = target.id;
+
+            association.viewModel.Description = input.GetNamedString("relation", "");
+
+            for (int i = 0; i < points.Count; ++i)
+            {
+                association.viewModel.Points[i] = points[i];
+            }
+            return association;
+        }
+
+        public class Line_ViewModel : INotifyPropertyChanged
+        {
+            private AssociationControl parent;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public Line_ViewModel(AssociationControl parent, Point source, Point target)
+            {
+                this.parent = parent;
+                Points.Add(source);
+                Points.Add(target);
+                Description = "[relation]";
+            }
+
+            # region getters/setters
+            public PointCollection Points
+            {
+                get { return parent.points; }
+            }
+
+            public String Description
+            {
+                set 
+                {
+                    parent.description = value; 
+                    OnPropertyChanged("Description");
+                }
+                get { return parent.description; }
+            }
+            # endregion
+
+            protected void OnPropertyChanged(string name)
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(name));
+                }
+            }
+
         }
     }
 }
