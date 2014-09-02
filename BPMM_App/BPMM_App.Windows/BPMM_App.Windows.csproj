@@ -103,12 +103,15 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BPMM_Controls\AssessmentControl.cs" />
     <Compile Include="BPMM_Controls\Association.xaml.cs">
       <DependentUpon>Association.xaml</DependentUpon>
     </Compile>
     <Compile Include="BPMMObject.cs" />
     <Compile Include="BPMM_Controls\BaseControl.cs" />
     <Compile Include="BPMM_Controls\BPMMControl.cs" />
+    <Compile Include="BPMM_Controls\BusinessRuleControl.cs" />
+    <Compile Include="BPMM_Controls\InfluencerControl.cs" />
     <Compile Include="BPMM_Controls\NoteControl.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>

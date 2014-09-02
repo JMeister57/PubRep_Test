@@ -172,7 +172,23 @@ namespace BPMM_App
 
         private BPMMControl addBPMMControl(BPMM_Object obj)
         {
-            var control = new BPMMControl(obj);
+            BPMMControl control;
+            if (obj is BusinessRule)
+            {
+                control = new BusinessRuleControl((BusinessRule)obj);
+            }
+            else if(obj is Influencer)
+            {
+                control = new InfluencerControl((Influencer)obj);
+            }
+            else if (obj is Assessment)
+            {
+                control = new AssessmentControl((Assessment)obj);
+            }
+            else
+            {
+                control = new BPMMControl(obj);
+            }
             controls.Add(control);
             return control;
         }
@@ -251,7 +267,7 @@ namespace BPMM_App
                 workspace.Children.Remove(currentLine);
                 return;
             }
-            bool linked = (sourceControl is BPMMControl)? ((BPMMControl)sourceControl).LinkWith(target) : ((NoteControl)sourceControl).LinkWith(target);
+            bool linked = sourceControl.LinkWith(target);
             if (linked)
             { // case: allowed association
                 currentLine.updateEndPoint(target, p);
@@ -396,7 +412,30 @@ namespace BPMM_App
             var bpmmArray = data.GetNamedArray("bpmms", null);
             foreach(var entry in bpmmArray)
             {
-                var control = BPMMControl.deserialize(entry.GetObject());
+                var value = entry.GetObject().GetNamedNumber("type", -1);
+                if (value == -1)
+                {
+                    return false;
+                }
+                var type = (BPMM_Object.Type)value;
+                BPMMControl control;
+                if (type == BPMM_Object.Type.BUSINESS_RULE)
+                {
+                    control = BusinessRuleControl.deserialize(entry.GetObject());
+                }
+                else if (type == BPMM_Object.Type.INFLUENCER)
+                {
+                    control = InfluencerControl.deserialize(entry.GetObject());
+                }
+                else if (type == BPMM_Object.Type.ASSESSMENT)
+                {
+                    control = AssessmentControl.deserialize(entry.GetObject());
+                }
+                else
+                {
+                    control = BusinessRuleControl.deserialize(entry.GetObject());
+                }
+                
                 if (control != null)
                 {
                     workspace.Children.Add(control);
@@ -562,6 +601,11 @@ namespace BPMM_App
             {
                 warnings_grid.RowDefinitions[1].Height = new GridLength(warningsPaneSize, GridUnitType.Pixel);
             }
+        }
+
+        private void validate()
+        {
+
         }
     }
 }

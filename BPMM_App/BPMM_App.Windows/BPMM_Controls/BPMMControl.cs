@@ -29,15 +29,14 @@ namespace BPMM_App
     {
         public BPMM_Object linkedObject;
         private ObservableCollection<String> states;
-        private ObservableCollection<String> influencerTypes;
-        public const String externalSep = "--- External: ---";
-        public const String internalSep = "--- Internal: ---";
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-
-        private ComboBox stateCombo;
-        private ComboBox influencerCombo;
+        protected Grid contentGrid;
+        protected TextBox headerBox;
+        protected TextBox descriptionBox;
+        protected ComboBox stateCombo;
+        
 
         public BPMMControl(BPMM_Object obj) : base()
         {
@@ -46,22 +45,12 @@ namespace BPMM_App
             linkedObject = obj;
             States = new ObservableCollection<String>(BPMM_Object.States);
 
-            if (obj is Influencer)
-            {
-                List<String> types = new List<String>();
-                types.Add(externalSep);
-                types.AddRange(Influencer.externalInfluencers);
-                types.Add(internalSep);
-                types.AddRange(Influencer.internalInfluencers);
-                InfluencerTypes = new ObservableCollection<String>(types);
-            }
-
-            var headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
+            headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
             headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
 
-            var descriptionBox = new TextBox()
+            descriptionBox = new TextBox()
             {
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
@@ -77,40 +66,16 @@ namespace BPMM_App
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
             stateCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
 
-            Grid contentGrid = new Grid();
-
-            if (obj is Influencer)
-            {
-                influencerCombo = new ComboBox() { Margin = new Thickness(0, 0, 0, 2) };
-                var influencerBinding = new Binding() { Source = InfluencerTypes };
-                influencerCombo.SetBinding(ComboBox.ItemsSourceProperty, influencerBinding);
-                influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
-
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-                Grid.SetRow(headerBox, 0);
-                Grid.SetRow(influencerCombo, 1);
-                Grid.SetRow(descriptionBox, 2);
-                Grid.SetRow(stateCombo, 3);
-                contentGrid.Children.Add(headerBox);
-                contentGrid.Children.Add(influencerCombo);
-                contentGrid.Children.Add(descriptionBox);
-                contentGrid.Children.Add(stateCombo);
-            }
-            else
-            {
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(6, GridUnitType.Star) });
-                contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
-                Grid.SetRow(headerBox, 0);
-                Grid.SetRow(descriptionBox, 1);
-                Grid.SetRow(stateCombo, 2);
-                contentGrid.Children.Add(headerBox);
-                contentGrid.Children.Add(descriptionBox);
-                contentGrid.Children.Add(stateCombo);
-            }
+            contentGrid = new Grid();
+            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
+            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(6, GridUnitType.Star) });
+            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
+            Grid.SetRow(headerBox, 0);
+            Grid.SetRow(descriptionBox, 1);
+            Grid.SetRow(stateCombo, 2);
+            contentGrid.Children.Add(headerBox);
+            contentGrid.Children.Add(descriptionBox);
+            contentGrid.Children.Add(stateCombo);
 
             setContent(contentGrid);
         }
@@ -122,16 +87,6 @@ namespace BPMM_App
             {
                 linkedObject.title = value;
                 OnPropertyChanged("Title");
-            }
-        }
-
-        public ObservableCollection<String> InfluencerTypes
-        {
-            get { return influencerTypes; }
-            set
-            {
-                influencerTypes = value;
-                OnPropertyChanged("InfluencerTypes");
             }
         }
 
@@ -155,7 +110,7 @@ namespace BPMM_App
             }
         }
 
-        public String DefaultState
+        public string DefaultState
         {
             get { return states[0]; }
         }
@@ -183,14 +138,15 @@ namespace BPMM_App
                     return targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.MISSION
                         || targetType == BPMM_Object.Type.INFLUENCER;
                 case BPMM_Object.Type.GOAL:
-                    return targetType == BPMM_Object.Type.MISSION || targetType == BPMM_Object.Type.OBJECTIVE
-                        || targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.ASSESSMENT
-                        || targetType == BPMM_Object.Type.STRATEGY;
+                    return targetType == BPMM_Object.Type.VISION || targetType == BPMM_Object.Type.MISSION
+                        || targetType == BPMM_Object.Type.OBJECTIVE || targetType == BPMM_Object.Type.GOAL
+                        || targetType == BPMM_Object.Type.ASSESSMENT || targetType == BPMM_Object.Type.STRATEGY;
                 case BPMM_Object.Type.OBJECTIVE:
                     return targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.OBJECTIVE
                         || targetType == BPMM_Object.Type.ASSESSMENT || targetType == BPMM_Object.Type.TACTIC;
                 case BPMM_Object.Type.MISSION:
-                    return targetType == BPMM_Object.Type.STRATEGY || targetType == BPMM_Object.Type.ASSESSMENT;
+                    return targetType == BPMM_Object.Type.VISION || targetType == BPMM_Object.Type.STRATEGY
+                        || targetType == BPMM_Object.Type.ASSESSMENT;
                 case BPMM_Object.Type.STRATEGY:
                     return targetType == BPMM_Object.Type.MISSION || targetType == BPMM_Object.Type.TACTIC
                         || targetType == BPMM_Object.Type.STRATEGY || targetType == BPMM_Object.Type.ASSESSMENT;
@@ -216,58 +172,10 @@ namespace BPMM_App
             {
                 return false;
             }
-            var linkedObject = ((BPMMControl)target).linkedObject;
-            switch (type())
-            {
-                case BPMM_Object.Type.VISION:
-                    ((Vision)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.GOAL:
-                    ((Goal)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.OBJECTIVE:
-                    ((Objective)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.MISSION:
-                    ((Mission)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.STRATEGY:
-                    ((Strategy)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.TACTIC:
-                    ((Tactic)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.BUSINESS_POLICY:
-                    ((BusinessPolicy)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.BUSINESS_RULE:
-                    ((BusinessRule)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.INFLUENCER:
-                    ((Influencer)linkedObject).linkWith(linkedObject);
-                    return true;
-                case BPMM_Object.Type.ASSESSMENT:
-                    ((Assessment)linkedObject).linkWith(linkedObject);
-                    return true;
-                default:
-                    return false;
-            }
+            linkedObject.linkWith(((BPMMControl)target).linkedObject);
+            return true;
         }
         #endregion
-
-        private void influencerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems[0].ToString() == internalSep
-                || e.AddedItems[0].ToString() == externalSep)
-            {
-                if (e.RemovedItems.Count == 0)
-                {
-                    ((ComboBox)sender).SelectedIndex = -1;
-                    return;
-                }
-                ((ComboBox)sender).SelectedItem = e.RemovedItems[0];
-            }
-        }
 
         public override JsonObject serialize()
         {
@@ -279,64 +187,49 @@ namespace BPMM_App
             }
             controlEntry.Add("type", JsonValue.CreateNumberValue((int)type()));
             controlEntry.Add("state", JsonValue.CreateNumberValue(stateCombo.SelectedIndex));
-            if (linkedObject is Influencer)
-            {
-                controlEntry.Add("influencer", JsonValue.CreateNumberValue(influencerCombo.SelectedIndex));
-            }
             return controlEntry;
         }
 
         public static BPMMControl deserialize(JsonObject input)
         {
-            try
-            {
-                var value = input.GetNamedNumber("type", -1);
-                if (value == -1)
-                {
-                    return null;
-                }
-                var type = (BPMM_Object.Type)value;
-                BPMM_Object obj =
-                (type == BPMM_Object.Type.VISION) ? (BPMM_Object)new Vision() :
-                (type == BPMM_Object.Type.GOAL) ? (BPMM_Object)new Goal() :
-                (type == BPMM_Object.Type.OBJECTIVE) ? (BPMM_Object)new Objective() :
-                (type == BPMM_Object.Type.MISSION) ? (BPMM_Object)new Mission() :
-                (type == BPMM_Object.Type.STRATEGY) ? (BPMM_Object)new Strategy() :
-                (type == BPMM_Object.Type.TACTIC) ? (BPMM_Object)new Tactic() :
-                (type == BPMM_Object.Type.BUSINESS_POLICY) ? (BPMM_Object)new BusinessPolicy() :
-                (type == BPMM_Object.Type.BUSINESS_RULE) ? (BPMM_Object)new BusinessRule() :
-                (type == BPMM_Object.Type.INFLUENCER) ? (BPMM_Object)new Influencer() :
-                (BPMM_Object)new Assessment();
-
-                var control = new BPMMControl(obj);
-                var title = input.GetNamedString("title", "");
-                if (title.Length > 0)
-                {
-                    control.Title = title;
-                }
-                var description = input.GetNamedString("description", "");
-                if (description.Length > 0)
-                {
-                    control.Description = description;
-                }
-                var state = input.GetNamedNumber("state", -1);
-                if (state != -1)
-                {
-                    control.stateCombo.SelectedIndex = (int)state;
-                }
-                var influencer = input.GetNamedNumber("influencer", -1);
-                if (influencer != -1)
-                {
-                    control.influencerCombo.SelectedIndex = (int)influencer;
-                }
-                Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
-                Canvas.SetTop(control, input.GetNamedNumber("y", 0));
-                return control;
-            }
-            catch (InvalidCastException)
+            var value = input.GetNamedNumber("type", -1);
+            if (value == -1)
             {
                 return null;
             }
+            var type = (BPMM_Object.Type)value;
+            BPMM_Object obj =
+            (type == BPMM_Object.Type.VISION) ? (BPMM_Object)new Vision() :
+            (type == BPMM_Object.Type.GOAL) ? (BPMM_Object)new Goal() :
+            (type == BPMM_Object.Type.OBJECTIVE) ? (BPMM_Object)new Objective() :
+            (type == BPMM_Object.Type.MISSION) ? (BPMM_Object)new Mission() :
+            (type == BPMM_Object.Type.STRATEGY) ? (BPMM_Object)new Strategy() :
+            (type == BPMM_Object.Type.TACTIC) ? (BPMM_Object)new Tactic() :
+            (type == BPMM_Object.Type.BUSINESS_POLICY) ? (BPMM_Object)new BusinessPolicy() :
+            (type == BPMM_Object.Type.BUSINESS_RULE) ? (BPMM_Object)new BusinessRule() :
+            (type == BPMM_Object.Type.INFLUENCER) ? (BPMM_Object)new Influencer() :
+            (BPMM_Object)new Assessment();
+
+            var control = new BPMMControl(obj);
+            var title = input.GetNamedString("title", "");
+            if (title.Length > 0)
+            {
+                control.Title = title;
+            }
+            var description = input.GetNamedString("description", "");
+            if (description.Length > 0)
+            {
+                control.Description = description;
+            }
+            var state = input.GetNamedNumber("state", -1);
+            if (state != -1)
+            {
+                control.stateCombo.SelectedIndex = (int)state;
+            }
+
+            Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
+            Canvas.SetTop(control, input.GetNamedNumber("y", 0));
+            return control;
         }
 
         public BPMM_Object.Type type()
