@@ -22,26 +22,54 @@ using Windows.Data.Json;
 
 namespace BPMM_App
 {
-    public partial class AssociationControl : UserControl
+    public partial class AssociationControl : UserControl, INotifyPropertyChanged
     {
         public PointCollection points = new PointCollection();
         public String description;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int sourceId;
         public int targetId;
-
-        public Line_ViewModel viewModel;
 
         public event EventHandler DeleteEvent;
 
         public AssociationControl(BaseControl sourceControl, Point source, Point target)
         {
             InitializeComponent();
-            viewModel = new Line_ViewModel(this, source, target);
+
+            Points.Add(source);
+            Points.Add(target);
+            Description = "[relation]";
+
             updateBoxPosition(source, target);
             sourceId = sourceControl.id;
-            DataContext = viewModel;
+            DataContext = this;
         }
+
+        # region getters/setters
+        public PointCollection Points
+        {
+            get { return points; }
+        }
+
+        public String Description
+        {
+            set
+            {
+                description = value;
+                OnPropertyChanged("Description");
+            }
+            get { return description; }
+        }
+        
+        protected void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+        }
+        # endregion
 
         public void updateEndPoint(BaseControl targetControl, Point p)
         {
@@ -206,47 +234,6 @@ namespace BPMM_App
                 association.viewModel.Points[i] = points[i];
             }
             return association;
-        }
-
-        public class Line_ViewModel : INotifyPropertyChanged
-        {
-            private AssociationControl parent;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            public Line_ViewModel(AssociationControl parent, Point source, Point target)
-            {
-                this.parent = parent;
-                Points.Add(source);
-                Points.Add(target);
-                Description = "[relation]";
-            }
-
-            # region getters/setters
-            public PointCollection Points
-            {
-                get { return parent.points; }
-            }
-
-            public String Description
-            {
-                set 
-                {
-                    parent.description = value; 
-                    OnPropertyChanged("Description");
-                }
-                get { return parent.description; }
-            }
-            # endregion
-
-            protected void OnPropertyChanged(string name)
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(name));
-                }
-            }
-
         }
     }
 }

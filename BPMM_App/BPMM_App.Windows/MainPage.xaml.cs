@@ -156,7 +156,7 @@ namespace BPMM_App
                         return;
                 }
                 BPMMControl control = addBPMMControl(obj);
-                control.viewModel.Title = title;
+                control.Title = title;
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
                 control.DeleteEvent += DeleteControl;
@@ -243,7 +243,7 @@ namespace BPMM_App
             BaseControl target = (BaseControl)sender;
             Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
 
-            if (currentLine.viewModel.Points[0].Equals(p))
+            if (currentLine.Points[0].Equals(p))
             { // case: association to itself
                 Debug.WriteLine("Cannot pull association to itself.");
                 workspace.Children.Remove(currentLine);

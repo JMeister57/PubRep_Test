@@ -25,21 +25,39 @@ using Windows.Data.Json;
 
 namespace BPMM_App
 {
-    public class BPMMControl : BaseControl
+    public class BPMMControl : BaseControl, INotifyPropertyChanged
     {
-        public BPMM_ViewModel viewModel;
+        public BPMM_Object linkedObject;
+        private ObservableCollection<String> states;
+        private ObservableCollection<String> influencerTypes;
+        public const String externalSep = "--- External: ---";
+        public const String internalSep = "--- Internal: ---";
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
 
         private ComboBox stateCombo;
         private ComboBox influencerCombo;
 
         public BPMMControl(BPMM_Object obj) : base()
         {
-            viewModel = new BPMM_ViewModel(obj);
-            DataContext = viewModel;
+            DataContext = this;
 
+            linkedObject = obj;
+            States = new ObservableCollection<String>(BPMM_Object.States);
+
+            if (obj is Influencer)
+            {
+                List<String> types = new List<String>();
+                types.Add(externalSep);
+                types.AddRange(Influencer.externalInfluencers);
+                types.Add(internalSep);
+                types.AddRange(Influencer.internalInfluencers);
+                InfluencerTypes = new ObservableCollection<String>(types);
+            }
 
             var headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
-            headerBox.DataContext = viewModel;
+            headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
 
@@ -49,13 +67,13 @@ namespace BPMM_App
                 TextWrapping = TextWrapping.Wrap,
                 PlaceholderText = "description",
             };
-            descriptionBox.DataContext = viewModel;
+            descriptionBox.DataContext = this;
             var descriptionBinding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
             descriptionBox.SetBinding(TextBox.TextProperty, descriptionBinding);
 
             stateCombo = new ComboBox();
-            Binding statesBinding = new Binding() { Source = viewModel.States };
-            Binding defaultBinding = new Binding() { Source = viewModel.DefaultState };
+            Binding statesBinding = new Binding() { Source = States };
+            Binding defaultBinding = new Binding() { Source = DefaultState };
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
             stateCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
 
@@ -64,7 +82,7 @@ namespace BPMM_App
             if (obj is Influencer)
             {
                 influencerCombo = new ComboBox() { Margin = new Thickness(0, 0, 0, 2) };
-                var influencerBinding = new Binding() { Source = viewModel.InfluencerTypes };
+                var influencerBinding = new Binding() { Source = InfluencerTypes };
                 influencerCombo.SetBinding(ComboBox.ItemsSourceProperty, influencerBinding);
                 influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
 
@@ -96,6 +114,60 @@ namespace BPMM_App
 
             setContent(contentGrid);
         }
+        #region getters/setters
+        public string Title
+        {
+            get { return linkedObject.title; }
+            set
+            {
+                linkedObject.title = value;
+                OnPropertyChanged("Title");
+            }
+        }
+
+        public ObservableCollection<String> InfluencerTypes
+        {
+            get { return influencerTypes; }
+            set
+            {
+                influencerTypes = value;
+                OnPropertyChanged("InfluencerTypes");
+            }
+        }
+
+        public string Description
+        {
+            get { return linkedObject.description; }
+            set
+            {
+                linkedObject.description = value;
+                OnPropertyChanged("Description");
+            }
+        }
+
+        public ObservableCollection<String> States
+        {
+            get { return states; }
+            set
+            {
+                states = value;
+                OnPropertyChanged("States");
+            }
+        }
+
+        public String DefaultState
+        {
+            get { return states[0]; }
+        }
+
+        protected void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+        }
+        #endregion
 
         #region linking
         public override bool linkableWith(BaseControl target)
@@ -144,38 +216,38 @@ namespace BPMM_App
             {
                 return false;
             }
-            var linkedObject = ((BPMMControl)target).viewModel.linkedObject;
+            var linkedObject = ((BPMMControl)target).linkedObject;
             switch (type())
             {
                 case BPMM_Object.Type.VISION:
-                    ((Vision)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Vision)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.GOAL:
-                    ((Goal)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Goal)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.OBJECTIVE:
-                    ((Objective)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Objective)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.MISSION:
-                    ((Mission)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Mission)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.STRATEGY:
-                    ((Strategy)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Strategy)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.TACTIC:
-                    ((Tactic)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Tactic)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.BUSINESS_POLICY:
-                    ((BusinessPolicy)viewModel.linkedObject).linkWith(linkedObject);
+                    ((BusinessPolicy)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.BUSINESS_RULE:
-                    ((BusinessRule)viewModel.linkedObject).linkWith(linkedObject);
+                    ((BusinessRule)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.INFLUENCER:
-                    ((Influencer)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Influencer)linkedObject).linkWith(linkedObject);
                     return true;
                 case BPMM_Object.Type.ASSESSMENT:
-                    ((Assessment)viewModel.linkedObject).linkWith(linkedObject);
+                    ((Assessment)linkedObject).linkWith(linkedObject);
                     return true;
                 default:
                     return false;
@@ -185,8 +257,8 @@ namespace BPMM_App
 
         private void influencerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems[0].ToString() == BPMM_ViewModel.internalSep
-                || e.AddedItems[0].ToString() == BPMM_ViewModel.externalSep)
+            if (e.AddedItems[0].ToString() == internalSep
+                || e.AddedItems[0].ToString() == externalSep)
             {
                 if (e.RemovedItems.Count == 0)
                 {
@@ -200,14 +272,14 @@ namespace BPMM_App
         public override JsonObject serialize()
         {
             var controlEntry = base.serialize();
-            controlEntry.Add("title", JsonValue.CreateStringValue(viewModel.Title));
-            if (viewModel.Description != null)
+            controlEntry.Add("title", JsonValue.CreateStringValue(Title));
+            if (Description != null)
             {
-                controlEntry.Add("description", JsonValue.CreateStringValue(viewModel.Description));
+                controlEntry.Add("description", JsonValue.CreateStringValue(Description));
             }
             controlEntry.Add("type", JsonValue.CreateNumberValue((int)type()));
             controlEntry.Add("state", JsonValue.CreateNumberValue(stateCombo.SelectedIndex));
-            if (viewModel.linkedObject is Influencer)
+            if (linkedObject is Influencer)
             {
                 controlEntry.Add("influencer", JsonValue.CreateNumberValue(influencerCombo.SelectedIndex));
             }
@@ -240,12 +312,12 @@ namespace BPMM_App
                 var title = input.GetNamedString("title", "");
                 if (title.Length > 0)
                 {
-                    control.viewModel.Title = title;
+                    control.Title = title;
                 }
                 var description = input.GetNamedString("description", "");
                 if (description.Length > 0)
                 {
-                    control.viewModel.Description = description;
+                    control.Description = description;
                 }
                 var state = input.GetNamedNumber("state", -1);
                 if (state != -1)
@@ -269,39 +341,39 @@ namespace BPMM_App
 
         public BPMM_Object.Type type()
         {
-            if (viewModel.linkedObject is Vision)
+            if (linkedObject is Vision)
             {
                 return BPMM_Object.Type.VISION;
             }
-            else if (viewModel.linkedObject is Goal)
+            else if (linkedObject is Goal)
             {
                 return BPMM_Object.Type.GOAL;
             }
-            else if (viewModel.linkedObject is Objective)
+            else if (linkedObject is Objective)
             {
                 return BPMM_Object.Type.OBJECTIVE;
             }
-            if (viewModel.linkedObject is Mission)
+            if (linkedObject is Mission)
             {
                 return BPMM_Object.Type.MISSION;
             }
-            if (viewModel.linkedObject is Strategy)
+            if (linkedObject is Strategy)
             {
                 return BPMM_Object.Type.STRATEGY;
             }
-            if (viewModel.linkedObject is Tactic)
+            if (linkedObject is Tactic)
             {
                 return BPMM_Object.Type.TACTIC;
             }
-            if (viewModel.linkedObject is BusinessPolicy)
+            if (linkedObject is BusinessPolicy)
             {
                 return BPMM_Object.Type.BUSINESS_POLICY;
             }
-            if (viewModel.linkedObject is BusinessRule)
+            if (linkedObject is BusinessRule)
             {
                 return BPMM_Object.Type.BUSINESS_RULE;
             }
-            if (viewModel.linkedObject is Influencer)
+            if (linkedObject is Influencer)
             {
                 return BPMM_Object.Type.INFLUENCER;
             }
@@ -310,88 +382,5 @@ namespace BPMM_App
                 return BPMM_Object.Type.ASSESSMENT;
             }
         }
-        #region viewmodel
-        public class BPMM_ViewModel : INotifyPropertyChanged
-        {
-            public BPMM_Object linkedObject;
-            private ObservableCollection<String> states;
-            private ObservableCollection<String> influencerTypes;
-            public const String externalSep = "--- External: ---";
-            public const String internalSep = "--- Internal: ---";
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            public BPMM_ViewModel(BPMM_Object obj)
-            {
-                linkedObject = obj;
-                States = new ObservableCollection<String>(BPMM_Object.States);
-
-                if (obj is Influencer)
-                {
-                    List<String> types = new List<String>();
-                    types.Add(externalSep);
-                    types.AddRange(Influencer.externalInfluencers);
-                    types.Add(internalSep);
-                    types.AddRange(Influencer.internalInfluencers);
-                    InfluencerTypes = new ObservableCollection<String>(types);
-                }
-            }
-
-            # region getters/setters
-            public string Title
-            {
-                get { return linkedObject.title; }
-                set
-                {
-                    linkedObject.title = value;
-                    OnPropertyChanged("Title");
-                }
-            }
-
-            public ObservableCollection<String> InfluencerTypes
-            {
-                get { return influencerTypes; }
-                set
-                {
-                    influencerTypes = value;
-                    OnPropertyChanged("InfluencerTypes");
-                }
-            }
-
-            public string Description
-            {
-                get { return linkedObject.description; }
-                set
-                {
-                    linkedObject.description = value;
-                    OnPropertyChanged("Description");
-                }
-            }
-
-            public ObservableCollection<String> States
-            {
-                get { return states; }
-                set
-                {
-                    states = value;
-                    OnPropertyChanged("States");
-                }
-            }
-            public String DefaultState
-            {
-                get { return states[0]; }
-            }
-            # endregion
-
-            protected void OnPropertyChanged(string name)
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(name));
-                }
-            }
-
-        }
-        #endregion
     }
 }
