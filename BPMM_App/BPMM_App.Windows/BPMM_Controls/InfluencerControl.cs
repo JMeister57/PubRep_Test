@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,18 +15,23 @@ namespace BPMM_App
     class InfluencerControl : BPMMControl
     {
         private ComboBox influencerCombo;
-        private ObservableCollection<String> influencerTypes; 
+        private ObservableCollection<String> influencerTypes;
+        public static List<String> externalInfluencers =
+        new List<String> { "Competitor", "Customer", "Environment", "Partner", "Regulation", "Supplier", "Technology" };
+        public static List<String> internalInfluencers =
+            new List<String> { "Assumption", "Corporate Value, explicit", "Corporate Value, implicit", "Habit",
+                                            "Infrastructure", "Issue", "Management Prerogative", "Resource" };
         public const String externalSep = "--- External: ---";
         public const String internalSep = "--- Internal: ---";
 
-        public InfluencerControl(Influencer obj) : base(obj)
+        public InfluencerControl(BPMMControl.Type type) : base(type)
         {
             List<String> types = new List<String>();
             types.Add("Influence Type");
             types.Add(externalSep);
-            types.AddRange(Influencer.externalInfluencers);
+            types.AddRange(externalInfluencers);
             types.Add(internalSep);
-            types.AddRange(Influencer.internalInfluencers);
+            types.AddRange(internalInfluencers);
             InfluencerTypes = new ObservableCollection<String>(types);
 
             influencerCombo = new ComboBox();
@@ -77,6 +83,7 @@ namespace BPMM_App
             {
                 control.influencerCombo.SelectedIndex = (int)influencer;
             }
+
             return control;
         }
 

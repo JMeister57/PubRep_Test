@@ -97,7 +97,7 @@ namespace BPMM_App
             object item;
             if (e.Data.Properties.TryGetValue("Item", out item))
             {
-                if (item is BPMM_Object.Type == false)
+                if (item is BPMMControl.Type == false)
                 {
                     NoteControl note = addNote();
                     note.AssociationStartEvent += OnAssociationStart;
@@ -109,56 +109,8 @@ namespace BPMM_App
                     workspace.Children.Add(note);
                     return;
                 }
-                BPMM_Object.Type type = (BPMM_Object.Type)item;
-                BPMM_Object obj;
-                String title;
-                switch (type)
-                {
-                    case BPMM_Object.Type.VISION:
-                        obj = (BPMM_Object) new Vision();
-                        title = "Vision";
-                        break;
-                    case BPMM_Object.Type.GOAL:
-                        obj = (BPMM_Object) new Goal();
-                        title = "Goal";
-                        break;
-                    case BPMM_Object.Type.OBJECTIVE:
-                        obj = (BPMM_Object) new Objective();
-                        title = "Objective";
-                        break;
-                    case BPMM_Object.Type.MISSION:
-                        obj = (BPMM_Object) new Mission();
-                        title = "Mission";
-                        break;
-                    case BPMM_Object.Type.STRATEGY:
-                        obj = (BPMM_Object) new Strategy();
-                        title = "Strategy";
-                        break;
-                    case BPMM_Object.Type.TACTIC:
-                        obj = (BPMM_Object) new Tactic();
-                        title = "Tactic";
-                        break;
-                    case BPMM_Object.Type.BUSINESS_POLICY:
-                        obj = (BPMM_Object) new BusinessPolicy();
-                        title = "Policy";
-                        break;
-                    case BPMM_Object.Type.BUSINESS_RULE:
-                        obj = (BPMM_Object) new BusinessRule();
-                        title = "Rule";
-                        break;
-                    case BPMM_Object.Type.INFLUENCER:
-                        obj = (BPMM_Object)new Influencer();
-                        title = "Influencer";
-                        break;
-                    case BPMM_Object.Type.ASSESSMENT:
-                        obj = (BPMM_Object) new Assessment();
-                        title = "Assessment";
-                        break;
-                    default:
-                        return;
-                }
-                BPMMControl control = addBPMMControl(obj);
-                control.Title = title;
+                BPMMControl.Type type = (BPMMControl.Type)item;
+                BPMMControl control = addBPMMControl(type);
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
                 control.DeleteEvent += DeleteControl;
@@ -170,25 +122,13 @@ namespace BPMM_App
         }
 
 
-        private BPMMControl addBPMMControl(BPMM_Object obj)
+        private BPMMControl addBPMMControl(BPMMControl.Type controlType)
         {
-            BPMMControl control;
-            if (obj is BusinessRule)
-            {
-                control = new BusinessRuleControl((BusinessRule)obj);
-            }
-            else if(obj is Influencer)
-            {
-                control = new InfluencerControl((Influencer)obj);
-            }
-            else if (obj is Assessment)
-            {
-                control = new AssessmentControl((Assessment)obj);
-            }
-            else
-            {
-                control = new BPMMControl(obj);
-            }
+            BPMMControl control =
+                (controlType == BPMMControl.Type.BUSINESS_RULE) ? new BusinessRuleControl(controlType) :
+                (controlType == BPMMControl.Type.INFLUENCER) ? new InfluencerControl(controlType) :
+                (controlType == BPMMControl.Type.ASSESSMENT) ? new AssessmentControl(controlType) :
+                new BPMMControl(controlType);
             controls.Add(control);
             return control;
         }
@@ -226,16 +166,16 @@ namespace BPMM_App
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.VISION); }
-            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.GOAL); }
-            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.OBJECTIVE); }
-            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.MISSION); }
-            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.STRATEGY); }
-            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.TACTIC); }
-            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.BUSINESS_POLICY); }
-            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.BUSINESS_RULE); }
-            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.INFLUENCER); }
-            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMM_Object.Type.ASSESSMENT); }
+            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.VISION); }
+            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.GOAL); }
+            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.OBJECTIVE); }
+            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.MISSION); }
+            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.STRATEGY); }
+            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.TACTIC); }
+            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.BUSINESS_POLICY); }
+            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.BUSINESS_RULE); }
+            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.INFLUENCER); }
+            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.ASSESSMENT); }
             else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", "Note"); }
         }
         #region association drawing
@@ -267,19 +207,9 @@ namespace BPMM_App
                 workspace.Children.Remove(currentLine);
                 return;
             }
-            bool linked = sourceControl.LinkWith(target);
-            if (linked)
-            { // case: allowed association
-                currentLine.updateEndPoint(target, p);
-                target.MovedEvent += currentLine.targetMoved;
-                target.DeleteEvent += currentLine.Delete;
-                sourceControl = null;
-            }
-            else
-            { // case: misfitting BPMM objects
-                Debug.WriteLine("these two objects cannot be linked");
-                workspace.Children.Remove(currentLine);
-            }
+            currentLine.updateEndPoint(target, p);
+            target.MovedEvent += currentLine.targetMoved;
+            target.DeleteEvent += currentLine.Delete;
             sourceControl = null;
             currentLine = null;
             associating = false;
@@ -402,7 +332,6 @@ namespace BPMM_App
 
         private bool deserialize(string input)
         {
-            Debug.WriteLine(input);
             JsonObject data;
             if (JsonObject.TryParse(input, out data) == false)
             {
@@ -417,25 +346,12 @@ namespace BPMM_App
                 {
                     return false;
                 }
-                var type = (BPMM_Object.Type)value;
-                BPMMControl control;
-                if (type == BPMM_Object.Type.BUSINESS_RULE)
-                {
-                    control = BusinessRuleControl.deserialize(entry.GetObject());
-                }
-                else if (type == BPMM_Object.Type.INFLUENCER)
-                {
-                    control = InfluencerControl.deserialize(entry.GetObject());
-                }
-                else if (type == BPMM_Object.Type.ASSESSMENT)
-                {
-                    control = AssessmentControl.deserialize(entry.GetObject());
-                }
-                else
-                {
-                    control = BusinessRuleControl.deserialize(entry.GetObject());
-                }
-                
+                var type = (BPMMControl.Type)value;
+                BPMMControl control =
+                    (type == BPMMControl.Type.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
+                    (type == BPMMControl.Type.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
+                    (type == BPMMControl.Type.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
+                    BPMMControl.deserialize(entry.GetObject());
                 if (control != null)
                 {
                     workspace.Children.Add(control);
@@ -543,11 +459,12 @@ namespace BPMM_App
             { // see: http://loekvandenouweland.com/index.php/2013/12/save-xaml-as-png-in-a-windows-store-app/
                 using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    var encoderId = (file.FileType == "jpeg" || file.FileType == "jpg") ? BitmapEncoder.JpegEncoderId
-                        : (file.FileType == "bmp") ? BitmapEncoder.BmpEncoderId
-                        : (file.FileType == "gif") ? BitmapEncoder.GifEncoderId
-                        : (file.FileType == "tiff") ? BitmapEncoder.TiffEncoderId
-                        : BitmapEncoder.PngEncoderId; // default
+                    var encoderId =
+                        (file.FileType == "jpeg" || file.FileType == "jpg") ? BitmapEncoder.JpegEncoderId :
+                        (file.FileType == "bmp") ? BitmapEncoder.BmpEncoderId :
+                        (file.FileType == "gif") ? BitmapEncoder.GifEncoderId :
+                        (file.FileType == "tiff") ? BitmapEncoder.TiffEncoderId :
+                        BitmapEncoder.PngEncoderId; // default
                     var encoder = await BitmapEncoder.CreateAsync(encoderId, stream);
                     encoder.SetPixelData(BitmapPixelFormat.Bgra8,
                                          BitmapAlphaMode.Ignore,

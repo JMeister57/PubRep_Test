@@ -31,15 +31,6 @@ namespace BPMM_App
             setContent(textField);
         }
 
-        public override bool linkableWith(BaseControl target)
-        {
-            return true;
-        }
-        public override bool LinkWith(BaseControl target)
-        {
-            return true;
-        }
-
         public override JsonObject serialize()
         {
             var noteEntry = base.serialize();
@@ -52,12 +43,11 @@ namespace BPMM_App
 
         public static NoteControl deserialize(JsonObject input)
         {
-            var note = new NoteControl();
+            var note = (BaseControl)new NoteControl();
+            BaseControl.deserialize(ref note, input);
             var description = input.GetNamedString("description", "");
-            note.textField.Text = description;
-            Canvas.SetLeft(note, input.GetNamedNumber("x", 0));
-            Canvas.SetTop(note, input.GetNamedNumber("y", 0));
-            return note;
+            ((NoteControl)note).textField.Text = description;
+            return (NoteControl)note;
         }
     }
 }

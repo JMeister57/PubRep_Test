@@ -18,7 +18,7 @@ namespace BPMM_App
         private static ObservableCollection<string> enforcementLevels =
             new ObservableCollection<string> { "<Enforcement Lvl>", "Strictly", "Deferred", "Pre-auth Override", "Post-justified Override", "Explained Override", "Guideline" };
 
-        public BusinessRuleControl(BusinessRule obj) : base(obj)
+        public BusinessRuleControl(BPMMControl.Type type) : base(type)
         {
             enforcementCombo = new ComboBox();
             enforcementCombo.DataContext = this;

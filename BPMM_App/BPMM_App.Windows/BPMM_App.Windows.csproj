@@ -107,7 +107,6 @@
     <Compile Include="BPMM_Controls\Association.xaml.cs">
       <DependentUpon>Association.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BPMMObject.cs" />
     <Compile Include="BPMM_Controls\BaseControl.cs" />
     <Compile Include="BPMM_Controls\BPMMControl.cs" />
     <Compile Include="BPMM_Controls\BusinessRuleControl.cs" />

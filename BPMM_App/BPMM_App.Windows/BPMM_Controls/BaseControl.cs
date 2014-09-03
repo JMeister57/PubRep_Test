@@ -111,9 +111,6 @@ namespace BPMM_App
             canvas.Children.Add(container);
             Content = canvas;
         }
-
-        public abstract bool linkableWith(BaseControl target);
-        public abstract bool LinkWith(BaseControl target);
         
         public virtual JsonObject serialize()
         {
@@ -123,6 +120,12 @@ namespace BPMM_App
             controlEntry.Add("width", JsonValue.CreateNumberValue(ActualWidth));
             controlEntry.Add("height", JsonValue.CreateNumberValue(ActualHeight));
             return controlEntry;
+        }
+
+        public static void deserialize(ref BaseControl control, JsonObject input)
+        {
+            Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
+            Canvas.SetTop(control, input.GetNamedNumber("y", 0));
         }
 
         protected void setContent(FrameworkElement element)

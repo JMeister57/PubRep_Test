@@ -27,8 +27,19 @@ namespace BPMM_App
 {
     public class BPMMControl : BaseControl, INotifyPropertyChanged
     {
-        public BPMM_Object linkedObject;
-        private ObservableCollection<String> states;
+        public enum Type
+        {
+            VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT
+        }
+        public static ObservableCollection<string> states = new ObservableCollection<string> { "created", "approved", "denied", "duplicate" };
+
+        public Type type;
+        string author;
+        DateTime creationDate;
+        public string title;
+        public string description;
+        List<string> references;
+        string state;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -38,12 +49,25 @@ namespace BPMM_App
         protected ComboBox stateCombo;
         
 
-        public BPMMControl(BPMM_Object obj) : base()
+        public BPMMControl(Type newType) : base()
         {
+            author = "Tieni";
+            creationDate = DateTime.Now;
+            States = states;
+            state = States[0];
+            type = newType;
+            title =
+                (type == BPMMControl.Type.VISION) ? "Vision" :
+                (type == BPMMControl.Type.GOAL) ? "Goal" :
+                (type == BPMMControl.Type.OBJECTIVE) ? "Objective" : 
+                (type == BPMMControl.Type.MISSION) ? "Mission" :
+                (type == BPMMControl.Type.STRATEGY) ? "Strategy" :
+                (type == BPMMControl.Type.TACTIC) ? "Tactic" :
+                (type == BPMMControl.Type.BUSINESS_POLICY) ? "Business Policy" :
+                (type == BPMMControl.Type.BUSINESS_RULE) ? "BUsiness Rule" :
+                (type == BPMMControl.Type.INFLUENCER) ? "Influencer" :
+                "Assessment";
             DataContext = this;
-
-            linkedObject = obj;
-            States = new ObservableCollection<String>(BPMM_Object.States);
 
             headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
             headerBox.DataContext = this;
@@ -82,20 +106,20 @@ namespace BPMM_App
         #region getters/setters
         public string Title
         {
-            get { return linkedObject.title; }
+            get { return title; }
             set
             {
-                linkedObject.title = value;
+                title = value;
                 OnPropertyChanged("Title");
             }
         }
 
         public string Description
         {
-            get { return linkedObject.description; }
+            get { return description; }
             set
             {
-                linkedObject.description = value;
+                description = value;
                 OnPropertyChanged("Description");
             }
         }
@@ -124,59 +148,6 @@ namespace BPMM_App
         }
         #endregion
 
-        #region linking
-        public override bool linkableWith(BaseControl target)
-        {
-            if (target is BPMMControl == false)
-            {
-                return false;
-            }
-            var targetType = ((BPMMControl)target).type();
-            switch (type())
-            {
-                case BPMM_Object.Type.VISION:
-                    return targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.MISSION
-                        || targetType == BPMM_Object.Type.INFLUENCER;
-                case BPMM_Object.Type.GOAL:
-                    return targetType == BPMM_Object.Type.VISION || targetType == BPMM_Object.Type.MISSION
-                        || targetType == BPMM_Object.Type.OBJECTIVE || targetType == BPMM_Object.Type.GOAL
-                        || targetType == BPMM_Object.Type.ASSESSMENT || targetType == BPMM_Object.Type.STRATEGY;
-                case BPMM_Object.Type.OBJECTIVE:
-                    return targetType == BPMM_Object.Type.GOAL || targetType == BPMM_Object.Type.OBJECTIVE
-                        || targetType == BPMM_Object.Type.ASSESSMENT || targetType == BPMM_Object.Type.TACTIC;
-                case BPMM_Object.Type.MISSION:
-                    return targetType == BPMM_Object.Type.VISION || targetType == BPMM_Object.Type.STRATEGY
-                        || targetType == BPMM_Object.Type.ASSESSMENT;
-                case BPMM_Object.Type.STRATEGY:
-                    return targetType == BPMM_Object.Type.MISSION || targetType == BPMM_Object.Type.TACTIC
-                        || targetType == BPMM_Object.Type.STRATEGY || targetType == BPMM_Object.Type.ASSESSMENT;
-                case BPMM_Object.Type.TACTIC:
-                    return targetType == BPMM_Object.Type.STRATEGY || targetType == BPMM_Object.Type.TACTIC
-                        || targetType == BPMM_Object.Type.BUSINESS_RULE || targetType == BPMM_Object.Type.ASSESSMENT;
-                case BPMM_Object.Type.BUSINESS_POLICY:
-                    return targetType == BPMM_Object.Type.BUSINESS_POLICY || targetType == BPMM_Object.Type.ASSESSMENT;
-                case BPMM_Object.Type.BUSINESS_RULE:
-                    return targetType == BPMM_Object.Type.TACTIC || targetType == BPMM_Object.Type.BUSINESS_POLICY;
-                case BPMM_Object.Type.INFLUENCER:
-                    return targetType == BPMM_Object.Type.ASSESSMENT;
-                case BPMM_Object.Type.ASSESSMENT:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        public override bool LinkWith(BaseControl target)
-        {
-            if (target is BPMMControl == false)
-            {
-                return false;
-            }
-            linkedObject.linkWith(((BPMMControl)target).linkedObject);
-            return true;
-        }
-        #endregion
-
         public override JsonObject serialize()
         {
             var controlEntry = base.serialize();
@@ -185,7 +156,7 @@ namespace BPMM_App
             {
                 controlEntry.Add("description", JsonValue.CreateStringValue(Description));
             }
-            controlEntry.Add("type", JsonValue.CreateNumberValue((int)type()));
+            controlEntry.Add("type", JsonValue.CreateNumberValue((int)type));
             controlEntry.Add("state", JsonValue.CreateNumberValue(stateCombo.SelectedIndex));
             return controlEntry;
         }
@@ -197,83 +168,37 @@ namespace BPMM_App
             {
                 return null;
             }
-            var type = (BPMM_Object.Type)value;
-            BPMM_Object obj =
-            (type == BPMM_Object.Type.VISION) ? (BPMM_Object)new Vision() :
-            (type == BPMM_Object.Type.GOAL) ? (BPMM_Object)new Goal() :
-            (type == BPMM_Object.Type.OBJECTIVE) ? (BPMM_Object)new Objective() :
-            (type == BPMM_Object.Type.MISSION) ? (BPMM_Object)new Mission() :
-            (type == BPMM_Object.Type.STRATEGY) ? (BPMM_Object)new Strategy() :
-            (type == BPMM_Object.Type.TACTIC) ? (BPMM_Object)new Tactic() :
-            (type == BPMM_Object.Type.BUSINESS_POLICY) ? (BPMM_Object)new BusinessPolicy() :
-            (type == BPMM_Object.Type.BUSINESS_RULE) ? (BPMM_Object)new BusinessRule() :
-            (type == BPMM_Object.Type.INFLUENCER) ? (BPMM_Object)new Influencer() :
-            (BPMM_Object)new Assessment();
-
-            var control = new BPMMControl(obj);
+            Type newType;
+            try
+            {
+                newType = (Type)value;
+            }
+            catch (InvalidCastException)
+            {
+                return null;
+            }
+            var control =
+                (newType == Type.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl(newType) :
+                (newType == Type.INFLUENCER) ? (BaseControl)new InfluencerControl(newType) :
+                (newType == Type.ASSESSMENT) ? (BaseControl)new AssessmentControl(newType) : 
+                new BPMMControl(newType);
+            BaseControl.deserialize(ref control, input);
             var title = input.GetNamedString("title", "");
             if (title.Length > 0)
             {
-                control.Title = title;
+                ((BPMMControl)control).Title = title;
             }
             var description = input.GetNamedString("description", "");
             if (description.Length > 0)
             {
-                control.Description = description;
+                ((BPMMControl)control).Description = description;
             }
             var state = input.GetNamedNumber("state", -1);
             if (state != -1)
             {
-                control.stateCombo.SelectedIndex = (int)state;
+                ((BPMMControl)control).stateCombo.SelectedIndex = (int)state;
             }
-
-            Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
-            Canvas.SetTop(control, input.GetNamedNumber("y", 0));
-            return control;
-        }
-
-        public BPMM_Object.Type type()
-        {
-            if (linkedObject is Vision)
-            {
-                return BPMM_Object.Type.VISION;
-            }
-            else if (linkedObject is Goal)
-            {
-                return BPMM_Object.Type.GOAL;
-            }
-            else if (linkedObject is Objective)
-            {
-                return BPMM_Object.Type.OBJECTIVE;
-            }
-            if (linkedObject is Mission)
-            {
-                return BPMM_Object.Type.MISSION;
-            }
-            if (linkedObject is Strategy)
-            {
-                return BPMM_Object.Type.STRATEGY;
-            }
-            if (linkedObject is Tactic)
-            {
-                return BPMM_Object.Type.TACTIC;
-            }
-            if (linkedObject is BusinessPolicy)
-            {
-                return BPMM_Object.Type.BUSINESS_POLICY;
-            }
-            if (linkedObject is BusinessRule)
-            {
-                return BPMM_Object.Type.BUSINESS_RULE;
-            }
-            if (linkedObject is Influencer)
-            {
-                return BPMM_Object.Type.INFLUENCER;
-            }
-            else
-            {
-                return BPMM_Object.Type.ASSESSMENT;
-            }
-        }
+            return (BPMMControl)control;
+        }     
     }
 }
