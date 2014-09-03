@@ -22,6 +22,7 @@ using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Core;
 using Windows.Data.Json;
+using Windows.UI;
 
 namespace BPMM_App
 {
@@ -148,6 +149,15 @@ namespace BPMM_App
         }
         #endregion
 
+        public void HighLight()
+        {
+            frame.Background = new SolidColorBrush(Colors.Gold);
+        }
+
+        public void LowLight()
+        {
+            frame.Background = new SolidColorBrush(Colors.Aquamarine);
+        }
         public override JsonObject serialize()
         {
             var controlEntry = base.serialize();

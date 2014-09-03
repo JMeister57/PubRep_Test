@@ -25,7 +25,7 @@ namespace BPMM_App
 
         public int id;
         protected Grid frame;
-        Grid contentGrid;
+        protected Grid contentGrid;
         protected bool isDragging;
         private PointerPoint offset;
 

@@ -112,6 +112,9 @@
     <Compile Include="BPMM_Controls\BusinessRuleControl.cs" />
     <Compile Include="BPMM_Controls\InfluencerControl.cs" />
     <Compile Include="BPMM_Controls\NoteControl.cs" />
+    <Compile Include="BPMM_Controls\WarningItem.xaml.cs">
+      <DependentUpon>WarningItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -134,6 +137,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="BPMM_Controls\Association.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BPMM_Controls\WarningItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

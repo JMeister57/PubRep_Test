@@ -24,16 +24,20 @@ using Windows.Graphics.Imaging;
 using Windows.Storage.Pickers;
 using Windows.Data.Json;
 using Windows.Storage.Streams;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
+using Windows.UI.Text;
 
 namespace BPMM_App
 {
 
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, INotifyPropertyChanged
     {      
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
         public static List<BaseControl> controls = new List<BaseControl>();
+        private static List<AssociationControl> associations = new List<AssociationControl>();
 
         bool associating;
         private AssociationControl currentLine;
@@ -44,17 +48,8 @@ namespace BPMM_App
         private Rectangle selectionBox;
 
         double warningsPaneSize = 100;
-
-        public ObservableDictionary DefaultViewModel
-        {
-            get { return this.defaultViewModel; }
-        }
-
-        public NavigationHelper NavigationHelper
-        {
-            get { return this.navigationHelper; }
-        }
-
+        private ObservableCollection<WarningItem> warnings = new ObservableCollection<WarningItem>();
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public MainPage()
         {
@@ -63,7 +58,33 @@ namespace BPMM_App
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
             associating = false;
+            DataContext = this;
         }
+
+        public ObservableDictionary DefaultViewModel
+        {
+            get { return defaultViewModel; }
+        }
+
+        public NavigationHelper NavigationHelper
+        {
+            get { return navigationHelper; }
+        }
+
+        public ObservableCollection<WarningItem> Warnings
+        {
+            get { return warnings; }
+            set { warnings = value; OnPropertyChanged("Warnings"); }
+        }
+
+        public void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
 
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
@@ -187,6 +208,7 @@ namespace BPMM_App
             sourceControl.MovedEvent += currentLine.sourceMoved;
             sourceControl.DeleteEvent += currentLine.Delete;
             currentLine.DeleteEvent += DeleteAssociation;
+            associations.Add(currentLine);
             workspace.Children.Add(currentLine);
             associating = true;
         }
@@ -205,6 +227,7 @@ namespace BPMM_App
             { // case: association to itself
                 Debug.WriteLine("Cannot pull association to itself.");
                 workspace.Children.Remove(currentLine);
+                associations.Remove(currentLine);
                 return;
             }
             currentLine.updateEndPoint(target, p);
@@ -222,6 +245,7 @@ namespace BPMM_App
             {
                 associating = false;
                 workspace.Children.Remove(currentLine);
+                associations.Remove(currentLine);
                 currentLine = null;
                 return;
             } 
@@ -277,6 +301,7 @@ namespace BPMM_App
             {
                 associating = false;
                 workspace.Children.Remove(currentLine);
+                associations.Remove(currentLine);
                 currentLine = null;
             }
 
@@ -300,6 +325,7 @@ namespace BPMM_App
         public void DeleteAssociation(object sender, EventArgs e)
         {
             workspace.Children.Remove((AssociationControl)sender);
+            associations.Remove((AssociationControl)sender);
         }
 
         private string serialize()
@@ -497,6 +523,8 @@ namespace BPMM_App
             if (result.Label == "Yes")
             {
                 workspace.Children.Clear();
+                associations.Clear();
+                controls.Clear();
             }
         }
 
@@ -520,9 +548,58 @@ namespace BPMM_App
             }
         }
 
-        private void validate()
+        private void validate_button_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            Warnings.Clear();
+            foreach (var control in controls)
+            {
+                if (control is NoteControl)
+                {
+                    continue;
+                }
+                if (control is AssessmentControl)
+                {
+                    var links = findLinks((BPMMControl)control);
+                    if (links.Count == 0)
+                    {
+                        Warnings.Add(new WarningItem((BPMMControl)control, "MLINK_1"));
+                    }
+                }
+            }
+        }
 
+        private List<AssociationControl> findLinks(BPMMControl control)
+        {
+            var result = new List<AssociationControl>();
+            foreach (var link in associations)
+            {
+                if (link.sourceId == control.id || link.targetId == control.id)
+                {
+                    result.Add(link);
+                }
+            }
+            return result;
+        }
+
+        private void warnings_listview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                var selected = (WarningItem)e.AddedItems[0];
+                if (selected != null)
+                {
+                    selected.control.HighLight();
+                }
+            }
+
+            if (e.RemovedItems.Count > 0)
+            {
+                var released = (WarningItem)e.RemovedItems[0];
+                if (released != null)
+                {
+                    released.control.LowLight();
+                }
+            }
         }
     }
 }

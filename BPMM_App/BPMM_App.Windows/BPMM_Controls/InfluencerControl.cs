@@ -16,9 +16,9 @@ namespace BPMM_App
     {
         private ComboBox influencerCombo;
         private ObservableCollection<String> influencerTypes;
-        public static List<String> externalInfluencers =
+        public static List<string> externalInfluencers =
         new List<String> { "Competitor", "Customer", "Environment", "Partner", "Regulation", "Supplier", "Technology" };
-        public static List<String> internalInfluencers =
+        public static List<string> internalInfluencers =
             new List<String> { "Assumption", "Corporate Value, explicit", "Corporate Value, implicit", "Habit",
                                             "Infrastructure", "Issue", "Management Prerogative", "Resource" };
         public const String externalSep = "--- External: ---";
