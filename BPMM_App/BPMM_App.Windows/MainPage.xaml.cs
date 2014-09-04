@@ -118,7 +118,7 @@ namespace BPMM_App
             object item;
             if (e.Data.Properties.TryGetValue("Item", out item))
             {
-                if (item is BPMMControl.Type == false)
+                if (item is Model == false)
                 {
                     NoteControl note = addNote();
                     note.AssociationStartEvent += OnAssociationStart;
@@ -130,11 +130,19 @@ namespace BPMM_App
                     workspace.Children.Add(note);
                     return;
                 }
-                BPMMControl.Type type = (BPMMControl.Type)item;
+                Model type = (Model)item;
                 BPMMControl control = addBPMMControl(type);
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
+                control.WarningsAddedEvent += AddWarnings;
+                control.WarningsRemovedEvent += RemoveWarnings;
                 control.DeleteEvent += DeleteControl;
+
+                foreach (var warnItem in control.getWarnings())
+                {
+                    Warnings.Add(warnItem);
+                }
+                
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
                 Canvas.SetTop(control, pos.Y);
@@ -143,12 +151,12 @@ namespace BPMM_App
         }
 
 
-        private BPMMControl addBPMMControl(BPMMControl.Type controlType)
+        private BPMMControl addBPMMControl(Model controlType)
         {
             BPMMControl control =
-                (controlType == BPMMControl.Type.BUSINESS_RULE) ? new BusinessRuleControl(controlType) :
-                (controlType == BPMMControl.Type.INFLUENCER) ? new InfluencerControl(controlType) :
-                (controlType == BPMMControl.Type.ASSESSMENT) ? new AssessmentControl(controlType) :
+                (controlType == Model.BUSINESS_RULE) ? new BusinessRuleControl(controlType) :
+                (controlType == Model.INFLUENCER) ? new InfluencerControl(controlType) :
+                (controlType == Model.ASSESSMENT) ? new AssessmentControl(controlType) :
                 new BPMMControl(controlType);
             controls.Add(control);
             return control;
@@ -159,18 +167,6 @@ namespace BPMM_App
             var note = new NoteControl();
             controls.Add(note);
             return note;
-        }
-
-        private void delete(BaseControl control)
-        {
-            for (int i = 0; i < controls.Count; ++i)
-            {
-                if (controls[i] == control)
-                {
-                    controls.RemoveAt(i);
-                    break;
-                }
-            }
         }
 
         public static BaseControl getControl(int id)
@@ -187,16 +183,16 @@ namespace BPMM_App
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.VISION); }
-            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.GOAL); }
-            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.OBJECTIVE); }
-            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.MISSION); }
-            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.STRATEGY); }
-            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.TACTIC); }
-            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.BUSINESS_POLICY); }
-            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.BUSINESS_RULE); }
-            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.INFLUENCER); }
-            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", BPMMControl.Type.ASSESSMENT); }
+            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", Model.VISION); }
+            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", Model.GOAL); }
+            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", Model.OBJECTIVE); }
+            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", Model.MISSION); }
+            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", Model.STRATEGY); }
+            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", Model.TACTIC); }
+            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", Model.BUSINESS_POLICY); }
+            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", Model.BUSINESS_RULE); }
+            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", Model.INFLUENCER); }
+            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", Model.ASSESSMENT); }
             else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", "Note"); }
         }
         #region association drawing
@@ -206,7 +202,6 @@ namespace BPMM_App
             Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
             currentLine = new AssociationControl(sourceControl, p, e.GetCurrentPoint((UIElement)sender).Position);
             sourceControl.MovedEvent += currentLine.sourceMoved;
-            sourceControl.DeleteEvent += currentLine.Delete;
             currentLine.DeleteEvent += DeleteAssociation;
             associations.Add(currentLine);
             workspace.Children.Add(currentLine);
@@ -216,7 +211,7 @@ namespace BPMM_App
         public void OnAssociationRequest(object sender, EventArgs e)
         {
             if (currentLine == null)
-            { // case: simple clickon control
+            { // case: simple click on control
                 return;
             }
 
@@ -232,7 +227,13 @@ namespace BPMM_App
             }
             currentLine.updateEndPoint(target, p);
             target.MovedEvent += currentLine.targetMoved;
-            target.DeleteEvent += currentLine.Delete;
+            if (sourceControl is BPMMControl && target is BPMMControl)
+            {
+                ((BPMMControl)target).WarningsAddedEvent += AddWarnings;
+                ((BPMMControl)target).WarningsRemovedEvent += RemoveWarnings;
+                ((BPMMControl)sourceControl).validateNewLink(((BPMMControl)target).type);
+                ((BPMMControl)target).validateNewLink(((BPMMControl)sourceControl).type);
+            }
             sourceControl = null;
             currentLine = null;
             associating = false;
@@ -318,14 +319,31 @@ namespace BPMM_App
         
         public void DeleteControl(object sender, EventArgs e)
         {
+            foreach (var link in findLinks((BaseControl)sender))
+            {
+                DeleteAssociation(link, e);
+            }
+            if(sender is BPMMControl)
+            {
+                RemoveWarnings(sender, ((BPMMControl)sender).warnings);
+            }
             workspace.Children.Remove((BaseControl)sender);
-            delete((BaseControl)sender);
+            controls.Remove((BaseControl)sender);
         }
 
-        public void DeleteAssociation(object sender, EventArgs e)
+        public void DeleteAssociation(object linkObj, EventArgs e)
         {
-            workspace.Children.Remove((AssociationControl)sender);
-            associations.Remove((AssociationControl)sender);
+            var link = (AssociationControl)linkObj;
+            workspace.Children.Remove(link);
+            associations.Remove(link);
+
+            if (link.source is BPMMControl && link.target is BPMMControl)
+            {
+                var source = (BPMMControl)link.source;
+                var target = (BPMMControl)link.target;
+                source.validateRemovedLink(target.type, (findLinks(source)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+                target.validateRemovedLink(source.type, (findLinks(target)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+            }
         }
 
         private string serialize()
@@ -372,11 +390,11 @@ namespace BPMM_App
                 {
                     return false;
                 }
-                var type = (BPMMControl.Type)value;
+                var type = (Model)value;
                 BPMMControl control =
-                    (type == BPMMControl.Type.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
-                    (type == BPMMControl.Type.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
-                    (type == BPMMControl.Type.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
+                    (type == Model.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
+                    (type == Model.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
+                    (type == Model.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
                     BPMMControl.deserialize(entry.GetObject());
                 if (control != null)
                 {
@@ -401,16 +419,8 @@ namespace BPMM_App
                 if (association != null)
                 {
                     workspace.Children.Add(association);
-                    var source = getControl(association.sourceId);
-                    var target = getControl(association.targetId);
-                    if (source == null || target == null)
-                    {
-                        return false;
-                    }
-                    source.MovedEvent += association.sourceMoved;
-                    target.MovedEvent += association.targetMoved;
-                    source.DeleteEvent += association.Delete;
-                    target.DeleteEvent += association.Delete;
+                    association.source.MovedEvent += association.sourceMoved;
+                    association.target.MovedEvent += association.targetMoved;
                 }
             }
             return true;
@@ -525,6 +535,7 @@ namespace BPMM_App
                 workspace.Children.Clear();
                 associations.Clear();
                 controls.Clear();
+                Warnings.Clear();
             }
         }
 
@@ -548,32 +559,28 @@ namespace BPMM_App
             }
         }
 
-        private void validate_button_Tapped(object sender, TappedRoutedEventArgs e)
+        private void AddWarnings(object sender, ObservableCollection<WarningItem> added)
         {
-            Warnings.Clear();
-            foreach (var control in controls)
+            foreach (var item in added)
             {
-                if (control is NoteControl)
-                {
-                    continue;
-                }
-                if (control is AssessmentControl)
-                {
-                    var links = findLinks((BPMMControl)control);
-                    if (links.Count == 0)
-                    {
-                        Warnings.Add(new WarningItem((BPMMControl)control, "MLINK_1"));
-                    }
-                }
+                Warnings.Add(item);
             }
         }
 
-        private List<AssociationControl> findLinks(BPMMControl control)
+        private void RemoveWarnings(object sender, ObservableCollection<WarningItem> removed)
+        {
+            foreach (var item in removed)
+            {
+                Warnings.Remove(item);
+            }
+        }
+
+        private List<AssociationControl> findLinks(BaseControl control)
         {
             var result = new List<AssociationControl>();
             foreach (var link in associations)
             {
-                if (link.sourceId == control.id || link.targetId == control.id)
+                if (link.source == control || link.target == control)
                 {
                     result.Add(link);
                 }

@@ -28,8 +28,8 @@ namespace BPMM_App
         public String description;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public int sourceId;
-        public int targetId;
+        public BaseControl source;
+        public BaseControl target;
 
         public event EventHandler DeleteEvent;
 
@@ -42,7 +42,7 @@ namespace BPMM_App
             Description = "[relation]";
 
             updateBoxPosition(source, target);
-            sourceId = sourceControl.id;
+            this.source = sourceControl;
             DataContext = this;
         }
 
@@ -71,11 +71,181 @@ namespace BPMM_App
         }
         # endregion
 
+        #region validation
+        public static List<WarningItem> validateAssessment(BPMMControl control, List<AssociationControl> links)
+        {
+            var warnings = new List<WarningItem>();
+            bool m_assessment_influencer = true;
+            bool m_assessment_ends_means = true;
+            foreach (var link in links)
+            {
+                if (m_assessment_influencer && link.contains(Model.INFLUENCER))
+                {
+                    m_assessment_influencer = false;
+                }
+                if (m_assessment_ends_means && link.contains(Model.VISION, Model.GOAL, Model.OBJECTIVE, Model.MISSION, Model.STRATEGY, Model.TACTIC))
+                {
+                    m_assessment_ends_means = false;
+                }
+            }
+            if (m_assessment_influencer)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_ASSESSMENT_INFLUENCER));
+            }
+            if (m_assessment_ends_means)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_ASSESSMENT_ENDS_MEANS));
+            }
+            return warnings;
+        }
+
+        public static List<WarningItem> validateInfluencer(BPMMControl control, List<AssociationControl> links)
+        {
+            var warnings = new List<WarningItem>();
+            bool m_influencer_assessment = true;
+            bool w_influencer_ass_dir = false;
+            foreach (var link in links)
+            {
+                if (m_influencer_assessment && link.contains(Model.ASSESSMENT))
+                {
+                    m_influencer_assessment = false;
+                }
+                if (w_influencer_ass_dir == false && link.misses(Model.ASSESSMENT, Model.BUSINESS_POLICY, Model.BUSINESS_RULE))
+                {
+                    w_influencer_ass_dir = true;
+                }
+            }
+            if (m_influencer_assessment)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_INFLUENCER_ASSESSMENT));
+            }
+            if (w_influencer_ass_dir)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.W_INFLUENCER_NOT_ASSESSMENT_DIRECTIVE));
+            }
+            return warnings;
+        }
+
+        public static List<WarningItem> validateBusinessRule(BPMMControl control, List<AssociationControl> links)
+        {
+            var warnings = new List<WarningItem>();
+            bool m_dir_action = true;
+            bool w_rule_vision_mission = false;
+            foreach (var link in links)
+            {
+                if (m_dir_action && link.contains(Model.STRATEGY, Model.TACTIC))
+                {
+                    m_dir_action = false;
+                }
+                if (w_rule_vision_mission == false && link.contains(Model.VISION, Model.MISSION))
+                {
+                    w_rule_vision_mission = true;
+                }
+            }
+            if (m_dir_action)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_DIRECTIVE_ACTION));
+            }
+            if (w_rule_vision_mission)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.W_DIRECTIVE_VISION_MISSION));
+            }
+            return warnings;
+        }
+
+        public static List<WarningItem> validateBusinessPolicy(BPMMControl control, List<AssociationControl> links)
+        {
+            var warnings = new List<WarningItem>();
+            bool m_policy_rule = true;
+            bool m_dir_action = true;
+            bool w_policy_vision_mission = false;
+            foreach (var link in links)
+            {
+                if (m_policy_rule && link.contains(Model.BUSINESS_RULE))
+                {
+                    m_policy_rule = false;
+                }
+                if (m_dir_action && link.contains(Model.STRATEGY, Model.TACTIC))
+                {
+                    m_dir_action = false;
+                }
+                if (w_policy_vision_mission == false && link.contains(Model.VISION, Model.MISSION))
+                {
+                    w_policy_vision_mission = true;
+                }
+            }
+            if (m_policy_rule)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_POLICY_RULE));
+            }
+            if (m_dir_action)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.M_DIRECTIVE_ACTION));
+            }
+            if (w_policy_vision_mission)
+            {
+                warnings.Add(new WarningItem(control, WarningItem.Codes.W_DIRECTIVE_VISION_MISSION));
+            }
+            return warnings;
+        }
+
+        
+
+        public bool contains(params Model[] types)
+        {
+            if (source is BPMMControl)
+            {
+                foreach (var type in types)
+                {
+                    if (((BPMMControl)source).type == type)
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (target is BPMMControl)
+            {
+                foreach (var type in types)
+                {
+                    if (((BPMMControl)target).type == type)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool misses(params Model[] types)
+        {
+            if (source is BPMMControl)
+            {
+                foreach (var type in types)
+                {
+                    if (((BPMMControl)source).type == type)
+                    {
+                        return false;
+                    }
+                }
+            }
+            if (target is BPMMControl)
+            {
+                foreach (var type in types)
+                {
+                    if (((BPMMControl)target).type == type)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        #endregion
         public void updateEndPoint(BaseControl targetControl, Point p)
         {
             if (targetControl != null)
             {
-                targetId = targetControl.id;
+                target = targetControl;
             }
             points[1] = p;
             updateBoxPosition(points[0], p);
@@ -171,8 +341,8 @@ namespace BPMM_App
         {
             var associationEntry = new JsonObject();
             associationEntry.Add("relation", JsonValue.CreateStringValue(Description));
-            associationEntry.Add("source", JsonValue.CreateNumberValue(sourceId));
-            associationEntry.Add("target", JsonValue.CreateNumberValue(targetId));
+            associationEntry.Add("source", JsonValue.CreateNumberValue(source.id));
+            associationEntry.Add("target", JsonValue.CreateNumberValue(target.id));
             JsonArray pointsEntry = new JsonArray();
             int i = 0;
             foreach (var point in Points)
@@ -225,7 +395,7 @@ namespace BPMM_App
                 points.Add(new Point(x, y));
             }
             var association = new AssociationControl(source, points[0], points[points.Count - 1]);
-            association.targetId = target.id;
+            association.target = target;
 
             association.Description = input.GetNamedString("relation", "");
 

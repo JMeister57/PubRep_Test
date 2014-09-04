@@ -17,7 +17,7 @@ namespace BPMM_App
         private static ObservableCollection<string> swot =
             new ObservableCollection<string> { "<SWOT>", "Strength", "Weakness", "Opportunity", "Threat" };
 
-        public AssessmentControl(BPMMControl.Type type) : base(type)
+        public AssessmentControl(Model type) : base(type)
         {
             swotControl = new ComboBox();
             swotControl.DataContext = this;

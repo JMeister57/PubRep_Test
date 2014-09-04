@@ -24,7 +24,7 @@ namespace BPMM_App
         public const String externalSep = "--- External: ---";
         public const String internalSep = "--- Internal: ---";
 
-        public InfluencerControl(BPMMControl.Type type) : base(type)
+        public InfluencerControl(Model type) : base(type)
         {
             List<String> types = new List<String>();
             types.Add("Influence Type");
