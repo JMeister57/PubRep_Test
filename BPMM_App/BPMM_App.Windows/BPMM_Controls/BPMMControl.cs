@@ -26,16 +26,10 @@ using Windows.UI;
 
 namespace BPMM_App
 {
-    public enum Model
-    {
-        VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT
-    }
-
     public class BPMMControl : BaseControl, INotifyPropertyChanged
     {
         public static ObservableCollection<string> states = new ObservableCollection<string> { "created", "approved", "denied", "duplicate" };
 
-        public Model type;
         string author;
         DateTime creationDate;
         public string title;
@@ -52,15 +46,16 @@ namespace BPMM_App
         protected TextBox headerBox;
         protected TextBox descriptionBox;
         protected ComboBox stateCombo;
-        
 
-        public BPMMControl(Model newType) : base()
+
+        public BPMMControl(Category category)
+            : base(category)
         {
             author = "Tieni";
             creationDate = DateTime.Now;
             States = states;
             state = States[0];
-            type = newType;
+            this.category = category;
             DataContext = this;
 
             headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
@@ -97,46 +92,46 @@ namespace BPMM_App
 
             setContent(contentGrid);
             
-            switch (type)
+            switch (category)
             { // type dependent configuration
-                case Model.VISION:
+                case Category.VISION:
                     Title = "Vision";
                     break;
-                case Model.GOAL:
+                case Category.GOAL:
                     Title = "Goal";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_OBJECTIVE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_VISION));
                     break;
-                case Model.OBJECTIVE:
+                case Category.OBJECTIVE:
                     Title = "Objective";
                     break;
-                case Model.MISSION:
+                case Category.MISSION:
                     Title = "Mission";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_MISSION_STRATEGY));
                     break;
-                case Model.STRATEGY:
+                case Category.STRATEGY:
                     Title = "Strategy";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_STRATEGY_TACTIC));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
-                case Model.TACTIC:
+                case Category.TACTIC:
                     Title = "Tactic";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
-                case Model.BUSINESS_POLICY:
+                case Category.BUSINESS_POLICY:
                     Title = "Business Policy";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_POLICY_RULE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
-                case Model.BUSINESS_RULE:
+                case Category.BUSINESS_RULE:
                     Title = "Business Rule";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
-                case Model.INFLUENCER:
+                case Category.INFLUENCER:
                     Title = "Influencer";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_INFLUENCER_ASSESSMENT));
                     break;
-                case Model.ASSESSMENT:
+                case Category.ASSESSMENT:
                     Title = "Assessment";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_ENDS_MEANS));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_INFLUENCER));
@@ -199,108 +194,108 @@ namespace BPMM_App
 
         #region validation
 
-        public void validateNewLink(Model linkedType)
+        public void validateNewLink(Category linkedType)
         {
             var added = new ObservableCollection<WarningItem>();
             var removed = new ObservableCollection<WarningItem>();
-            switch (type)
+            switch (category)
             { // check if an incorrect association is added or if a missing association is restored.
-                case Model.VISION:
-                    if (linkedType != Model.MISSION && linkedType != Model.GOAL && linkedType != Model.ASSESSMENT)
+                case Category.VISION:
+                    if (linkedType != Category.MISSION && linkedType != Category.GOAL && linkedType != Category.ASSESSMENT)
                     {
                         var item = new WarningItem(this, WarningItem.Codes.W_VISION_NOT_MISSION_GOAL_ASSESSMENT);
                         warnings.Add(item);
                         added.Add(item);
                     }
                     break;
-                case Model.GOAL:
-                    if (linkedType == Model.OBJECTIVE)
+                case Category.GOAL:
+                    if (linkedType == Category.OBJECTIVE)
                     {
                         var item = getWarning(WarningItem.Codes.M_GOAL_OBJECTIVE);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    if (linkedType == Model.VISION)
+                    if (linkedType == Category.VISION)
                     {
                         var item = getWarning(WarningItem.Codes.M_GOAL_VISION);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
                     break;
-                case Model.OBJECTIVE:
+                case Category.OBJECTIVE:
                     break;
-                case Model.MISSION:
-                    if (linkedType == Model.STRATEGY)
+                case Category.MISSION:
+                    if (linkedType == Category.STRATEGY)
                     {
                         var item = getWarning(WarningItem.Codes.M_MISSION_STRATEGY);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
                     break;
-                case Model.STRATEGY:
-                    if (linkedType == Model.TACTIC)
+                case Category.STRATEGY:
+                    if (linkedType == Category.TACTIC)
                     {
                         var item = getWarning(WarningItem.Codes.M_STRATEGY_TACTIC);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    if (linkedType == Model.GOAL || linkedType == Model.OBJECTIVE)
+                    if (linkedType == Category.GOAL || linkedType == Category.OBJECTIVE)
                     {
                         var item = getWarning(WarningItem.Codes.M_ACTION_RESULT);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
                     break;
-                case Model.TACTIC:
-                    if (linkedType == Model.GOAL || linkedType == Model.OBJECTIVE)
+                case Category.TACTIC:
+                    if (linkedType == Category.GOAL || linkedType == Category.OBJECTIVE)
                     {
                         var item = getWarning(WarningItem.Codes.M_ACTION_RESULT);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
                     break;
-                case Model.BUSINESS_POLICY:
-                    if (linkedType == Model.BUSINESS_RULE)
+                case Category.BUSINESS_POLICY:
+                    if (linkedType == Category.BUSINESS_RULE)
                     {
                         var item = getWarning(WarningItem.Codes.M_POLICY_RULE);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    if (linkedType == Model.STRATEGY || linkedType == Model.TACTIC)
+                    if (linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                     {
                         var item = getWarning(WarningItem.Codes.M_DIRECTIVE_ACTION);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    if (linkedType == Model.VISION || linkedType == Model.MISSION)
+                    if (linkedType == Category.VISION || linkedType == Category.MISSION)
                     {
                         var item = new WarningItem(this, WarningItem.Codes.W_DIRECTIVE_VISION_MISSION);
                         warnings.Add(item);
                         added.Add(item);
                     }
                     break;
-                case Model.BUSINESS_RULE:
-                    if (linkedType == Model.STRATEGY || linkedType == Model.TACTIC)
+                case Category.BUSINESS_RULE:
+                    if (linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                     {
                         var item = getWarning(WarningItem.Codes.M_DIRECTIVE_ACTION);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    if (linkedType == Model.VISION || linkedType == Model.MISSION)
+                    if (linkedType == Category.VISION || linkedType == Category.MISSION)
                     {
                         var item = new WarningItem(this, WarningItem.Codes.W_DIRECTIVE_VISION_MISSION);
                         warnings.Add(item);
                         added.Add(item);
                     }
                     break;
-                case Model.INFLUENCER:
-                    if (linkedType == Model.ASSESSMENT)
+                case Category.INFLUENCER:
+                    if (linkedType == Category.ASSESSMENT)
                     {
                         var item = getWarning(WarningItem.Codes.M_INFLUENCER_ASSESSMENT);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    else if (linkedType != Model.BUSINESS_POLICY && linkedType != Model.BUSINESS_RULE)
+                    else if (linkedType != Category.BUSINESS_POLICY && linkedType != Category.BUSINESS_RULE)
                     {
                         var item = new WarningItem(this, WarningItem.Codes.W_INFLUENCER_NOT_ASSESSMENT_DIRECTIVE);
                         warnings.Add(item);
@@ -308,15 +303,15 @@ namespace BPMM_App
 
                     }
                     break;
-                case Model.ASSESSMENT:
-                    if (linkedType == Model.VISION || linkedType == Model.GOAL || linkedType == Model.OBJECTIVE
-                        || linkedType == Model.MISSION || linkedType == Model.STRATEGY || linkedType == Model.TACTIC)
+                case Category.ASSESSMENT:
+                    if (linkedType == Category.VISION || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE
+                        || linkedType == Category.MISSION || linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                     {
                         var item = getWarning(WarningItem.Codes.M_ASSESSMENT_ENDS_MEANS);
                         warnings.Remove(item);
                         removed.Add(item);
                     }
-                    else if (linkedType == Model.INFLUENCER)
+                    else if (linkedType == Category.INFLUENCER)
                     {
                         var item = getWarning(WarningItem.Codes.M_ASSESSMENT_INFLUENCER);
                         warnings.Remove(item);
@@ -333,21 +328,21 @@ namespace BPMM_App
                 WarningsRemovedEvent(this, removed);
             }
         }
-        public void validateRemovedLink(Model linkedType, List<AssociationControl> remainingLinks)
+        public void validateRemovedLink(Category linkedType, List<AssociationControl> remainingLinks)
         {
             var removed = new ObservableCollection<WarningItem>();
             var added = new ObservableCollection<WarningItem>();
-            switch (type)
+            switch (category)
             { // check if an incorrect association has been removed or if a needed one is destroyed.
-                case Model.VISION:
+                case Category.VISION:
                     if(getWarning(WarningItem.Codes.W_VISION_NOT_MISSION_GOAL_ASSESSMENT) != null) {
                         bool removeWarning = true;
                         foreach (var link in remainingLinks)
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if(src.type != Model.MISSION && src.type != Model.GOAL && src.type != Model.ASSESSMENT
-                                && trgt.type != Model.MISSION && trgt.type != Model.GOAL && trgt.type != Model.ASSESSMENT)
+                            if (src.category != Category.MISSION && src.category != Category.GOAL && src.category != Category.ASSESSMENT
+                                && trgt.category != Category.MISSION && trgt.category != Category.GOAL && trgt.category != Category.ASSESSMENT)
                             {
                                 removeWarning = false;
                                 break;
@@ -361,8 +356,8 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.GOAL:
-                    if (linkedType == Model.OBJECTIVE || linkedType == Model.VISION)
+                case Category.GOAL:
+                    if (linkedType == Category.OBJECTIVE || linkedType == Category.VISION)
                     {
                         bool warnObjective = true;
                         bool warnVision = true;
@@ -370,11 +365,11 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.OBJECTIVE || trgt.type == Model.OBJECTIVE)
+                            if (src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnObjective = false;
                             }
-                            else if (src.type == Model.VISION || trgt.type == Model.VISION)
+                            else if (src.category == Category.VISION || trgt.category == Category.VISION)
                             {
                                 warnVision = false;
                             }
@@ -393,17 +388,17 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.OBJECTIVE:
+                case Category.OBJECTIVE:
                     break;
-                case Model.MISSION:
-                    if (linkedType == Model.STRATEGY)
+                case Category.MISSION:
+                    if (linkedType == Category.STRATEGY)
                     {
                         bool warn = true;
                         foreach (var link in remainingLinks)
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.STRATEGY || trgt.type == Model.STRATEGY)
+                            if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY)
                             {
                                 warn = false;
                             }
@@ -416,8 +411,8 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.STRATEGY:
-                    if (linkedType == Model.TACTIC || linkedType == Model.GOAL || linkedType == Model.OBJECTIVE)
+                case Category.STRATEGY:
+                    if (linkedType == Category.TACTIC || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE)
                     {
                         bool warnTactic = true;
                         bool warnResult = true;
@@ -425,11 +420,11 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.TACTIC || trgt.type == Model.TACTIC)
+                            if (src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnTactic = false;
                             }
-                            else if (src.type == Model.GOAL || trgt.type == Model.GOAL || src.type == Model.OBJECTIVE || trgt.type == Model.OBJECTIVE)
+                            else if (src.category == Category.GOAL || trgt.category == Category.GOAL || src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnResult = false;
                             }
@@ -449,15 +444,15 @@ namespace BPMM_App
 
                     }
                     break;
-                case Model.TACTIC:
-                    if (linkedType == Model.GOAL || linkedType == Model.OBJECTIVE)
+                case Category.TACTIC:
+                    if (linkedType == Category.GOAL || linkedType == Category.OBJECTIVE)
                     {
                         bool warnResult = true;
                         foreach (var link in remainingLinks)
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.GOAL || trgt.type == Model.GOAL || src.type == Model.OBJECTIVE || trgt.type == Model.OBJECTIVE)
+                            if (src.category == Category.GOAL || trgt.category == Category.GOAL || src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnResult = false;
                             }
@@ -470,9 +465,9 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.BUSINESS_POLICY:
-                    if (linkedType == Model.BUSINESS_RULE || linkedType == Model.STRATEGY || linkedType == Model.TACTIC
-                        || linkedType == Model.VISION || linkedType == Model.MISSION)
+                case Category.BUSINESS_POLICY:
+                    if (linkedType == Category.BUSINESS_RULE || linkedType == Category.STRATEGY || linkedType == Category.TACTIC
+                        || linkedType == Category.VISION || linkedType == Category.MISSION)
                     {
                         bool warnRule = true;
                         bool warnAction = true;
@@ -481,15 +476,15 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.BUSINESS_RULE || trgt.type == Model.BUSINESS_RULE)
+                            if (src.category == Category.BUSINESS_RULE || trgt.category == Category.BUSINESS_RULE)
                             {
                                 warnRule = false;
                             }
-                            else if (src.type == Model.STRATEGY || trgt.type == Model.STRATEGY || src.type == Model.TACTIC || trgt.type == Model.TACTIC)
+                            else if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY || src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnAction = false;
                             }
-                            else if (src.type == Model.VISION || trgt.type == Model.VISION || src.type == Model.MISSION || trgt.type == Model.MISSION)
+                            else if (src.category == Category.VISION || trgt.category == Category.VISION || src.category == Category.MISSION || trgt.category == Category.MISSION)
                             {
                                 removeVisionMission = false;
                             }
@@ -514,8 +509,8 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.BUSINESS_RULE:
-                    if (linkedType == Model.STRATEGY || linkedType == Model.TACTIC || linkedType == Model.VISION || linkedType == Model.MISSION)
+                case Category.BUSINESS_RULE:
+                    if (linkedType == Category.STRATEGY || linkedType == Category.TACTIC || linkedType == Category.VISION || linkedType == Category.MISSION)
                     {
                         bool warnAction = true;
                         bool removeVisionMission = true;
@@ -523,11 +518,11 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.STRATEGY || trgt.type == Model.STRATEGY || src.type == Model.TACTIC || trgt.type == Model.TACTIC)
+                            if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY || src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnAction = false;
                             }
-                            else if (src.type == Model.VISION || trgt.type == Model.VISION || src.type == Model.MISSION || trgt.type == Model.MISSION)
+                            else if (src.category == Category.VISION || trgt.category == Category.VISION || src.category == Category.MISSION || trgt.category == Category.MISSION)
                             {
                                 removeVisionMission = false;
                             }
@@ -546,8 +541,8 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.INFLUENCER:
-                    if (linkedType == Model.ASSESSMENT || linkedType == Model.BUSINESS_POLICY || linkedType == Model.BUSINESS_RULE)
+                case Category.INFLUENCER:
+                    if (linkedType == Category.ASSESSMENT || linkedType == Category.BUSINESS_POLICY || linkedType == Category.BUSINESS_RULE)
                     {
                         bool warnAssessment = true;
                         bool removeAssDir = true;
@@ -555,13 +550,13 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (src.type == Model.ASSESSMENT || trgt.type == Model.ASSESSMENT)
+                            if (src.category == Category.ASSESSMENT || trgt.category == Category.ASSESSMENT)
                             {
                                 removeAssDir = false;
                                 warnAssessment = false;
                             }
-                            else if (src.type != Model.BUSINESS_POLICY || trgt.type != Model.BUSINESS_POLICY
-                                || src.type != Model.BUSINESS_RULE || trgt.type != Model.BUSINESS_RULE)
+                            else if (src.category != Category.BUSINESS_POLICY || trgt.category != Category.BUSINESS_POLICY
+                                || src.category != Category.BUSINESS_RULE || trgt.category != Category.BUSINESS_RULE)
                             {
                                 removeAssDir = false;
                             }
@@ -580,9 +575,9 @@ namespace BPMM_App
                         }
                     }
                     break;
-                case Model.ASSESSMENT:
-                    if (linkedType == Model.VISION || linkedType == Model.GOAL || linkedType == Model.OBJECTIVE
-                        || linkedType == Model.MISSION || linkedType == Model.STRATEGY || linkedType == Model.TACTIC || linkedType == Model.INFLUENCER)
+                case Category.ASSESSMENT:
+                    if (linkedType == Category.VISION || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE
+                        || linkedType == Category.MISSION || linkedType == Category.STRATEGY || linkedType == Category.TACTIC || linkedType == Category.INFLUENCER)
                     {
                         bool warnEndsMeans = true;
                         bool warnInfluencer = true;
@@ -590,12 +585,12 @@ namespace BPMM_App
                         {
                             var src = (BPMMControl)link.source;
                             var trgt = (BPMMControl)link.target;
-                            if (linkedType == Model.VISION || linkedType == Model.GOAL || linkedType == Model.OBJECTIVE
-                                || linkedType == Model.MISSION || linkedType == Model.STRATEGY || linkedType == Model.TACTIC)
+                            if (linkedType == Category.VISION || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE
+                                || linkedType == Category.MISSION || linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                             {
                                 warnEndsMeans = false;
                             }
-                            else if (src.type == Model.INFLUENCER || trgt.type == Model.INFLUENCER)
+                            else if (src.category == Category.INFLUENCER || trgt.category == Category.INFLUENCER)
                             {
                                 warnInfluencer = false;
                             }
@@ -654,33 +649,13 @@ namespace BPMM_App
             {
                 controlEntry.Add("description", JsonValue.CreateStringValue(Description));
             }
-            controlEntry.Add("type", JsonValue.CreateNumberValue((int)type));
             controlEntry.Add("state", JsonValue.CreateNumberValue(stateCombo.SelectedIndex));
             return controlEntry;
         }
 
         public static BPMMControl deserialize(JsonObject input)
         {
-            var value = input.GetNamedNumber("type", -1);
-            if (value == -1)
-            {
-                return null;
-            }
-            Model newType;
-            try
-            {
-                newType = (Model)value;
-            }
-            catch (InvalidCastException)
-            {
-                return null;
-            }
-            var control =
-                (newType == Model.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl(newType) :
-                (newType == Model.INFLUENCER) ? (BaseControl)new InfluencerControl(newType) :
-                (newType == Model.ASSESSMENT) ? (BaseControl)new AssessmentControl(newType) : 
-                new BPMMControl(newType);
-            BaseControl.deserialize(ref control, input);
+            var control = BaseControl.deserialize(input);
             var title = input.GetNamedString("title", "");
             if (title.Length > 0)
             {

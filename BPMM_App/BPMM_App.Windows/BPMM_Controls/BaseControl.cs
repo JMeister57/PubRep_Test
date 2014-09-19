@@ -18,12 +18,17 @@ using Windows.UI.Xaml.Shapes;
 
 namespace BPMM_App
 {
+    public enum Category
+    {
+        VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT, NOTE
+    }
     public abstract class BaseControl : UserControl
     {
         private const int MIN_SIZE = 100;
         private static int max_id = 0;
 
         public int id;
+        public Category category;
         protected Grid frame;
         protected Grid contentGrid;
         protected bool isDragging;
@@ -34,9 +39,10 @@ namespace BPMM_App
         public event EventHandler AssociationEndEvent;
         public event EventHandler DeleteEvent;
 
-        public BaseControl()
+        public BaseControl(Category category)
         {
             id = ++max_id;
+            this.category = category;
             RightTapped += BaseControl_RightTapped;
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue) };
@@ -111,10 +117,19 @@ namespace BPMM_App
             canvas.Children.Add(container);
             Content = canvas;
         }
-        
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            Size desiredSize = new Size();
+            frame.Measure(availableSize);
+            desiredSize = frame.DesiredSize;
+            return desiredSize;
+        }
+
         public virtual JsonObject serialize()
         {
             var controlEntry = new JsonObject();
+            controlEntry.Add("category", JsonValue.CreateNumberValue((int)category));
             controlEntry.Add("x", JsonValue.CreateNumberValue(Canvas.GetLeft(this)));
             controlEntry.Add("y", JsonValue.CreateNumberValue(Canvas.GetTop(this)));
             controlEntry.Add("width", JsonValue.CreateNumberValue(ActualWidth));
@@ -122,10 +137,30 @@ namespace BPMM_App
             return controlEntry;
         }
 
-        public static void deserialize(ref BaseControl control, JsonObject input)
+        public static BaseControl deserialize(JsonObject input)
         {
-            Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
-            Canvas.SetTop(control, input.GetNamedNumber("y", 0));
+            var value = input.GetNamedNumber("category", -1);
+            if (value == -1)
+            {
+                return null;
+            }
+            try
+            {
+                Category newType = (Category)value;
+                var control =
+                    (newType == Category.NOTE) ? (BaseControl)new NoteControl() :
+                    (newType == Category.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl() :
+                    (newType == Category.INFLUENCER) ? (BaseControl)new InfluencerControl() :
+                    (newType == Category.ASSESSMENT) ? (BaseControl)new AssessmentControl() :
+                    new BPMMControl(newType);
+                Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
+                Canvas.SetTop(control, input.GetNamedNumber("y", 0));
+                return control;
+            }
+            catch (InvalidCastException)
+            {
+                return null;
+            }
         }
 
         protected void setContent(FrameworkElement element)
@@ -133,6 +168,10 @@ namespace BPMM_App
             Grid.SetRow(element, 1);
             element.Margin = new Thickness(10, 0, 10, 0);
             frame.Children.Add(element);
+        }
+
+        public static void resetIds() {
+            max_id = 0;
         }
 
         private async void BaseControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -178,11 +217,11 @@ namespace BPMM_App
             if (isDragging)
             {
                 PointerPoint currPos = e.GetCurrentPoint(Parent as UIElement);
-                double prevPosX = Canvas.GetLeft(this);
-                double prevPosY = Canvas.GetTop(this);
+                var prevPosX = Canvas.GetLeft(this);
+                var prevPosY = Canvas.GetTop(this);
 
-                double newPosX = currPos.Position.X - offset.Position.X;
-                double newPosY = currPos.Position.Y - offset.Position.Y;
+                var newPosX = currPos.Position.X - offset.Position.X;
+                var newPosY = currPos.Position.Y - offset.Position.Y;
                 Canvas.SetLeft(this, newPosX);
                 Canvas.SetTop(this, newPosY);
                 if (MovedEvent != null)

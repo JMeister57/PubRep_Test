@@ -118,55 +118,36 @@ namespace BPMM_App
             object item;
             if (e.Data.Properties.TryGetValue("Item", out item))
             {
-                if (item is Model == false)
-                {
-                    NoteControl note = addNote();
-                    note.AssociationStartEvent += OnAssociationStart;
-                    note.AssociationEndEvent += OnAssociationRequest;
-                    note.DeleteEvent += DeleteControl;
-                    Point point = e.GetPosition(workspace);
-                    Canvas.SetLeft(note, point.X);
-                    Canvas.SetTop(note, point.Y);
-                    workspace.Children.Add(note);
-                    return;
-                }
-                Model type = (Model)item;
-                BPMMControl control = addBPMMControl(type);
+                Category category = (Category)item;
+                BaseControl control =
+                            (category == Category.NOTE) ? (BaseControl)new NoteControl() :
+                            (category == Category.ASSESSMENT) ? (BaseControl)new AssessmentControl() :
+                            (category == Category.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl() :
+                            (category == Category.INFLUENCER) ? (BaseControl)new InfluencerControl() :
+                            (BaseControl)new BPMMControl(category);
+
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
-                control.WarningsAddedEvent += AddWarnings;
-                control.WarningsRemovedEvent += RemoveWarnings;
                 control.DeleteEvent += DeleteControl;
-
-                foreach (var warnItem in control.getWarnings())
+                control.MovedEvent += ResizeWorkspace;
+                controls.Add(control);
+                if (control is BPMMControl)
                 {
-                    Warnings.Add(warnItem);
+                    BPMMControl bpmm = (BPMMControl)control;
+                    bpmm.WarningsAddedEvent += AddWarnings;
+                    bpmm.WarningsRemovedEvent += RemoveWarnings;
+
+
+                    foreach (var warnItem in bpmm.getWarnings())
+                    {
+                        Warnings.Add(warnItem);
+                    }
                 }
-                
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
                 Canvas.SetTop(control, pos.Y);
-                workspace.Children.Add(control);                
+                workspace.Children.Add(control);   
             }
-        }
-
-
-        private BPMMControl addBPMMControl(Model controlType)
-        {
-            BPMMControl control =
-                (controlType == Model.BUSINESS_RULE) ? new BusinessRuleControl(controlType) :
-                (controlType == Model.INFLUENCER) ? new InfluencerControl(controlType) :
-                (controlType == Model.ASSESSMENT) ? new AssessmentControl(controlType) :
-                new BPMMControl(controlType);
-            controls.Add(control);
-            return control;
-        }
-
-        private NoteControl addNote()
-        {
-            var note = new NoteControl();
-            controls.Add(note);
-            return note;
         }
 
         public static BaseControl getControl(int id)
@@ -183,17 +164,17 @@ namespace BPMM_App
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", Model.VISION); }
-            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", Model.GOAL); }
-            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", Model.OBJECTIVE); }
-            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", Model.MISSION); }
-            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", Model.STRATEGY); }
-            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", Model.TACTIC); }
-            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", Model.BUSINESS_POLICY); }
-            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", Model.BUSINESS_RULE); }
-            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", Model.INFLUENCER); }
-            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", Model.ASSESSMENT); }
-            else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", "Note"); }
+            if (e.Items[0].Equals(visionIcon)) { e.Data.Properties.Add("Item", Category.VISION); }
+            else if (e.Items[0].Equals(goalIcon)) { e.Data.Properties.Add("Item", Category.GOAL); }
+            else if (e.Items[0].Equals(objectiveIcon)) { e.Data.Properties.Add("Item", Category.OBJECTIVE); }
+            else if (e.Items[0].Equals(missionIcon)) { e.Data.Properties.Add("Item", Category.MISSION); }
+            else if (e.Items[0].Equals(strategyIcon)) { e.Data.Properties.Add("Item", Category.STRATEGY); }
+            else if (e.Items[0].Equals(tacticIcon)) { e.Data.Properties.Add("Item", Category.TACTIC); }
+            else if (e.Items[0].Equals(policyIcon)) { e.Data.Properties.Add("Item", Category.BUSINESS_POLICY); }
+            else if (e.Items[0].Equals(ruleIcon)) { e.Data.Properties.Add("Item", Category.BUSINESS_RULE); }
+            else if (e.Items[0].Equals(influencerIcon)) { e.Data.Properties.Add("Item", Category.INFLUENCER); }
+            else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", Category.ASSESSMENT); }
+            else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", Category.NOTE); }
         }
         #region association drawing
         public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
@@ -231,8 +212,8 @@ namespace BPMM_App
             {
                 ((BPMMControl)target).WarningsAddedEvent += AddWarnings;
                 ((BPMMControl)target).WarningsRemovedEvent += RemoveWarnings;
-                ((BPMMControl)sourceControl).validateNewLink(((BPMMControl)target).type);
-                ((BPMMControl)target).validateNewLink(((BPMMControl)sourceControl).type);
+                ((BPMMControl)sourceControl).validateNewLink(((BPMMControl)target).category);
+                ((BPMMControl)target).validateNewLink(((BPMMControl)sourceControl).category);
             }
             sourceControl = null;
             currentLine = null;
@@ -341,34 +322,56 @@ namespace BPMM_App
             {
                 var source = (BPMMControl)link.source;
                 var target = (BPMMControl)link.target;
-                source.validateRemovedLink(target.type, (findLinks(source)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
-                target.validateRemovedLink(source.type, (findLinks(target)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+                source.validateRemovedLink(target.category, (findLinks(source)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+                target.validateRemovedLink(source.category, (findLinks(target)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+            }
+        }
+
+        private void ResizeWorkspace(object sender, PointerRoutedEventArgs e)
+        {
+            var control = (BaseControl)sender;
+            Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
+            control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            workspace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            if (p.X < 0)
+            {
+                workspace.Width = workspace.ActualWidth + Math.Abs(p.X);
+                Canvas.SetLeft(control, 0);
+            }
+            else if (p.X + control.DesiredSize.Width > workspace.ActualWidth)
+            {
+                workspace.Width = p.X + control.DesiredSize.Width;
+                workspaceScroll.ChangeView(p.X + control.DesiredSize.Width, workspaceScroll.VerticalOffset, 1);
+            }
+            if (p.Y < 0)
+            {
+                workspace.Height = workspace.DesiredSize.Height + Math.Abs(p.Y);
+                Canvas.SetTop(control, 0);
+            }
+            else if (p.Y + control.DesiredSize.Height > workspace.ActualHeight)
+            {
+                workspace.Height = p.Y + control.DesiredSize.Height;
+                workspaceScroll.ChangeView(workspaceScroll.HorizontalOffset, p.Y + control.DesiredSize.Height, 1);
             }
         }
 
         private string serialize()
         {
             var root = new JsonObject();
-            var bpmmArray = new JsonArray();
-            var noteArray = new JsonArray();
+            var controlArray = new JsonArray();
             var associationArray = new JsonArray();
             foreach (var child in workspace.Children)
             {
-                if (child is BPMMControl)
+                if (child is BaseControl)
                 {
-                    bpmmArray.Add(((BPMMControl)child).serialize());
-                }
-                else if (child is NoteControl)
-                {
-                    noteArray.Add(((NoteControl)child).serialize());
+                    controlArray.Add(((BaseControl)child).serialize());
                 }
                 else if (child is AssociationControl)
                 {
                     associationArray.Add(((AssociationControl)child).serialize());
                 }
             }
-            root.Add("bpmms", bpmmArray);
-            root.Add("notes", noteArray);
+            root.Add("controls", controlArray);
             root.Add("associations", associationArray);
             Debug.WriteLine(root.Stringify());
             return root.Stringify();
@@ -382,34 +385,25 @@ namespace BPMM_App
                 return false;
             }
 
-            var bpmmArray = data.GetNamedArray("bpmms", null);
-            foreach(var entry in bpmmArray)
+            var controlArray = data.GetNamedArray("controls", null);
+            foreach(var entry in controlArray)
             {
-                var value = entry.GetObject().GetNamedNumber("type", -1);
+                var value = entry.GetObject().GetNamedNumber("category", -1);
                 if (value == -1)
                 {
                     return false;
                 }
-                var type = (Model)value;
-                BPMMControl control =
-                    (type == Model.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
-                    (type == Model.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
-                    (type == Model.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
+                var type = (Category)value;
+                BaseControl control =
+                    (type == Category.NOTE) ? (BaseControl)NoteControl.deserialize(entry.GetObject()) :
+                    (type == Category.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
+                    (type == Category.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
+                    (type == Category.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
                     BPMMControl.deserialize(entry.GetObject());
                 if (control != null)
                 {
                     workspace.Children.Add(control);
                     controls.Add(control);
-                }
-            }
-            var noteArray = data.GetNamedArray("notes", null);
-            foreach (var entry in noteArray)
-            {
-                var note = NoteControl.deserialize(entry.GetObject());
-                if (note != null)
-                {
-                    workspace.Children.Add(note);
-                    controls.Add(note);
                 }
             }
             var associationArray = data.GetNamedArray("associations", null);
@@ -536,6 +530,7 @@ namespace BPMM_App
                 associations.Clear();
                 controls.Clear();
                 Warnings.Clear();
+                BaseControl.resetIds();
             }
         }
 

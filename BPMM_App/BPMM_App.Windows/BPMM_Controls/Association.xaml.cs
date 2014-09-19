@@ -79,11 +79,11 @@ namespace BPMM_App
             bool m_assessment_ends_means = true;
             foreach (var link in links)
             {
-                if (m_assessment_influencer && link.contains(Model.INFLUENCER))
+                if (m_assessment_influencer && link.contains(Category.INFLUENCER))
                 {
                     m_assessment_influencer = false;
                 }
-                if (m_assessment_ends_means && link.contains(Model.VISION, Model.GOAL, Model.OBJECTIVE, Model.MISSION, Model.STRATEGY, Model.TACTIC))
+                if (m_assessment_ends_means && link.contains(Category.VISION, Category.GOAL, Category.OBJECTIVE, Category.MISSION, Category.STRATEGY, Category.TACTIC))
                 {
                     m_assessment_ends_means = false;
                 }
@@ -106,11 +106,11 @@ namespace BPMM_App
             bool w_influencer_ass_dir = false;
             foreach (var link in links)
             {
-                if (m_influencer_assessment && link.contains(Model.ASSESSMENT))
+                if (m_influencer_assessment && link.contains(Category.ASSESSMENT))
                 {
                     m_influencer_assessment = false;
                 }
-                if (w_influencer_ass_dir == false && link.misses(Model.ASSESSMENT, Model.BUSINESS_POLICY, Model.BUSINESS_RULE))
+                if (w_influencer_ass_dir == false && link.misses(Category.ASSESSMENT, Category.BUSINESS_POLICY, Category.BUSINESS_RULE))
                 {
                     w_influencer_ass_dir = true;
                 }
@@ -133,11 +133,11 @@ namespace BPMM_App
             bool w_rule_vision_mission = false;
             foreach (var link in links)
             {
-                if (m_dir_action && link.contains(Model.STRATEGY, Model.TACTIC))
+                if (m_dir_action && link.contains(Category.STRATEGY, Category.TACTIC))
                 {
                     m_dir_action = false;
                 }
-                if (w_rule_vision_mission == false && link.contains(Model.VISION, Model.MISSION))
+                if (w_rule_vision_mission == false && link.contains(Category.VISION, Category.MISSION))
                 {
                     w_rule_vision_mission = true;
                 }
@@ -161,15 +161,15 @@ namespace BPMM_App
             bool w_policy_vision_mission = false;
             foreach (var link in links)
             {
-                if (m_policy_rule && link.contains(Model.BUSINESS_RULE))
+                if (m_policy_rule && link.contains(Category.BUSINESS_RULE))
                 {
                     m_policy_rule = false;
                 }
-                if (m_dir_action && link.contains(Model.STRATEGY, Model.TACTIC))
+                if (m_dir_action && link.contains(Category.STRATEGY, Category.TACTIC))
                 {
                     m_dir_action = false;
                 }
-                if (w_policy_vision_mission == false && link.contains(Model.VISION, Model.MISSION))
+                if (w_policy_vision_mission == false && link.contains(Category.VISION, Category.MISSION))
                 {
                     w_policy_vision_mission = true;
                 }
@@ -189,15 +189,15 @@ namespace BPMM_App
             return warnings;
         }
 
-        
 
-        public bool contains(params Model[] types)
+
+        public bool contains(params Category[] types)
         {
             if (source is BPMMControl)
             {
                 foreach (var type in types)
                 {
-                    if (((BPMMControl)source).type == type)
+                    if (((BPMMControl)source).category == type)
                     {
                         return true;
                     }
@@ -207,7 +207,7 @@ namespace BPMM_App
             {
                 foreach (var type in types)
                 {
-                    if (((BPMMControl)target).type == type)
+                    if (((BPMMControl)target).category == type)
                     {
                         return true;
                     }
@@ -216,13 +216,13 @@ namespace BPMM_App
             return false;
         }
 
-        public bool misses(params Model[] types)
+        public bool misses(params Category[] types)
         {
             if (source is BPMMControl)
             {
                 foreach (var type in types)
                 {
-                    if (((BPMMControl)source).type == type)
+                    if (((BPMMControl)source).category == type)
                     {
                         return false;
                     }
@@ -232,7 +232,7 @@ namespace BPMM_App
             {
                 foreach (var type in types)
                 {
-                    if (((BPMMControl)target).type == type)
+                    if (((BPMMControl)target).category == type)
                     {
                         return false;
                     }

@@ -20,7 +20,7 @@ namespace BPMM_App
     {
         private TextBox textField;
 
-        public NoteControl() : base()
+        public NoteControl() : base(Category.NOTE)
         {
             textField = new TextBox()
             {
@@ -43,11 +43,10 @@ namespace BPMM_App
 
         public static NoteControl deserialize(JsonObject input)
         {
-            var note = (BaseControl)new NoteControl();
-            BaseControl.deserialize(ref note, input);
+            var note = (NoteControl)BaseControl.deserialize(input);
             var description = input.GetNamedString("description", "");
-            ((NoteControl)note).textField.Text = description;
-            return (NoteControl)note;
+            note.textField.Text = description;
+            return note;
         }
     }
 }

@@ -83,9 +83,11 @@
                 <Image x:Name="assessmentIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Assessment"/>
                 <Image x:Name="note" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
             </ListView>
-            <Canvas Grid.Column="1" x:Name="workspace" Background="Beige" AllowDrop="True"
-                    Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased"/>
-            
+            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                <Canvas x:Name="workspace" Background="Beige" AllowDrop="True"
+                        Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
+                </Canvas>
+            </ScrollViewer>
             <Grid x:Name="warnings_grid" Grid.Column="1" VerticalAlignment="Bottom">
                 <Grid.Resources>
                     <Style TargetType="ListViewItem" x:Key="itemStyle">
