@@ -142,6 +142,14 @@ namespace BPMM_App
                 WarningsAddedEvent(this, warnings);
             }
         }
+
+        public override void UpdateFontSize(double scale)
+        {
+            headerBox.FontSize = headerBox.FontSize * scale;
+            descriptionBox.FontSize = descriptionBox.FontSize * scale;
+            stateCombo.FontSize = stateCombo.FontSize * scale;
+        }
+
         #region getters/setters
         public string Title
         {

@@ -39,13 +39,15 @@ namespace BPMM_App
         public static List<BaseControl> controls = new List<BaseControl>();
         private static List<AssociationControl> associations = new List<AssociationControl>();
 
-        bool associating;
+        private bool associating;
         private AssociationControl currentLine;
         private BaseControl sourceControl;
         
         private bool selecting;
         private Point selectionStartPoint;
         private Rectangle selectionBox;
+
+        private bool dragging; 
 
         double warningsPaneSize = 100;
         private ObservableCollection<WarningItem> warnings = new ObservableCollection<WarningItem>();
@@ -129,7 +131,8 @@ namespace BPMM_App
                 control.AssociationStartEvent += OnAssociationStart;
                 control.AssociationEndEvent += OnAssociationRequest;
                 control.DeleteEvent += DeleteControl;
-                control.MovedEvent += ResizeWorkspace;
+                control.MovedEvent += ControlMoved;
+                control.MoveEndEvent += ControlStoppedMoving;
                 controls.Add(control);
                 if (control is BPMMControl)
                 {
@@ -160,6 +163,28 @@ namespace BPMM_App
                 }
             }
             return null;
+        }
+
+        private double maxX()
+        {
+            double maxX = 0;
+            foreach (var control in controls)
+            {
+                control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                maxX = Math.Max(maxX, Canvas.GetLeft(control) + control.ActualWidth);
+            }
+            return maxX;
+        }
+
+        private double maxY()
+        {
+            double maxY = 0;
+            foreach (var control in controls)
+            {
+                control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                maxY = Math.Max(maxY, Canvas.GetTop(control) + control.ActualHeight);
+            }
+            return maxY;
         }
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -221,6 +246,45 @@ namespace BPMM_App
         }
         #endregion
 
+        private void workspace_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (associating)
+            {
+                if (e.IsInertial)
+                {
+                    e.Handled = true;
+                    return;
+                }
+                Point target = e.Position;
+                target.X -= 5;
+                target.Y -= 5;
+                currentLine.updateEndPoint(null, target);
+            }
+            else if (e.Delta.Scale != 0)
+            {
+                foreach (var control in controls)
+                {
+                    control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    control.Width = control.ActualWidth * e.Delta.Scale;
+                    control.Height = control.ActualHeight * e.Delta.Scale;
+                    control.Arrange(new Rect(0, 0, control.DesiredSize.Width, control.DesiredSize.Height));
+                    control.UpdateFontSize(e.Delta.Scale);
+                }
+                foreach (var link in associations)
+                {
+                    link.UpdateFontSize(e.Delta.Scale);
+                }
+                workspace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                workspace.Width = Math.Max(maxX(), workspace.ActualWidth);
+                workspace.Height = Math.Max(maxY(), workspace.ActualHeight);
+            }
+            else if(dragging)
+            {
+                workspaceScroll.ChangeView(workspaceScroll.HorizontalOffset + e.Delta.Translation.X,
+                    workspaceScroll.VerticalOffset + e.Delta.Translation.Y, 1);
+            }
+        }
+
         private void workspace_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (associating)
@@ -230,51 +294,48 @@ namespace BPMM_App
                 associations.Remove(currentLine);
                 currentLine = null;
                 return;
-            } 
-            selecting = true;
-            selectionStartPoint = e.GetCurrentPoint(workspace).Position;
-            selectionBox = new Rectangle()
-            {
-                Width = Math.Abs(selectionStartPoint.X - selectionStartPoint.X),
-                Height = Math.Abs(selectionStartPoint.Y - selectionStartPoint.Y),
-                Fill = new SolidColorBrush(Colors.Blue),
-                Stroke = new SolidColorBrush(Colors.Blue) { Opacity = 1 },
-                StrokeThickness = 4,
-                Opacity = 0.2
-            };
-            Canvas.SetLeft(selectionBox, selectionStartPoint.X);
-            Canvas.SetTop(selectionBox, selectionStartPoint.Y);
-            workspace.Children.Add(selectionBox);
+            }
+            dragging = true;
             workspace.CapturePointer(e.Pointer);
+            //selecting = true;
+            //selectionStartPoint = e.GetCurrentPoint(workspace).Position;
+            //selectionBox = new Rectangle()
+            //{
+            //    Width = Math.Abs(selectionStartPoint.X - selectionStartPoint.X),
+            //    Height = Math.Abs(selectionStartPoint.Y - selectionStartPoint.Y),
+            //    Fill = new SolidColorBrush(Colors.Blue),
+            //    Stroke = new SolidColorBrush(Colors.Blue) { Opacity = 1 },
+            //    StrokeThickness = 4,
+            //    Opacity = 0.2
+            //};
+            //Canvas.SetLeft(selectionBox, selectionStartPoint.X);
+            //Canvas.SetTop(selectionBox, selectionStartPoint.Y);
+            //workspace.Children.Add(selectionBox);
+            //workspace.CapturePointer(e.Pointer);
         }
 
         private void workspace_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (associating)
-            {
-                Point target = e.GetCurrentPoint((UIElement)sender).Position;
-                target.X -= 5;
-                target.Y -= 5;
-                currentLine.updateEndPoint(null, target);
-            }
-            else if (selecting)
-            {
-                Point currPoint = e.GetCurrentPoint(workspace).Position;
-                currPoint.X = (currPoint.X > workspace.Width) ? workspace.Width
-                                                                : (currPoint.X < 0) ? 0 : currPoint.X;
-                currPoint.Y = (currPoint.Y > workspace.Height) ? workspace.Height
-                                                                : (currPoint.Y < 0) ? 0 : currPoint.Y;
-                if (currPoint.X < selectionStartPoint.X)
-                {
-                    Canvas.SetLeft(selectionBox, currPoint.X);
-                }
-                if (currPoint.Y < selectionStartPoint.Y)
-                {
-                    Canvas.SetTop(selectionBox, currPoint.Y);
-                }
-                selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
-                selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
-            }
+
+
+            //else if (selecting)
+            //{
+            //    Point currPoint = e.GetCurrentPoint(workspace).Position;
+            //    currPoint.X = (currPoint.X > workspace.Width) ? workspace.Width
+            //                                                    : (currPoint.X < 0) ? 0 : currPoint.X;
+            //    currPoint.Y = (currPoint.Y > workspace.Height) ? workspace.Height
+            //                                                    : (currPoint.Y < 0) ? 0 : currPoint.Y;
+            //    if (currPoint.X < selectionStartPoint.X)
+            //    {
+            //        Canvas.SetLeft(selectionBox, currPoint.X);
+            //    }
+            //    if (currPoint.Y < selectionStartPoint.Y)
+            //    {
+            //        Canvas.SetTop(selectionBox, currPoint.Y);
+            //    }
+            //    selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
+            //    selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
+            //}
         }
 
         private void workspace_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -287,15 +348,15 @@ namespace BPMM_App
                 currentLine = null;
             }
 
-            else if (selecting)
-            {
-                Point currPoint = e.GetCurrentPoint(workspace).Position;
-                selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
-                selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
-                workspace.Children.Remove(selectionBox);
-                selecting = false;
-                workspace.ReleasePointerCapture(e.Pointer);
-            }
+            //else if (selecting)
+            //{
+            //    Point currPoint = e.GetCurrentPoint(workspace).Position;
+            //    selectionBox.Width = Math.Abs(currPoint.X - selectionStartPoint.X);
+            //    selectionBox.Height = Math.Abs(currPoint.Y - selectionStartPoint.Y);
+            //    workspace.Children.Remove(selectionBox);
+            //    selecting = false;
+            //    workspace.ReleasePointerCapture(e.Pointer);
+            //}
         }
         
         public void DeleteControl(object sender, EventArgs e)
@@ -327,31 +388,57 @@ namespace BPMM_App
             }
         }
 
-        private void ResizeWorkspace(object sender, PointerRoutedEventArgs e)
+        private void ControlMoved(object sender, PointerRoutedEventArgs e)
+        {
+            //var control = (BaseControl)sender;
+            //Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
+            //control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            //if (p.X < 0)
+            //{
+            //    workspace.Width += Math.Abs(p.X);
+            //    Canvas.SetLeft(control, 0);
+            //}
+            //else if (maxX() + 100 > workspaceScroll.ActualWidth)
+            //{
+            //    workspace.Width = maxX() + 100;
+            //}
+            //if (p.Y < 0)
+            //{
+            //    workspace.Height += Math.Abs(p.Y);
+            //    Canvas.SetTop(control, 0);
+            //}
+            //else if (maxY() + 100 > workspaceScroll.ActualHeight)
+            //{
+            //    workspace.Height = maxY() + 100;
+            //}
+            //if (p.X < workspaceScroll.HorizontalOffset)
+            //{
+            //    workspaceScroll.ChangeView(p.X, null, null);
+            //}
+            //if (workspaceScroll.ActualWidth - p.X - control.DesiredSize.Width <= 0)
+            //{
+            //    workspaceScroll.ScrollToHorizontalOffset(workspaceScroll.ScrollableWidth);
+            //}
+            //if (p.Y < workspaceScroll.VerticalOffset)
+            //{
+            //    workspaceScroll.ChangeView(null, p.Y, null);
+            //}
+            //if (workspaceScroll.ActualHeight - p.Y - control.DesiredSize.Height <= 0)
+            //{
+            //    workspaceScroll.ScrollToVerticalOffset(workspaceScroll.ScrollableHeight);
+            //}
+        }
+        private void ControlStoppedMoving(object sender, PointerRoutedEventArgs e)
         {
             var control = (BaseControl)sender;
-            Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
             control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            workspace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            if (p.X < 0)
+            if (maxX() + control.DesiredSize.Width + 100 < workspaceScroll.ActualWidth)
             {
-                workspace.Width = workspace.ActualWidth + Math.Abs(p.X);
-                Canvas.SetLeft(control, 0);
+                workspace.Width = workspaceScroll.ActualWidth;
             }
-            else if (p.X + control.DesiredSize.Width > workspace.ActualWidth)
+            if (maxY() + control.DesiredSize.Height + 100 < workspaceScroll.ActualHeight)
             {
-                workspace.Width = p.X + control.DesiredSize.Width;
-                workspaceScroll.ChangeView(p.X + control.DesiredSize.Width, workspaceScroll.VerticalOffset, 1);
-            }
-            if (p.Y < 0)
-            {
-                workspace.Height = workspace.DesiredSize.Height + Math.Abs(p.Y);
-                Canvas.SetTop(control, 0);
-            }
-            else if (p.Y + control.DesiredSize.Height > workspace.ActualHeight)
-            {
-                workspace.Height = p.Y + control.DesiredSize.Height;
-                workspaceScroll.ChangeView(workspaceScroll.HorizontalOffset, p.Y + control.DesiredSize.Height, 1);
+                workspace.Height = workspaceScroll.ActualHeight;
             }
         }
 

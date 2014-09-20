@@ -46,6 +46,12 @@ namespace BPMM_App
             DataContext = this;
         }
 
+        public void UpdateFontSize(double scale)
+        {
+            descriptionBox.FontSize = descriptionBox.FontSize * scale;
+            updateBoxPosition(Points[0], Points[1]);
+        }
+
         # region getters/setters
         public PointCollection Points
         {

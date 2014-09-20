@@ -39,6 +39,11 @@ namespace BPMM_App
             contentGrid.Children.Add(enforcementCombo);
         }
 
+        public override void UpdateFontSize(double scale)
+        {
+            enforcementCombo.FontSize = enforcementCombo.FontSize * scale;
+        }
+
         public ObservableCollection<string> EnforcementLevels
         {
             get { return enforcementLevels; }

@@ -29,12 +29,21 @@ namespace BPMM_App
 
         public int id;
         public Category category;
+
         protected Grid frame;
         protected Grid contentGrid;
+        private Grid container;
+        private Rectangle anchor;
+        private Thumb topLeftThumb;
+        private Thumb topRightThumb;
+        private Thumb bottomLeftThumb;
+        private Thumb bottomRightThumb;
+
         protected bool isDragging;
         private PointerPoint offset;
 
         public event PointerEventHandler MovedEvent;
+        public event PointerEventHandler MoveEndEvent;
         public event PointerEventHandler AssociationStartEvent;
         public event EventHandler AssociationEndEvent;
         public event EventHandler DeleteEvent;
@@ -53,25 +62,25 @@ namespace BPMM_App
             frame.RowDefinitions.Add(new RowDefinition());
             frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(10) });
 
-            Thumb topLeftThumb = new Thumb()
+            topLeftThumb = new Thumb()
             {
                 Height = 10, Width = 10,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Background = new SolidColorBrush(Colors.White)
             };
-            Thumb topRightThumb = new Thumb()
+            topRightThumb = new Thumb()
             {
                 Height = 10, Width = 10,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Background = new SolidColorBrush(Colors.White)
             };
-            Thumb bottomLeftThumb = new Thumb()
+            bottomLeftThumb = new Thumb()
             {
                 Height = 10, Width = 10,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Background = new SolidColorBrush(Colors.White)
             };
-            Thumb bottomRightThumb = new Thumb()
+            bottomRightThumb = new Thumb()
             {
                 Height = 10,
                 Width = 10,
@@ -95,7 +104,7 @@ namespace BPMM_App
             frame.Children.Add(bottomRightThumb);
             frame.Children.Add(contentGrid);
 
-            Rectangle anchor = new Rectangle()
+            anchor = new Rectangle()
             {
                 Height = 15,
                 Width = 15,
@@ -105,7 +114,7 @@ namespace BPMM_App
             };
             anchor.PointerPressed += anchor_PointerPressed;
 
-            Grid container = new Grid();
+            container = new Grid();
             container.ColumnDefinitions.Add(new ColumnDefinition());
             container.ColumnDefinitions.Add(new ColumnDefinition());
             Grid.SetColumn(frame, 0);
@@ -120,11 +129,29 @@ namespace BPMM_App
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            base.MeasureOverride(availableSize);
             Size desiredSize = new Size();
-            frame.Measure(availableSize);
-            desiredSize = frame.DesiredSize;
+            container.Measure(availableSize);
+            desiredSize = container.DesiredSize;
             return desiredSize;
         }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var size = base.ArrangeOverride(finalSize);
+            frame.Width = finalSize.Width * 0.93;
+            frame.Height = finalSize.Height * 0.93;
+            frame.Arrange(new Rect(0, 0, finalSize.Width * 0.93, finalSize.Height * 0.93));
+            anchor.Width = finalSize.Width * 0.07;
+            anchor.Height = finalSize.Width * 0.07;
+            anchor.Arrange(new Rect(frame.ActualWidth, 0, finalSize.Width * 0.07, finalSize.Width * 0.07));
+            container.Width = finalSize.Width;
+            container.Height = finalSize.Height;
+            container.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+            return size;
+        }
+
+        public abstract void UpdateFontSize(double scale);
 
         public virtual JsonObject serialize()
         {
@@ -237,6 +264,10 @@ namespace BPMM_App
             if (isDragging)
             {
                 isDragging = false;
+                if (MoveEndEvent != null)
+                {
+                    MoveEndEvent(this, e);
+                }
                 frame.ReleasePointerCapture(e.Pointer);
             }
             else

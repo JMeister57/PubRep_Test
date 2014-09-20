@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -29,6 +30,11 @@ namespace BPMM_App
                 AcceptsReturn = true
             };
             setContent(textField);
+        }
+
+        public override void UpdateFontSize(double scale)
+        {
+            textField.FontSize = textField.FontSize*scale;
         }
 
         public override JsonObject serialize()

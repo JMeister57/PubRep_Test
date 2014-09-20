@@ -38,6 +38,11 @@ namespace BPMM_App
             contentGrid.Children.Add(swotControl);
         }
 
+        public override void UpdateFontSize(double scale)
+        {
+            swotControl.FontSize = swotControl.FontSize * scale;
+        }
+
         public ObservableCollection<string> SWOT
         {
             get { return swot; }

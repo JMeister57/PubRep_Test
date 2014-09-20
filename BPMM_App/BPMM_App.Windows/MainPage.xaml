@@ -85,7 +85,7 @@
             </ListView>
             <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="workspace" Background="Beige" AllowDrop="True"
-                        Drop="StackPanel_Drop" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
+                        Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
                 </Canvas>
             </ScrollViewer>
             <Grid x:Name="warnings_grid" Grid.Column="1" VerticalAlignment="Bottom">

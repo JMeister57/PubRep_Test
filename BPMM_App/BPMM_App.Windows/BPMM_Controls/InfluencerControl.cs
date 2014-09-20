@@ -54,6 +54,11 @@ namespace BPMM_App
             contentGrid.Children.Add(influencerCombo);
         }
 
+        public override void UpdateFontSize(double scale)
+        {
+            influencerCombo.FontSize = influencerCombo.FontSize * scale;
+        }
+
         public ObservableCollection<String> InfluencerTypes
         {
             get { return influencerTypes; }

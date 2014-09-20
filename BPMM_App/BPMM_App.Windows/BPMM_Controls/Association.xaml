@@ -14,7 +14,7 @@
     RightTapped="UserControl_RightTapped">
     
     <Canvas>
-        <TextBox x:Name="descriptionBox" MaxHeight="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" Text="{Binding Path=Description, Mode=TwoWay}" TextWrapping="Wrap"/>
+        <TextBox x:Name="descriptionBox" VerticalAlignment="Bottom" HorizontalAlignment="Center" Text="{Binding Path=Description, Mode=TwoWay}" TextWrapping="Wrap"/>
         <Polyline x:Name="line" Stroke="Black" Points="{Binding Path=Points}" />
     </Canvas>
 </UserControl>
