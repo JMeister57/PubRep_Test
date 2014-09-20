@@ -176,6 +176,16 @@ namespace BPMM_App
             return maxX;
         }
 
+        private double minX()
+        {
+            double minX = double.PositiveInfinity;
+            foreach (var control in controls)
+            {
+                minX = Math.Min(minX, Canvas.GetLeft(control));
+            }
+            return minX;
+        }
+
         private double maxY()
         {
             double maxY = 0;
@@ -185,6 +195,16 @@ namespace BPMM_App
                 maxY = Math.Max(maxY, Canvas.GetTop(control) + control.ActualHeight);
             }
             return maxY;
+        }
+
+        private double minY()
+        {
+            double minY = double.PositiveInfinity;
+            foreach (var control in controls)
+            {
+                minY = Math.Min(minY, Canvas.GetTop(control));
+            }
+            return minY;
         }
 
         private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -390,56 +410,42 @@ namespace BPMM_App
 
         private void ControlMoved(object sender, PointerRoutedEventArgs e)
         {
-            //var control = (BaseControl)sender;
-            //Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
-            //control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            //if (p.X < 0)
-            //{
-            //    workspace.Width += Math.Abs(p.X);
-            //    Canvas.SetLeft(control, 0);
-            //}
-            //else if (maxX() + 100 > workspaceScroll.ActualWidth)
-            //{
-            //    workspace.Width = maxX() + 100;
-            //}
-            //if (p.Y < 0)
-            //{
-            //    workspace.Height += Math.Abs(p.Y);
-            //    Canvas.SetTop(control, 0);
-            //}
-            //else if (maxY() + 100 > workspaceScroll.ActualHeight)
-            //{
-            //    workspace.Height = maxY() + 100;
-            //}
-            //if (p.X < workspaceScroll.HorizontalOffset)
-            //{
-            //    workspaceScroll.ChangeView(p.X, null, null);
-            //}
-            //if (workspaceScroll.ActualWidth - p.X - control.DesiredSize.Width <= 0)
-            //{
-            //    workspaceScroll.ScrollToHorizontalOffset(workspaceScroll.ScrollableWidth);
-            //}
-            //if (p.Y < workspaceScroll.VerticalOffset)
-            //{
-            //    workspaceScroll.ChangeView(null, p.Y, null);
-            //}
-            //if (workspaceScroll.ActualHeight - p.Y - control.DesiredSize.Height <= 0)
-            //{
-            //    workspaceScroll.ScrollToVerticalOffset(workspaceScroll.ScrollableHeight);
-            //}
+            var control = (BaseControl)sender;
+            Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
+            control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            workspace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            if (p.X < 0)
+            {
+                workspace.Width = workspace.ActualWidth + Math.Abs(p.X);
+                workspace.UpdateLayout();
+                Canvas.SetLeft(control, 0);
+            }
+            else if (p.X + control.DesiredSize.Width > workspace.ActualWidth)
+            {
+                workspace.Width = p.X + control.DesiredSize.Width;
+                workspaceScroll.ChangeView(p.X + control.DesiredSize.Width, null, null);
+            }
+            if (p.Y < 0)
+            {
+                workspace.Height = workspace.DesiredSize.Height + Math.Abs(p.Y);
+                workspace.UpdateLayout();
+                Canvas.SetTop(control, 0);
+            }
+            else if (p.Y + control.DesiredSize.Height > workspace.ActualHeight)
+            {
+                workspace.Height = p.Y + control.DesiredSize.Height;
+                workspaceScroll.ChangeView(null, p.Y + control.DesiredSize.Height, null);
+            }
         }
         private void ControlStoppedMoving(object sender, PointerRoutedEventArgs e)
         {
             var control = (BaseControl)sender;
             control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            if (maxX() + control.DesiredSize.Width + 100 < workspaceScroll.ActualWidth)
-            {
-                workspace.Width = workspaceScroll.ActualWidth;
-            }
-            if (maxY() + control.DesiredSize.Height + 100 < workspaceScroll.ActualHeight)
-            {
-                workspace.Height = workspaceScroll.ActualHeight;
-            }
+            double xBound = maxX();
+            double yBound = maxY();
+            workspace.Width = Math.Max(xBound, workspaceScroll.ActualWidth);
+            workspace.Height = Math.Max(yBound, workspaceScroll.ActualHeight);
+            workspaceScroll.ChangeView(Canvas.GetLeft(control), Canvas.GetTop(control), null);
         }
 
         private string serialize()
