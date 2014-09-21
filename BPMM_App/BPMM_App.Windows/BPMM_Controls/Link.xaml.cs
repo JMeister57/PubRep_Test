@@ -22,7 +22,7 @@ using Windows.Data.Json;
 
 namespace BPMM_App
 {
-    public partial class AssociationControl : UserControl, INotifyPropertyChanged
+    public partial class Link : UserControl, INotifyPropertyChanged
     {
         public PointCollection points = new PointCollection();
         public String description;
@@ -33,7 +33,7 @@ namespace BPMM_App
 
         public event EventHandler DeleteEvent;
 
-        public AssociationControl(BaseControl sourceControl, Point source, Point target)
+        public Link(BaseControl sourceControl, Point source, Point target)
         {
             InitializeComponent();
 
@@ -78,7 +78,7 @@ namespace BPMM_App
         # endregion
 
         #region validation
-        public static List<WarningItem> validateAssessment(BPMMControl control, List<AssociationControl> links)
+        public static List<WarningItem> validateAssessment(BPMMControl control, List<Link> links)
         {
             var warnings = new List<WarningItem>();
             bool m_assessment_influencer = true;
@@ -105,7 +105,7 @@ namespace BPMM_App
             return warnings;
         }
 
-        public static List<WarningItem> validateInfluencer(BPMMControl control, List<AssociationControl> links)
+        public static List<WarningItem> validateInfluencer(BPMMControl control, List<Link> links)
         {
             var warnings = new List<WarningItem>();
             bool m_influencer_assessment = true;
@@ -132,7 +132,7 @@ namespace BPMM_App
             return warnings;
         }
 
-        public static List<WarningItem> validateBusinessRule(BPMMControl control, List<AssociationControl> links)
+        public static List<WarningItem> validateBusinessRule(BPMMControl control, List<Link> links)
         {
             var warnings = new List<WarningItem>();
             bool m_dir_action = true;
@@ -159,7 +159,7 @@ namespace BPMM_App
             return warnings;
         }
 
-        public static List<WarningItem> validateBusinessPolicy(BPMMControl control, List<AssociationControl> links)
+        public static List<WarningItem> validateBusinessPolicy(BPMMControl control, List<Link> links)
         {
             var warnings = new List<WarningItem>();
             bool m_policy_rule = true;
@@ -247,6 +247,17 @@ namespace BPMM_App
             return true;
         }
         #endregion
+
+        public void updateStartPoint(BaseControl sourceControl, Point p)
+        {
+            if (sourceControl != null)
+            {
+                source = sourceControl;
+            }
+            points[0] = p;
+            updateBoxPosition(p, points[1]);
+        }
+
         public void updateEndPoint(BaseControl targetControl, Point p)
         {
             if (targetControl != null)
@@ -272,7 +283,7 @@ namespace BPMM_App
         private void updateBoxPosition(Point source, Point target)
         {
             if (Double.IsNaN(descriptionBox.Width)) {
-                // happens on initial AssociationControl creation
+                // happens on initial Link creation
                 descriptionBox.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 descriptionBox.Arrange(new Rect(0, 0, descriptionBox.DesiredSize.Width, descriptionBox.DesiredSize.Height));
             }
@@ -326,29 +337,27 @@ namespace BPMM_App
         private async void UserControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             var menu = new PopupMenu();
-            menu.Commands.Add(new UICommand("Delete Association"));
+            menu.Commands.Add(new UICommand("Delete Link"));
 
             GeneralTransform transform = descriptionBox.TransformToVisual(null);
             Point pointTransformed = transform.TransformPoint(new Point(0, 0));
-            Debug.WriteLine("point: {0}, {1}, ActualSize: {2}, {3}", pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
             Rect rect = new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
             var response = await menu.ShowForSelectionAsync(rect);
-            if (response != null && response.Label == "Delete Association")
+            if (response != null && response.Label == "Delete Link")
             {
                 if (DeleteEvent != null)
                 {
                     DeleteEvent(this, EventArgs.Empty);
                 }
-
             }
         }
 
         public JsonObject serialize()
         {
-            var associationEntry = new JsonObject();
-            associationEntry.Add("relation", JsonValue.CreateStringValue(Description));
-            associationEntry.Add("source", JsonValue.CreateNumberValue(source.id));
-            associationEntry.Add("target", JsonValue.CreateNumberValue(target.id));
+            var linkEntry = new JsonObject();
+            linkEntry.Add("relation", JsonValue.CreateStringValue(Description));
+            linkEntry.Add("source", JsonValue.CreateNumberValue(source.id));
+            linkEntry.Add("target", JsonValue.CreateNumberValue(target.id));
             JsonArray pointsEntry = new JsonArray();
             int i = 0;
             foreach (var point in Points)
@@ -359,11 +368,11 @@ namespace BPMM_App
                 pointEntry.Add("y", JsonValue.CreateNumberValue(point.Y));
                 pointsEntry.Add(pointEntry);
             }
-            associationEntry.Add("points", pointsEntry);
-            return associationEntry;
+            linkEntry.Add("points", pointsEntry);
+            return linkEntry;
         }
 
-        public static AssociationControl deserialize(JsonObject input)
+        public static Link deserialize(JsonObject input)
         {
             var sourceId = (int)input.GetNamedNumber("source", -1);
             var targetId = (int)input.GetNamedNumber("target", -1);
@@ -400,16 +409,16 @@ namespace BPMM_App
                 }
                 points.Add(new Point(x, y));
             }
-            var association = new AssociationControl(source, points[0], points[points.Count - 1]);
-            association.target = target;
+            var link = new Link(source, points[0], points[points.Count - 1]);
+            link.target = target;
 
-            association.Description = input.GetNamedString("relation", "");
+            link.Description = input.GetNamedString("relation", "");
 
             for (int i = 0; i < points.Count; ++i)
             {
-                association.Points[i] = points[i];
+                link.Points[i] = points[i];
             }
-            return association;
+            return link;
         }
     }
 }

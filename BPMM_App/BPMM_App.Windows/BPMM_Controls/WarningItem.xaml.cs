@@ -27,10 +27,10 @@ namespace BPMM_App
         public event PropertyChangedEventHandler PropertyChanged;
         
         public enum Codes
-        {   // missing associations
+        {   // missing links
             M_ASSESSMENT_INFLUENCER, M_ASSESSMENT_ENDS_MEANS, M_INFLUENCER_ASSESSMENT, M_POLICY_RULE, M_DIRECTIVE_ACTION,
             M_STRATEGY_TACTIC, M_ACTION_RESULT, M_GOAL_VISION, M_GOAL_OBJECTIVE, M_MISSION_STRATEGY,
-            // wrong associations
+            // wrong links
             W_INFLUENCER_NOT_ASSESSMENT_DIRECTIVE, W_DIRECTIVE_INFLUENCER_NOT_REGULATION, W_DIRECTIVE_VISION_MISSION,
             W_VISION_NOT_MISSION_GOAL_ASSESSMENT
         };

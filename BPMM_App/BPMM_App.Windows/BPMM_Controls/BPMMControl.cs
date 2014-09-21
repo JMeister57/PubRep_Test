@@ -228,7 +228,7 @@ namespace BPMM_App
             var added = new ObservableCollection<WarningItem>();
             var removed = new ObservableCollection<WarningItem>();
             switch (category)
-            { // check if an incorrect association is added or if a missing association is restored.
+            { // check if an incorrect link is added or if a missing link is restored.
                 case Category.VISION:
                     if (linkedType != Category.MISSION && linkedType != Category.GOAL && linkedType != Category.ASSESSMENT)
                     {
@@ -357,14 +357,15 @@ namespace BPMM_App
                 WarningsRemovedEvent(this, removed);
             }
         }
-        public void validateRemovedLink(Category linkedType, List<AssociationControl> remainingLinks)
+        public void validateRemovedLink(Category linkedType, List<Link> remainingLinks)
         {
             var removed = new ObservableCollection<WarningItem>();
             var added = new ObservableCollection<WarningItem>();
             switch (category)
-            { // check if an incorrect association has been removed or if a needed one is destroyed.
+            { // check if an incorrect link has been removed or if a needed one is destroyed.
                 case Category.VISION:
-                    if(getWarning(WarningItem.Codes.W_VISION_NOT_MISSION_GOAL_ASSESSMENT) != null) {
+                    if (getWarning(WarningItem.Codes.W_VISION_NOT_MISSION_GOAL_ASSESSMENT) != null)
+                    {
                         bool removeWarning = true;
                         foreach (var link in remainingLinks)
                         {

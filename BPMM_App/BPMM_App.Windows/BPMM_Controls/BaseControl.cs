@@ -33,20 +33,19 @@ namespace BPMM_App
 
         protected Grid frame;
         private Grid container;
-        private Rectangle anchor;
+        public SymbolIcon anchor;
 
         private Point pointerPressPos;
         public event ManipulationDeltaEventHandler MovedEvent;
         public event ManipulationCompletedEventHandler MoveEndEvent;
-        public event PointerEventHandler AssociationStartEvent;
-        public event EventHandler AssociationEndEvent;
+        public event PointerEventHandler LinkStartEvent;
+        public event EventHandler LinkEndEvent;
         public event EventHandler DeleteEvent;
 
         public BaseControl(Category category)
         {
             id = ++max_id;
             this.category = category;
-           // RightTapped += BaseControl_RightTapped;
             AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseControl_RightTapped), false);
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue)};
@@ -56,14 +55,7 @@ namespace BPMM_App
             frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), true);
             frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), true);
 
-            anchor = new Rectangle()
-            {
-                Height = 15,
-                Width = 15,
-                VerticalAlignment = VerticalAlignment.Top,
-                Stroke = new SolidColorBrush(Colors.Black),
-                Fill = new SolidColorBrush(Colors.White)
-            };
+            anchor = new SymbolIcon(Symbol.Go) { Opacity = 0.4 };
             anchor.PointerPressed += anchor_PointerPressed;
 
             container = new Grid();
@@ -91,12 +83,12 @@ namespace BPMM_App
         protected override Size ArrangeOverride(Size finalSize)
         {
             var size = base.ArrangeOverride(finalSize);
-            frame.Width = finalSize.Width * 0.93;
-            frame.Height = finalSize.Height * 0.93;
-            frame.Arrange(new Rect(0, 0, finalSize.Width * 0.93, finalSize.Height * 0.93));
-            anchor.Width = finalSize.Width * 0.07;
-            anchor.Height = finalSize.Width * 0.07;
-            anchor.Arrange(new Rect(frame.ActualWidth, 0, finalSize.Width * 0.07, finalSize.Width * 0.07));
+            frame.Width = finalSize.Width * 0.90;
+            frame.Height = finalSize.Height * 0.90;
+            frame.Arrange(new Rect(0, 0, finalSize.Width * 0.90, finalSize.Height * 0.90));
+            anchor.Width = finalSize.Width * 0.1;
+            anchor.Height = finalSize.Width * 0.1;
+            anchor.Arrange(new Rect(frame.ActualWidth, 0, finalSize.Width * 0.1, finalSize.Width * 0.1));
             container.Width = finalSize.Width;
             container.Height = finalSize.Height;
             container.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
@@ -222,18 +214,19 @@ namespace BPMM_App
 
         private void BaseControl_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (AssociationEndEvent != null)
+            if (LinkEndEvent != null)
             {
-                AssociationEndEvent(this, EventArgs.Empty);
+                LinkEndEvent(this, EventArgs.Empty);
             }
             e.Handled = true;
         }
 
         private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (AssociationStartEvent != null)
+            anchor.Opacity = 1;
+            if (LinkStartEvent != null)
             {
-                AssociationStartEvent(this, e);
+                LinkStartEvent(this, e);
                 e.Handled = true;
             }
         }

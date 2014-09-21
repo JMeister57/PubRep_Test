@@ -37,10 +37,10 @@ namespace BPMM_App
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
         public static List<BaseControl> controls = new List<BaseControl>();
-        private static List<AssociationControl> associations = new List<AssociationControl>();
+        private static List<Link> links = new List<Link>();
 
-        private bool associating;
-        private AssociationControl currentLine;
+        private bool linking;
+        private Link currentLine;
         private BaseControl sourceControl;
         
         private bool selecting;
@@ -59,7 +59,7 @@ namespace BPMM_App
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
-            associating = false;
+            linking = false;
             DataContext = this;
         }
 
@@ -128,8 +128,8 @@ namespace BPMM_App
                             (category == Category.INFLUENCER) ? (BaseControl)new InfluencerControl() :
                             (BaseControl)new BPMMControl(category);
 
-                control.AssociationStartEvent += OnAssociationStart;
-                control.AssociationEndEvent += OnAssociationRequest;
+                control.LinkStartEvent += OnLinkStart;
+                control.LinkEndEvent += OnLinkRequest;
                 control.DeleteEvent += DeleteControl;
                 control.MovedEvent += ControlMoved;
                 control.MoveEndEvent += ControlStoppedMoving;
@@ -221,20 +221,20 @@ namespace BPMM_App
             else if (e.Items[0].Equals(assessmentIcon)) { e.Data.Properties.Add("Item", Category.ASSESSMENT); }
             else if (e.Items[0].Equals(note)) { e.Data.Properties.Add("Item", Category.NOTE); }
         }
-        #region association drawing
-        public void OnAssociationStart(object sender, PointerRoutedEventArgs e)
+        #region link drawing
+        public void OnLinkStart(object sender, PointerRoutedEventArgs e)
         {
             sourceControl = (BaseControl)sender;
-            Point p = new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl));
-            currentLine = new AssociationControl(sourceControl, p, e.GetCurrentPoint((UIElement)sender).Position);
+            Point p = e.GetCurrentPoint(workspace).Position;
+            currentLine = new Link(sourceControl, p, p);
             sourceControl.MovedEvent += currentLine.sourceMoved;
-            currentLine.DeleteEvent += DeleteAssociation;
-            associations.Add(currentLine);
+            currentLine.DeleteEvent += DeleteLink;
+            links.Add(currentLine);
             workspace.Children.Add(currentLine);
-            associating = true;
+            linking = true;
         }
 
-        public void OnAssociationRequest(object sender, EventArgs e)
+        public void OnLinkRequest(object sender, EventArgs e)
         {
             if (currentLine == null)
             { // case: simple click on control
@@ -245,14 +245,16 @@ namespace BPMM_App
             Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
 
             if (currentLine.Points[0].Equals(p))
-            { // case: association to itself
-                Debug.WriteLine("Cannot pull association to itself.");
+            { // case: link to itself
+                Debug.WriteLine("Cannot pull link to itself.");
                 workspace.Children.Remove(currentLine);
-                associations.Remove(currentLine);
+                links.Remove(currentLine);
                 return;
             }
+            currentLine.updateStartPoint(sourceControl, new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl)));
             currentLine.updateEndPoint(target, p);
             target.MovedEvent += currentLine.targetMoved;
+            sourceControl.anchor.Opacity = 0.4;
             if (sourceControl is BPMMControl && target is BPMMControl)
             {
                 ((BPMMControl)target).WarningsAddedEvent += AddWarnings;
@@ -262,13 +264,13 @@ namespace BPMM_App
             }
             sourceControl = null;
             currentLine = null;
-            associating = false;
+            linking = false;
         }
         #endregion
 
         private void workspace_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (associating)
+            if (linking)
             {
                 if (e.IsInertial)
                 {
@@ -288,7 +290,7 @@ namespace BPMM_App
                     control.Resize(e.Delta.Scale);
                     control.UpdateFontSize(e.Delta.Scale);
                 }
-                foreach (var link in associations)
+                foreach (var link in links)
                 {
                     link.UpdateFontSize(e.Delta.Scale);
                 }
@@ -305,11 +307,11 @@ namespace BPMM_App
 
         private void workspace_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (associating)
+            if (linking)
             {
-                associating = false;
+                linking = false;
                 workspace.Children.Remove(currentLine);
-                associations.Remove(currentLine);
+                links.Remove(currentLine);
                 currentLine = null;
                 return;
             }
@@ -358,11 +360,11 @@ namespace BPMM_App
 
         private void workspace_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (associating)
+            if (linking)
             {
-                associating = false;
+                linking = false;
                 workspace.Children.Remove(currentLine);
-                associations.Remove(currentLine);
+                links.Remove(currentLine);
                 currentLine = null;
             }
 
@@ -381,7 +383,7 @@ namespace BPMM_App
         {
             foreach (var link in findLinks((BaseControl)sender))
             {
-                DeleteAssociation(link, e);
+                DeleteLink(link, e);
             }
             if(sender is BPMMControl)
             {
@@ -391,11 +393,11 @@ namespace BPMM_App
             controls.Remove((BaseControl)sender);
         }
 
-        public void DeleteAssociation(object linkObj, EventArgs e)
+        public void DeleteLink(object linkObj, EventArgs e)
         {
-            var link = (AssociationControl)linkObj;
+            var link = (Link)linkObj;
             workspace.Children.Remove(link);
-            associations.Remove(link);
+            links.Remove(link);
 
             if (link.source is BPMMControl && link.target is BPMMControl)
             {
@@ -450,20 +452,20 @@ namespace BPMM_App
         {
             var root = new JsonObject();
             var controlArray = new JsonArray();
-            var associationArray = new JsonArray();
+            var linkArray = new JsonArray();
             foreach (var child in workspace.Children)
             {
                 if (child is BaseControl)
                 {
                     controlArray.Add(((BaseControl)child).serialize());
                 }
-                else if (child is AssociationControl)
+                else if (child is Link)
                 {
-                    associationArray.Add(((AssociationControl)child).serialize());
+                    linkArray.Add(((Link)child).serialize());
                 }
             }
             root.Add("controls", controlArray);
-            root.Add("associations", associationArray);
+            root.Add("links", linkArray);
             Debug.WriteLine(root.Stringify());
             return root.Stringify();
         }
@@ -497,15 +499,15 @@ namespace BPMM_App
                     controls.Add(control);
                 }
             }
-            var associationArray = data.GetNamedArray("associations", null);
-            foreach (var entry in associationArray)
+            var linkArray = data.GetNamedArray("links", null);
+            foreach (var entry in linkArray)
             {
-                var association = AssociationControl.deserialize(entry.GetObject());
-                if (association != null)
+                var link = Link.deserialize(entry.GetObject());
+                if (link != null)
                 {
-                    workspace.Children.Add(association);
-                    association.source.MovedEvent += association.sourceMoved;
-                    association.target.MovedEvent += association.targetMoved;
+                    workspace.Children.Add(link);
+                    link.source.MovedEvent += link.sourceMoved;
+                    link.target.MovedEvent += link.targetMoved;
                 }
             }
             return true;
@@ -618,7 +620,7 @@ namespace BPMM_App
             if (result.Label == "Yes")
             {
                 workspace.Children.Clear();
-                associations.Clear();
+                links.Clear();
                 controls.Clear();
                 Warnings.Clear();
                 BaseControl.resetIds();
@@ -649,7 +651,10 @@ namespace BPMM_App
         {
             foreach (var item in added)
             {
-                Warnings.Add(item);
+                if (Warnings.Contains(item) == false)
+                { // TODO: filter out duplicate warnings at validation time
+                    Warnings.Add(item);
+                }
             }
         }
 
@@ -657,14 +662,17 @@ namespace BPMM_App
         {
             foreach (var item in removed)
             {
-                Warnings.Remove(item);
+                if (Warnings.Contains(item))
+                {
+                    Warnings.Remove(item);
+                }
             }
         }
 
-        private List<AssociationControl> findLinks(BaseControl control)
+        private List<Link> findLinks(BaseControl control)
         {
-            var result = new List<AssociationControl>();
-            foreach (var link in associations)
+            var result = new List<Link>();
+            foreach (var link in links)
             {
                 if (link.source == control || link.target == control)
                 {
