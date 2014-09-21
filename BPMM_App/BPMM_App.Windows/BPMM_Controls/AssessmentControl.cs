@@ -26,16 +26,15 @@ namespace BPMM_App
             var defaultBinding = new Binding() { Source = DefaultSWOT };
             swotControl.SetBinding(ComboBox.ItemsSourceProperty, levelBinding);
             swotControl.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
-            contentGrid.RowDefinitions.Clear();
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
+            frame.RowDefinitions.Clear();
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
             Grid.SetRow(headerBox, 0);
             Grid.SetRow(swotControl, 1);
             Grid.SetRow(descriptionBox, 2);
             Grid.SetRow(stateCombo, 3);
-            contentGrid.Children.Add(swotControl);
         }
 
         public override void UpdateFontSize(double scale)

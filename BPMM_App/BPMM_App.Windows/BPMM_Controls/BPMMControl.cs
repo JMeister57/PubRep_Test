@@ -42,6 +42,7 @@ namespace BPMM_App
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsAddedEvent;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsRemovedEvent;
+        public event EventHandler LoseFocus;
 
         protected TextBox headerBox;
         protected TextBox descriptionBox;
@@ -58,14 +59,13 @@ namespace BPMM_App
             this.category = category;
             DataContext = this;
 
-            headerBox = new TextBox() { AcceptsReturn = true, Margin = new Thickness(0, 0, 0, 2) };
+            headerBox = new BPMM_TextBox() { Margin = new Thickness(0, 0, 0, 2)};
             headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
 
-            descriptionBox = new TextBox()
+            descriptionBox = new BPMM_TextBox()
             {
-                AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
                 PlaceholderText = "description",
             };
@@ -79,18 +79,17 @@ namespace BPMM_App
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
             stateCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
 
-            contentGrid = new Grid();
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(6, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(6, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
             Grid.SetRow(headerBox, 0);
             Grid.SetRow(descriptionBox, 1);
             Grid.SetRow(stateCombo, 2);
-            contentGrid.Children.Add(headerBox);
-            contentGrid.Children.Add(descriptionBox);
-            contentGrid.Children.Add(stateCombo);
+            frame.Children.Add(headerBox);
+            frame.Children.Add(descriptionBox);
+            frame.Children.Add(stateCombo);
 
-            setContent(contentGrid);
+            frame.AddHandler(UIElement.DoubleTappedEvent, new DoubleTappedEventHandler(Frame_DoubleTapped), true);
             
             switch (category)
             { // type dependent configuration
@@ -199,6 +198,28 @@ namespace BPMM_App
             }
         }
         #endregion
+
+        private void Frame_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var transformHeader = headerBox.TransformToVisual(null);
+            var yTopHeader = transformHeader.TransformPoint(new Point(0, 0)).Y;
+            var yBottomHeader = yTopHeader + headerBox.ActualHeight;
+
+            var transformDescription = descriptionBox.TransformToVisual(null);
+            var yTopDescription = transformHeader.TransformPoint(new Point(0, 0)).Y;
+            var yBottomDescription = yTopDescription + descriptionBox.ActualHeight;
+
+            if (e.GetPosition(null).Y < yBottomHeader)
+            {
+                headerBox.IsEnabled = true;
+                descriptionBox.IsEnabled = false;
+            }
+            else if (e.GetPosition(null).Y < yBottomDescription)
+            {
+                descriptionBox.IsEnabled = true;
+                headerBox.IsEnabled = false;
+            }
+        }
 
         #region validation
 

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Data.Json;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,18 +24,33 @@ namespace BPMM_App
 
         public NoteControl() : base(Category.NOTE)
         {
-            textField = new TextBox()
+            textField = new BPMM_TextBox()
             {
                 TextWrapping = TextWrapping.Wrap,
                 PlaceholderText = "A Note... ",
                 AcceptsReturn = true
             };
-            setContent(textField);
+            frame.Children.Add(textField);
+
+            textField.TextChanged += TextField_TextChanged;
+            frame.AddHandler(UIElement.DoubleTappedEvent, new DoubleTappedEventHandler(Frame_DoubleTapped), true);
         }
 
         public override void UpdateFontSize(double scale)
         {
             textField.FontSize = textField.FontSize*scale;
+        }
+
+        private void TextField_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (textField.Text.Length == 0)
+            {
+                textField.PlaceholderText = "A Note... ";
+            }
+        }
+        private void Frame_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            textField.IsEnabled = true;
         }
 
         public override JsonObject serialize()

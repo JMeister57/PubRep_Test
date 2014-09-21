@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Popups;
@@ -31,19 +32,12 @@ namespace BPMM_App
         public Category category;
 
         protected Grid frame;
-        protected Grid contentGrid;
         private Grid container;
         private Rectangle anchor;
-        private Thumb topLeftThumb;
-        private Thumb topRightThumb;
-        private Thumb bottomLeftThumb;
-        private Thumb bottomRightThumb;
 
-        protected bool isDragging;
-        private PointerPoint offset;
-
-        public event PointerEventHandler MovedEvent;
-        public event PointerEventHandler MoveEndEvent;
+        private Point pointerPressPos;
+        public event ManipulationDeltaEventHandler MovedEvent;
+        public event ManipulationCompletedEventHandler MoveEndEvent;
         public event PointerEventHandler AssociationStartEvent;
         public event EventHandler AssociationEndEvent;
         public event EventHandler DeleteEvent;
@@ -52,57 +46,15 @@ namespace BPMM_App
         {
             id = ++max_id;
             this.category = category;
-            RightTapped += BaseControl_RightTapped;
+           // RightTapped += BaseControl_RightTapped;
+            AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseControl_RightTapped), false);
 
-            frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue) };
-            frame.PointerPressed += UserControl_PointerPressed;
-            frame.PointerMoved += UserControl_PointerMoved;
-            frame.PointerReleased += UserControl_PointerReleased;
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(10) });
-            frame.RowDefinitions.Add(new RowDefinition());
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(10) });
-
-            topLeftThumb = new Thumb()
-            {
-                Height = 10, Width = 10,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Background = new SolidColorBrush(Colors.White)
-            };
-            topRightThumb = new Thumb()
-            {
-                Height = 10, Width = 10,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Background = new SolidColorBrush(Colors.White)
-            };
-            bottomLeftThumb = new Thumb()
-            {
-                Height = 10, Width = 10,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Background = new SolidColorBrush(Colors.White)
-            };
-            bottomRightThumb = new Thumb()
-            {
-                Height = 10,
-                Width = 10,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Background = new SolidColorBrush(Colors.White)
-            };
-            topLeftThumb.DragDelta += ThumbTopLeft_DragDelta;
-            topRightThumb.DragDelta += ThumbTopRight_DragDelta;
-            bottomLeftThumb.DragDelta += ThumbBottomLeft_DragDelta;
-            bottomRightThumb.DragDelta += ThumbBottomRight_DragDelta;
-
-            contentGrid = new Grid();
-            Grid.SetRow(topLeftThumb, 0);
-            Grid.SetRow(topRightThumb, 0);
-            Grid.SetRow(contentGrid, 1);
-            Grid.SetRow(bottomLeftThumb, 2);
-            Grid.SetRow(bottomRightThumb, 2);
-            frame.Children.Add(topLeftThumb);
-            frame.Children.Add(topRightThumb);
-            frame.Children.Add(bottomLeftThumb);
-            frame.Children.Add(bottomRightThumb);
-            frame.Children.Add(contentGrid);
+            frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue)};
+            frame.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseControl_ManipulationDelta), true);
+            frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseControl_PointerPressed), true);
+            frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), true);
+            frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), true);
 
             anchor = new Rectangle()
             {
@@ -190,19 +142,20 @@ namespace BPMM_App
             }
         }
 
-        protected void setContent(FrameworkElement element)
-        {
-            Grid.SetRow(element, 1);
-            element.Margin = new Thickness(10, 0, 10, 0);
-            frame.Children.Add(element);
-        }
-
         public static void resetIds() {
             max_id = 0;
         }
 
+        private void BaseControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            pointerPressPos = e.GetCurrentPoint((UIElement)Parent).Position;
+        }
         private async void BaseControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            if (e.GetPosition((UIElement)Parent).X - pointerPressPos.X > 1 || e.GetPosition((UIElement)Parent).Y - pointerPressPos.Y > 1)
+            {
+                return;
+            }
             var menu = new PopupMenu();
             menu.Commands.Add(new UICommand("Delete BPMM Object"));
 
@@ -230,94 +183,51 @@ namespace BPMM_App
             return new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
         }
 
-        #region dragging
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void BaseControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            isDragging = true;
-            offset = e.GetCurrentPoint(this);
-            frame.CapturePointer(e.Pointer);
-            e.Handled = true;
-        }
-
-        private void UserControl_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            if (isDragging)
+            if (e.Delta.Scale != 1)
+            { // Scaling
+                Resize(e.Delta.Scale);
+                e.Handled = true;
+                return;
+            }
+            // Translation
+            Canvas.SetLeft(this, Canvas.GetLeft(this) + e.Delta.Translation.X);
+            Canvas.SetTop(this, Canvas.GetTop(this) + e.Delta.Translation.Y);
+            if (MovedEvent != null)
             {
-                PointerPoint currPos = e.GetCurrentPoint(Parent as UIElement);
-                var prevPosX = Canvas.GetLeft(this);
-                var prevPosY = Canvas.GetTop(this);
-
-                var newPosX = currPos.Position.X - offset.Position.X;
-                var newPosY = currPos.Position.Y - offset.Position.Y;
-                Canvas.SetLeft(this, newPosX);
-                Canvas.SetTop(this, newPosY);
-                if (MovedEvent != null)
-                {
-                    MovedEvent(this, e);
-                }
+                MovedEvent(this, e);
             }
             e.Handled = true;
         }
 
-        private void UserControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void BaseControl_ManipulationComplete(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (isDragging)
+            if (e.Cumulative.Translation.X != 0 || e.Cumulative.Translation.Y != 0)
             {
-                isDragging = false;
                 if (MoveEndEvent != null)
                 {
                     MoveEndEvent(this, e);
                 }
-                frame.ReleasePointerCapture(e.Pointer);
             }
-            else
+        }
+
+        public void Resize(double scale)
+        {
+            Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Width = ActualWidth * scale;
+            Height = ActualHeight * scale;
+            Arrange(new Rect(0, 0, DesiredSize.Width, DesiredSize.Height));
+        }
+
+        private void BaseControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (AssociationEndEvent != null)
             {
-                if (AssociationEndEvent != null)
-                {
-                    AssociationEndEvent(this, EventArgs.Empty);
-                }
+                AssociationEndEvent(this, EventArgs.Empty);
             }
             e.Handled = true;
         }
-        #endregion
-
-        #region resize
-        private void ThumbTopLeft_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            double xChange = frame.Width - e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
-            double yChange = frame.Height - e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
-            frame.Width -= xChange;
-            frame.Height -= yChange;
-            Canvas.SetLeft(frame, Canvas.GetLeft(frame) + xChange);
-            Canvas.SetTop(frame, Canvas.GetTop(frame) + yChange);
-        }
-
-        private void ThumbTopRight_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            double xChange = frame.Width + e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
-            double yChange = frame.Height - e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
-            frame.Width += xChange;
-            frame.Height -= yChange;
-            Canvas.SetTop(frame, Canvas.GetTop(frame) + yChange);
-        }
-
-        private void ThumbBottomLeft_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            double xChange = frame.Width - e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
-            double yChange = frame.Height + e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
-            frame.Width -= xChange;
-            frame.Height += yChange;
-            Canvas.SetLeft(frame, Canvas.GetLeft(frame) + xChange);
-        }
-
-        private void ThumbBottomRight_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            double xChange = frame.Width + e.HorizontalChange > MIN_SIZE ? e.HorizontalChange : 0;
-            double yChange = frame.Height + e.VerticalChange > MIN_SIZE ? e.VerticalChange : 0;
-            frame.Width += xChange;
-            frame.Height += yChange;
-        }
-        #endregion
 
         private void anchor_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -325,6 +235,60 @@ namespace BPMM_App
             {
                 AssociationStartEvent(this, e);
                 e.Handled = true;
+            }
+        }
+    }
+
+    public class BPMM_TextBox : TextBox
+    {
+        public bool shiftPressed;
+
+        public BPMM_TextBox()
+            : base()
+        {
+            shiftPressed = false;
+            IsEnabled = false;
+            DoubleTapped += tb_DoubleTapped;
+            KeyDown += tb_keyDown;
+            KeyUp += tb_keyUp;
+        }
+        private void tb_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            IsEnabled = true;
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            shiftPressed = false;
+            IsEnabled = false;
+        }
+
+        private void tb_keyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Shift)
+            {
+                shiftPressed = false;
+            }
+            else if (e.Key == VirtualKey.Enter)
+            {
+                if (shiftPressed)
+                {
+                    Text += "\n";
+                    Select(Text.Length, 0);
+                }
+                else
+                {
+                    IsEnabled = false;
+                }
+            }
+        }
+
+        private void tb_keyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Shift)
+            {
+                shiftPressed = true;
             }
         }
     }

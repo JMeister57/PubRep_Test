@@ -42,16 +42,15 @@ namespace BPMM_App
             influencerCombo.SetBinding(ComboBox.ItemsSourceProperty, influencerBinding);
             influencerCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
             influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
-            contentGrid.RowDefinitions.Clear();
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-            contentGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
+            frame.RowDefinitions.Clear();
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
             Grid.SetRow(headerBox, 0);
             Grid.SetRow(influencerCombo, 1);
             Grid.SetRow(descriptionBox, 2);
             Grid.SetRow(stateCombo, 3);
-            contentGrid.Children.Add(influencerCombo);
         }
 
         public override void UpdateFontSize(double scale)

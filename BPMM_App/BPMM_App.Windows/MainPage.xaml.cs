@@ -284,10 +284,8 @@ namespace BPMM_App
             {
                 foreach (var control in controls)
                 {
-                    control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                    control.Width = control.ActualWidth * e.Delta.Scale;
-                    control.Height = control.ActualHeight * e.Delta.Scale;
-                    control.Arrange(new Rect(0, 0, control.DesiredSize.Width, control.DesiredSize.Height));
+
+                    control.Resize(e.Delta.Scale);
                     control.UpdateFontSize(e.Delta.Scale);
                 }
                 foreach (var link in associations)
@@ -408,7 +406,7 @@ namespace BPMM_App
             }
         }
 
-        private void ControlMoved(object sender, PointerRoutedEventArgs e)
+        private void ControlMoved(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var control = (BaseControl)sender;
             Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
@@ -437,7 +435,7 @@ namespace BPMM_App
                 workspaceScroll.ChangeView(null, p.Y + control.DesiredSize.Height, null);
             }
         }
-        private void ControlStoppedMoving(object sender, PointerRoutedEventArgs e)
+        private void ControlStoppedMoving(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             var control = (BaseControl)sender;
             control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));

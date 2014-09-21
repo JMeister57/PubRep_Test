@@ -257,13 +257,13 @@ namespace BPMM_App
             updateBoxPosition(points[0], p);
         }
 
-        public void targetMoved(object sender, PointerRoutedEventArgs e)
+        public void targetMoved(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             points[1] = new Point(Canvas.GetLeft((UIElement)sender), Canvas.GetTop((UIElement)sender));
             updateBoxPosition(points[0], points[1]);
         }
 
-        public void sourceMoved(object sender, PointerRoutedEventArgs e)
+        public void sourceMoved(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             points[0] = new Point(Canvas.GetLeft((UIElement)sender), Canvas.GetTop((UIElement)sender));
             updateBoxPosition(points[0], points[1]);
