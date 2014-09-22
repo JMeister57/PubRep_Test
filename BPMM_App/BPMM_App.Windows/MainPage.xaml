@@ -64,7 +64,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView Grid.Column="0" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                      Header="Toolbar" Background="#FFFCFFDB" FontSize="24">
+                      Header="Toolbar" Background="WhiteSmoke" FontSize="24">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Height" Value="50" />
@@ -84,7 +84,7 @@
                 <Image x:Name="note" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
             </ListView>
             <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
-                <Canvas x:Name="workspace" Background="Beige" AllowDrop="True" 
+                <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
                         Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
                 </Canvas>
             </ScrollViewer>

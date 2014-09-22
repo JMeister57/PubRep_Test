@@ -48,14 +48,14 @@ namespace BPMM_App
             this.category = category;
             AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseControl_RightTapped), false);
 
-            frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.LightBlue)};
+            frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.Linen)};
             frame.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseControl_ManipulationDelta), true);
             frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseControl_PointerPressed), true);
             frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), true);
             frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), true);
 
-            anchor = new SymbolIcon(Symbol.Go) { Opacity = 0.4 };
+            anchor = new SymbolIcon(Symbol.Go) { Opacity = 0.4, Foreground = new SolidColorBrush(Colors.White) };
             anchor.PointerPressed += anchor_PointerPressed;
 
             container = new Grid();
@@ -234,8 +234,8 @@ namespace BPMM_App
 
     public class BPMM_TextBox : TextBox
     {
-        public bool shiftPressed;
-
+        private bool shiftPressed;
+        private string placeholder;
         public BPMM_TextBox()
             : base()
         {
@@ -245,16 +245,38 @@ namespace BPMM_App
             KeyDown += tb_keyDown;
             KeyUp += tb_keyUp;
         }
+
+        public void PlaceHolderWithWrap(string s)
+        {
+            placeholder = s;
+            if (Text.Length == 0)
+            {
+                Text = placeholder;
+            }
+        }
+
         private void tb_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             IsEnabled = true;
         }
 
+        protected override void OnGotFocus(RoutedEventArgs e)
+        {
+            base.OnGotFocus(e);
+            if (Text == placeholder)
+            {
+                Text = "";
+            }
+        }
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
             shiftPressed = false;
             IsEnabled = false;
+            if (Text.Length == 0)
+            {
+                Text = placeholder;
+            }
         }
 
         private void tb_keyUp(object sender, KeyRoutedEventArgs e)

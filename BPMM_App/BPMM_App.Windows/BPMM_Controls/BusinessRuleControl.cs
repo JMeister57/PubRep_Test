@@ -21,7 +21,7 @@ namespace BPMM_App
         public BusinessRuleControl()
             : base(Category.BUSINESS_RULE)
         {
-            enforcementCombo = new ComboBox();
+            enforcementCombo = new ComboBox() { IsEnabled = false };
             enforcementCombo.DataContext = this;
             var levelBinding = new Binding() { Source = EnforcementLevels };
             var defaultBinding = new Binding() { Source = DefaultLevel };

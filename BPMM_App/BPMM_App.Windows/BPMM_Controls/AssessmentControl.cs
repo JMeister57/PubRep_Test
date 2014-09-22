@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Json;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 
 namespace BPMM_App
 {
@@ -20,7 +22,7 @@ namespace BPMM_App
         public AssessmentControl()
             : base(Category.ASSESSMENT)
         {
-            swotControl = new ComboBox();
+            swotControl = new ComboBox() { IsEnabled = false };
             swotControl.DataContext = this;
             var levelBinding = new Binding() { Source = SWOT };
             var defaultBinding = new Binding() { Source = DefaultSWOT };
@@ -35,6 +37,7 @@ namespace BPMM_App
             Grid.SetRow(swotControl, 1);
             Grid.SetRow(descriptionBox, 2);
             Grid.SetRow(stateCombo, 3);
+            frame.Children.Add(swotControl);
         }
 
         public override void UpdateFontSize(double scale)

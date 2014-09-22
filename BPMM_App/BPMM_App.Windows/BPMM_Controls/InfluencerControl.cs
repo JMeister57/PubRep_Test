@@ -35,7 +35,7 @@ namespace BPMM_App
             types.AddRange(internalInfluencers);
             InfluencerTypes = new ObservableCollection<String>(types);
 
-            influencerCombo = new ComboBox();
+            influencerCombo = new ComboBox() { IsEnabled = false };
             influencerCombo.DataContext = this;
             var influencerBinding = new Binding() { Source = InfluencerTypes };
             var defaultBinding = new Binding() { Source = DefaultInfluencer };
@@ -51,6 +51,7 @@ namespace BPMM_App
             Grid.SetRow(influencerCombo, 1);
             Grid.SetRow(descriptionBox, 2);
             Grid.SetRow(stateCombo, 3);
+            frame.Children.Add(influencerCombo);
         }
 
         public override void UpdateFontSize(double scale)

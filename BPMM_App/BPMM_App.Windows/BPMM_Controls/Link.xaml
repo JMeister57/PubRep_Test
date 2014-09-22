@@ -15,6 +15,6 @@
     
     <Canvas>
         <TextBox x:Name="descriptionBox" VerticalAlignment="Bottom" HorizontalAlignment="Center" Text="{Binding Path=Description, Mode=TwoWay}" TextWrapping="Wrap"/>
-        <Polyline x:Name="line" Stroke="Black" Points="{Binding Path=Points}" />
+        <Polyline x:Name="line" Stroke="White" Points="{Binding Path=Points}" />
     </Canvas>
 </UserControl>

@@ -42,10 +42,9 @@ namespace BPMM_App
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsAddedEvent;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsRemovedEvent;
-        public event EventHandler LoseFocus;
 
-        protected TextBox headerBox;
-        protected TextBox descriptionBox;
+        protected BPMM_TextBox headerBox;
+        protected BPMM_TextBox descriptionBox;
         protected ComboBox stateCombo;
 
 
@@ -63,17 +62,13 @@ namespace BPMM_App
             headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
-
-            descriptionBox = new BPMM_TextBox()
-            {
-                TextWrapping = TextWrapping.Wrap,
-                PlaceholderText = "description",
-            };
+            headerBox.IsEnabledChanged += control_EnabledChanged;
+            descriptionBox = new BPMM_TextBox() { TextWrapping = TextWrapping.Wrap };
             descriptionBox.DataContext = this;
             var descriptionBinding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
             descriptionBox.SetBinding(TextBox.TextProperty, descriptionBinding);
 
-            stateCombo = new ComboBox();
+            stateCombo = new ComboBox() { IsEnabled = false };
             Binding statesBinding = new Binding() { Source = States };
             Binding defaultBinding = new Binding() { Source = DefaultState };
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
@@ -94,44 +89,64 @@ namespace BPMM_App
             switch (category)
             { // type dependent configuration
                 case Category.VISION:
-                    Title = "Vision";
+                    frame.Background = new SolidColorBrush(Colors.LightGreen);
+                    headerBox.PlaceholderText = "Vision";
+                    descriptionBox.PlaceHolderWithWrap("Describes the future state of the enterprise, without regard to how it is to be achieved.");
                     break;
                 case Category.GOAL:
-                    Title = "Goal";
+                    frame.Background = new SolidColorBrush(Colors.LightGreen);
+                    headerBox.PlaceholderText = "Goal";
+                    descriptionBox.PlaceHolderWithWrap("Indicates what must be satisfied on a continuing basis to effectively attain the Vision.");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_OBJECTIVE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_VISION));
                     break;
                 case Category.OBJECTIVE:
-                    Title = "Objective";
+                    frame.Background = new SolidColorBrush(Colors.LightGreen);
+                    headerBox.PlaceholderText = "Objective";
+                    descriptionBox.PlaceHolderWithWrap("An attainable, time-restricted, and measurable target to achieve enterprise Goals.");
                     break;
                 case Category.MISSION:
-                    Title = "Mission";
+                    frame.Background = new SolidColorBrush(Colors.LightYellow);
+                    headerBox.PlaceholderText = "Mission";
+                    descriptionBox.PlaceHolderWithWrap("Indicates the ongoing operational activity of the enterprise (the day-to-day activities).");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_MISSION_STRATEGY));
                     break;
                 case Category.STRATEGY:
-                    Title = "Strategy";
+                    frame.Background = new SolidColorBrush(Colors.LightYellow);
+                    headerBox.PlaceholderText = "Strategy";
+                    descriptionBox.PlaceHolderWithWrap("A component of the plan for the Mission: The essential Course of Action to achieve Ends (especially Goals).");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_STRATEGY_TACTIC));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
                 case Category.TACTIC:
-                    Title = "Tactic";
+                    frame.Background = new SolidColorBrush(Colors.LightYellow);
+                    headerBox.PlaceholderText = "Tactic";
+                    descriptionBox.PlaceHolderWithWrap("Represents part of the detailing of Strategies: Implements Strategies.");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
                 case Category.BUSINESS_POLICY:
-                    Title = "Business Policy";
+                    frame.Background = new SolidColorBrush(Colors.LightBlue);
+                    headerBox.PlaceholderText = "Business Policy";
+                    descriptionBox.PlaceHolderWithWrap("Non-enforceable Directive to govern or guide the enterprise.\nProvides the basis for Business Rules.");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_POLICY_RULE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
                 case Category.BUSINESS_RULE:
-                    Title = "Business Rule";
+                    frame.Background = new SolidColorBrush(Colors.LightBlue);
+                    headerBox.PlaceholderText = "Business Rule";
+                    descriptionBox.PlaceHolderWithWrap("Enforceable atomic Directive that is often derived from Business Policies.");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
                 case Category.INFLUENCER:
-                    Title = "Influencer";
+                    frame.Background = new SolidColorBrush(Colors.Plum);
+                    headerBox.PlaceholderText = "Influencer";
+                    descriptionBox.PlaceHolderWithWrap("External or internal neutral impact on enterprise’s employment of Means or achievement of Ends.");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_INFLUENCER_ASSESSMENT));
                     break;
                 case Category.ASSESSMENT:
-                    Title = "Assessment";
+                    frame.Background = new SolidColorBrush(Colors.Plum);
+                    headerBox.PlaceholderText = "Assessment";
+                    descriptionBox.PlaceHolderWithWrap("A Judgment of an Influencer's impact on the achievement of Ends and/or Means");
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_ENDS_MEANS));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_INFLUENCER));
                     break;
@@ -199,26 +214,27 @@ namespace BPMM_App
         }
         #endregion
 
-        private void Frame_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        protected void Frame_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var transformHeader = headerBox.TransformToVisual(null);
-            var yTopHeader = transformHeader.TransformPoint(new Point(0, 0)).Y;
-            var yBottomHeader = yTopHeader + headerBox.ActualHeight;
-
-            var transformDescription = descriptionBox.TransformToVisual(null);
-            var yTopDescription = transformHeader.TransformPoint(new Point(0, 0)).Y;
-            var yBottomDescription = yTopDescription + descriptionBox.ActualHeight;
-
-            if (e.GetPosition(null).Y < yBottomHeader)
+            foreach (Control child in frame.Children)
             {
-                headerBox.IsEnabled = true;
-                descriptionBox.IsEnabled = false;
+                child.IsEnabled = false;
             }
-            else if (e.GetPosition(null).Y < yBottomDescription)
+            foreach (Control child in frame.Children)
             {
-                descriptionBox.IsEnabled = true;
-                headerBox.IsEnabled = false;
+                var transform = child.TransformToVisual(null);
+                var yTop = transform.TransformPoint(new Point(0, 0)).Y;
+                var yBottom = yTop + child.ActualHeight;
+                var y = e.GetPosition(null).Y;
+                if (yTop < y && y < yBottom)
+                {
+                    child.IsEnabled = true;
+                }
             }
+        }
+
+        protected void control_EnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
         }
 
         #region validation
