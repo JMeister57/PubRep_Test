@@ -25,7 +25,8 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -56,6 +57,16 @@
                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160, 5" PointerReleased="Clear_Pressed">
                 <SymbolIcon Symbol="Delete" ToolTipService.ToolTip="Clear workspace"/>
             </Border>
+            <Border x:Name="tourBorder" Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="210, 5" PointerReleased="startTour">
+                <SymbolIcon x:Name="tourIcon" Symbol="Help" ToolTipService.ToolTip="Start the tour"/>
+            </Border>
+
+            <Border x:Name="guideBubble" Grid.Column="2" Grid.RowSpan="2" BorderThickness="5" BorderBrush="GreenYellow" Visibility="Collapsed">
+                <ScrollViewer>
+                    <TextBlock Text="{Binding Path=Guide}" FontSize="18" Margin="10" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </ScrollViewer>
+            </Border>
         </Grid>
         
         <Grid Grid.Row="1">
@@ -63,7 +74,7 @@
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListView Grid.Column="0" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+            <ListView x:Name="toolbar" Grid.Column="0" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
                       Header="Toolbar" Background="WhiteSmoke" FontSize="24">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -71,17 +82,39 @@
                         <Setter Property="HorizontalAlignment" Value="Center"/>
                     </Style>
                 </ListView.ItemContainerStyle>
-                <Image x:Name="visionIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Vision"/>
-                <Image x:Name="goalIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Goal"/>
-                <Image x:Name="objectiveIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Objective"/>
-                <Image x:Name="missionIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Mission"/>
-                <Image x:Name="strategyIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Strategy"/>
-                <Image x:Name="tacticIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Tactic"/>
-                <Image x:Name="policyIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Policy"/>
-                <Image x:Name="ruleIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Rule"/>
-                <Image x:Name="influencerIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Influencer"/>
-                <Image x:Name="assessmentIcon" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Assessment"/>
-                <Image x:Name="note" Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
+                <Border BorderThickness="3" x:Name="visionIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Vision"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="goalIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Goal"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="objectiveIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Objective"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="missionIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Mission"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="strategyIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Strategy"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="tacticIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Tactic"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="policyIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Policy"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="ruleIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Rule"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="influencerIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Influencer"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="assessmentIcon" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Assessment"/>
+                </Border>
+                <Border BorderThickness="3" x:Name="note" >
+                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
+                </Border>
             </ListView>
             <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 

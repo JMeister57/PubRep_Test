@@ -43,10 +43,13 @@ namespace BPMM_App
         public event EventHandler<ObservableCollection<WarningItem>> WarningsAddedEvent;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsRemovedEvent;
 
-        protected BPMM_TextBox headerBox;
-        protected BPMM_TextBox descriptionBox;
+        public BPMM_TextBox headerBox;
+        protected TextBlock headerBlock;
+        public Border headerBorder;
+        public BPMM_TextBox descriptionBox;
+        protected TextBlock descriptionBlock;
+        public Border descriptionBorder;
         protected ComboBox stateCombo;
-
 
         public BPMMControl(Category category)
             : base(category)
@@ -62,91 +65,100 @@ namespace BPMM_App
             headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
-            headerBox.IsEnabledChanged += control_EnabledChanged;
+            headerBox.KeyUp += headerBox_KeyUp;
+            headerBox.LostFocus += headerBox_LostFocus;
+            headerBlock = new TextBlock() { Margin = new Thickness(0, 0, 0, 2), VerticalAlignment = VerticalAlignment.Center, FontSize = 18};
+            headerBlock.SetBinding(TextBlock.TextProperty, headerBinding);
+            headerBlock.DoubleTapped += headerBlock_DoubleTapped;
+            headerBorder = new Border() { Child = headerBlock };
+
             descriptionBox = new BPMM_TextBox() { TextWrapping = TextWrapping.Wrap };
             descriptionBox.DataContext = this;
             var descriptionBinding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
             descriptionBox.SetBinding(TextBox.TextProperty, descriptionBinding);
+            descriptionBox.KeyUp += descriptionBox_KeyUp;
+            descriptionBlock = new TextBlock() { TextWrapping = TextWrapping.Wrap, FontSize = 13};
+            descriptionBlock.DoubleTapped += descriptionBlock_DoubleTapped;
+            descriptionBlock.SetBinding(TextBlock.TextProperty, descriptionBinding);
+            descriptionBorder = new Border() { Child = descriptionBlock };
 
-            stateCombo = new ComboBox() { IsEnabled = false };
+            stateCombo = new ComboBox();
             Binding statesBinding = new Binding() { Source = States };
             Binding defaultBinding = new Binding() { Source = DefaultState };
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
             stateCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
 
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(6, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
-            Grid.SetRow(headerBox, 0);
-            Grid.SetRow(descriptionBox, 1);
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(40, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(40, GridUnitType.Pixel) });
+            Grid.SetRow(headerBorder, 0);
+            Grid.SetRow(descriptionBorder, 1);
             Grid.SetRow(stateCombo, 2);
-            frame.Children.Add(headerBox);
-            frame.Children.Add(descriptionBox);
+            frame.Children.Add(headerBorder);
+            frame.Children.Add(descriptionBorder);
             frame.Children.Add(stateCombo);
-
-            frame.AddHandler(UIElement.DoubleTappedEvent, new DoubleTappedEventHandler(Frame_DoubleTapped), true);
             
             switch (category)
             { // type dependent configuration
                 case Category.VISION:
                     frame.Background = new SolidColorBrush(Colors.LightGreen);
-                    headerBox.PlaceholderText = "Vision";
-                    descriptionBox.PlaceHolderWithWrap("Describes the future state of the enterprise, without regard to how it is to be achieved.");
+                    Title = headerBox.PlaceholderText = "Vision";
+                    Description = descriptionBox.PlaceholderText = "Describes the future state of the enterprise, without regard to how it is to be achieved.";
                     break;
                 case Category.GOAL:
                     frame.Background = new SolidColorBrush(Colors.LightGreen);
-                    headerBox.PlaceholderText = "Goal";
-                    descriptionBox.PlaceHolderWithWrap("Indicates what must be satisfied on a continuing basis to effectively attain the Vision.");
+                    Title = headerBox.PlaceholderText = "Goal";
+                    Description = descriptionBox.PlaceholderText = "Indicates what must be satisfied on a continuing basis to effectively attain the Vision.";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_OBJECTIVE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_GOAL_VISION));
                     break;
                 case Category.OBJECTIVE:
                     frame.Background = new SolidColorBrush(Colors.LightGreen);
-                    headerBox.PlaceholderText = "Objective";
-                    descriptionBox.PlaceHolderWithWrap("An attainable, time-restricted, and measurable target to achieve enterprise Goals.");
+                    Title = headerBox.PlaceholderText = "Objective";
+                    Description = descriptionBox.PlaceholderText = "An attainable, time-restricted, and measurable target to achieve enterprise Goals.";
                     break;
                 case Category.MISSION:
                     frame.Background = new SolidColorBrush(Colors.LightYellow);
-                    headerBox.PlaceholderText = "Mission";
-                    descriptionBox.PlaceHolderWithWrap("Indicates the ongoing operational activity of the enterprise (the day-to-day activities).");
+                    Title = headerBox.PlaceholderText = "Mission";
+                    Description = descriptionBox.PlaceholderText = "Indicates the ongoing operational activity of the enterprise (the day-to-day activities).";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_MISSION_STRATEGY));
                     break;
                 case Category.STRATEGY:
                     frame.Background = new SolidColorBrush(Colors.LightYellow);
-                    headerBox.PlaceholderText = "Strategy";
-                    descriptionBox.PlaceHolderWithWrap("A component of the plan for the Mission: The essential Course of Action to achieve Ends (especially Goals).");
+                    Title = headerBox.PlaceholderText = "Strategy";
+                    Description = descriptionBox.PlaceholderText = "A component of the plan for the Mission: The essential Course of Action to achieve Ends (especially Goals).";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_STRATEGY_TACTIC));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
                 case Category.TACTIC:
                     frame.Background = new SolidColorBrush(Colors.LightYellow);
-                    headerBox.PlaceholderText = "Tactic";
-                    descriptionBox.PlaceHolderWithWrap("Represents part of the detailing of Strategies: Implements Strategies.");
+                    Title = headerBox.PlaceholderText = "Tactic";
+                    Description = descriptionBox.PlaceholderText = "Represents part of the detailing of Strategies: Implements Strategies.";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ACTION_RESULT));
                     break;
                 case Category.BUSINESS_POLICY:
                     frame.Background = new SolidColorBrush(Colors.LightBlue);
-                    headerBox.PlaceholderText = "Business Policy";
-                    descriptionBox.PlaceHolderWithWrap("Non-enforceable Directive to govern or guide the enterprise.\nProvides the basis for Business Rules.");
+                    Title = headerBox.PlaceholderText = "Business Policy";
+                    Description = descriptionBox.PlaceholderText = "Non-enforceable Directive to govern or guide the enterprise.\nProvides the basis for Business Rules.";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_POLICY_RULE));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
                 case Category.BUSINESS_RULE:
                     frame.Background = new SolidColorBrush(Colors.LightBlue);
-                    headerBox.PlaceholderText = "Business Rule";
-                    descriptionBox.PlaceHolderWithWrap("Enforceable atomic Directive that is often derived from Business Policies.");
+                    Title = headerBox.PlaceholderText = "Business Rule";
+                    Description = descriptionBox.PlaceholderText = "Enforceable atomic Directive that is often derived from Business Policies.";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_DIRECTIVE_ACTION));
                     break;
                 case Category.INFLUENCER:
                     frame.Background = new SolidColorBrush(Colors.Plum);
-                    headerBox.PlaceholderText = "Influencer";
-                    descriptionBox.PlaceHolderWithWrap("External or internal neutral impact on enterprise’s employment of Means or achievement of Ends.");
+                    Title = headerBox.PlaceholderText = "Influencer";
+                    Description = descriptionBox.PlaceholderText = "External or internal neutral impact on enterprise’s employment of Means or achievement of Ends.";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_INFLUENCER_ASSESSMENT));
                     break;
                 case Category.ASSESSMENT:
                     frame.Background = new SolidColorBrush(Colors.Plum);
-                    headerBox.PlaceholderText = "Assessment";
-                    descriptionBox.PlaceHolderWithWrap("A Judgment of an Influencer's impact on the achievement of Ends and/or Means");
+                    Title = headerBox.PlaceholderText = "Assessment";
+                    Description = descriptionBox.PlaceholderText = "A Judgment of an Influencer's impact on the achievement of Ends and/or Means";
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_ENDS_MEANS));
                     warnings.Add(new WarningItem(this, WarningItem.Codes.M_ASSESSMENT_INFLUENCER));
                     break;
@@ -214,27 +226,75 @@ namespace BPMM_App
         }
         #endregion
 
-        protected void Frame_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void headerBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            foreach (Control child in frame.Children)
+            if (e.Key == VirtualKey.Enter && headerBox.shiftPressed == false)
             {
-                child.IsEnabled = false;
+                headerLostFocus();
             }
-            foreach (Control child in frame.Children)
+        }
+
+        private void headerBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            headerLostFocus();
+        }
+
+        private void headerLostFocus()
+        {
+            if (headerBorder.Child == headerBox)
             {
-                var transform = child.TransformToVisual(null);
-                var yTop = transform.TransformPoint(new Point(0, 0)).Y;
-                var yBottom = yTop + child.ActualHeight;
-                var y = e.GetPosition(null).Y;
-                if (yTop < y && y < yBottom)
+                headerBorder.Child = headerBlock;
+                var currWidth = headerBlock.ActualWidth;
+                headerBlock.Text = (headerBox.Text.Length > 0)? headerBox.Text : headerBox.PlaceholderText;
+                headerBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                if (headerBlock.DesiredSize.Width > currWidth)
                 {
-                    child.IsEnabled = true;
+                    Width = ActualWidth + headerBlock.DesiredSize.Width - currWidth;
                 }
             }
         }
 
-        protected void control_EnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void headerBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            descriptionLostFocus();
+            Title = (Title == headerBox.PlaceholderText) ? "" : Title;
+            headerBorder.Child = headerBox;
+            headerBox.Focus(FocusState.Programmatic);
+        }
+
+        protected void descriptionBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter && descriptionBox.shiftPressed == false)
+            {
+                descriptionLostFocus();
+            }
+        }
+
+        private void descriptionBox_LostFocus()
+        {
+            descriptionLostFocus();
+        }
+
+        private void descriptionLostFocus()
+        {
+            if (descriptionBorder.Child == descriptionBox)
+            {
+                descriptionBorder.Child = descriptionBlock;
+                var currHeight = descriptionBlock.ActualHeight;
+                descriptionBlock.Text = (descriptionBox.Text.Length > 0)? descriptionBox.Text : descriptionBox.PlaceholderText;
+                descriptionBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                if(descriptionBlock.DesiredSize.Height > currHeight) {
+                    Height = ActualHeight + descriptionBlock.DesiredSize.Height - currHeight;
+                }
+            }
+        }
+
+        private void descriptionBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            headerLostFocus();
+            Description = (Description == descriptionBox.PlaceholderText) ? "" : Description;
+            descriptionBorder.Child = descriptionBox;
+            descriptionBox.Focus(FocusState.Programmatic);
         }
 
         #region validation

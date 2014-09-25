@@ -14,7 +14,7 @@ namespace BPMM_App
 {
     class InfluencerControl : BPMMControl
     {
-        private ComboBox influencerCombo;
+        public ComboBox influencerCombo;
         private ObservableCollection<String> influencerTypes;
         public static List<string> externalInfluencers =
         new List<String> { "Competitor", "Customer", "Environment", "Partner", "Regulation", "Supplier", "Technology" };
@@ -35,7 +35,7 @@ namespace BPMM_App
             types.AddRange(internalInfluencers);
             InfluencerTypes = new ObservableCollection<String>(types);
 
-            influencerCombo = new ComboBox() { IsEnabled = false };
+            influencerCombo = new ComboBox();
             influencerCombo.DataContext = this;
             var influencerBinding = new Binding() { Source = InfluencerTypes };
             var defaultBinding = new Binding() { Source = DefaultInfluencer };
@@ -43,13 +43,13 @@ namespace BPMM_App
             influencerCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
             influencerCombo.SelectionChanged += influencerCombo_SelectionChanged;
             frame.RowDefinitions.Clear();
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            Grid.SetRow(headerBox, 0);
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(36, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            Grid.SetRow(headerBorder, 0);
             Grid.SetRow(influencerCombo, 1);
-            Grid.SetRow(descriptionBox, 2);
+            Grid.SetRow(descriptionBorder, 2);
             Grid.SetRow(stateCombo, 3);
             frame.Children.Add(influencerCombo);
         }

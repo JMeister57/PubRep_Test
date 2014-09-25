@@ -33,7 +33,7 @@ namespace BPMM_App
 
         protected Grid frame;
         private Grid container;
-        public SymbolIcon anchor;
+        public Border anchor;
 
         private Point pointerPressPos;
         public event ManipulationDeltaEventHandler MovedEvent;
@@ -50,14 +50,15 @@ namespace BPMM_App
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.Linen)};
             frame.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseControl_ManipulationDelta), true);
-            frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseControl_PointerPressed), true);
-            frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), true);
-            frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), true);
+            frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseControl_ManipulationDelta), false);
+            frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseControl_PointerPressed), false);
+            frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), false);
+            frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), false);
 
-            anchor = new SymbolIcon(Symbol.Go) { Opacity = 0.4, Foreground = new SolidColorBrush(Colors.White) };
-            anchor.PointerPressed += anchor_PointerPressed;
-
+            anchor = new Border() { Opacity = 0.4 };
+            var linkIcon = new SymbolIcon(Symbol.Go) { Foreground = new SolidColorBrush(Colors.White) };
+            linkIcon.PointerPressed += anchor_PointerPressed;
+            anchor.Child = linkIcon;
             container = new Grid();
             container.ColumnDefinitions.Add(new ColumnDefinition());
             container.ColumnDefinitions.Add(new ColumnDefinition());
@@ -234,49 +235,20 @@ namespace BPMM_App
 
     public class BPMM_TextBox : TextBox
     {
-        private bool shiftPressed;
-        private string placeholder;
+        public bool shiftPressed;
+
         public BPMM_TextBox()
             : base()
         {
             shiftPressed = false;
-            IsEnabled = false;
-            DoubleTapped += tb_DoubleTapped;
             KeyDown += tb_keyDown;
             KeyUp += tb_keyUp;
         }
 
-        public void PlaceHolderWithWrap(string s)
-        {
-            placeholder = s;
-            if (Text.Length == 0)
-            {
-                Text = placeholder;
-            }
-        }
-
-        private void tb_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            IsEnabled = true;
-        }
-
-        protected override void OnGotFocus(RoutedEventArgs e)
-        {
-            base.OnGotFocus(e);
-            if (Text == placeholder)
-            {
-                Text = "";
-            }
-        }
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
             shiftPressed = false;
-            IsEnabled = false;
-            if (Text.Length == 0)
-            {
-                Text = placeholder;
-            }
         }
 
         private void tb_keyUp(object sender, KeyRoutedEventArgs e)
@@ -291,10 +263,6 @@ namespace BPMM_App
                 {
                     Text += "\n";
                     Select(Text.Length, 0);
-                }
-                else
-                {
-                    IsEnabled = false;
                 }
             }
         }

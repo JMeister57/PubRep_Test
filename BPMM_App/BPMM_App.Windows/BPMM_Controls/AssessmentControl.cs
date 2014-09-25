@@ -15,27 +15,27 @@ namespace BPMM_App
 {
     class AssessmentControl : BPMMControl
     {
-        private ComboBox swotControl;
+        public ComboBox swotControl;
         private static ObservableCollection<string> swot =
             new ObservableCollection<string> { "<SWOT>", "Strength", "Weakness", "Opportunity", "Threat" };
 
         public AssessmentControl()
             : base(Category.ASSESSMENT)
         {
-            swotControl = new ComboBox() { IsEnabled = false };
+            swotControl = new ComboBox();
             swotControl.DataContext = this;
             var levelBinding = new Binding() { Source = SWOT };
             var defaultBinding = new Binding() { Source = DefaultSWOT };
             swotControl.SetBinding(ComboBox.ItemsSourceProperty, levelBinding);
             swotControl.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
             frame.RowDefinitions.Clear();
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            Grid.SetRow(headerBox, 0);
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(36, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            Grid.SetRow(headerBorder, 0);
             Grid.SetRow(swotControl, 1);
-            Grid.SetRow(descriptionBox, 2);
+            Grid.SetRow(descriptionBorder, 2);
             Grid.SetRow(stateCombo, 3);
             frame.Children.Add(swotControl);
         }

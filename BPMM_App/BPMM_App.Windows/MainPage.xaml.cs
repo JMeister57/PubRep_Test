@@ -27,6 +27,8 @@ using Windows.Storage.Streams;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using Windows.UI.Text;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.Core;
 
 namespace BPMM_App
 {
@@ -36,10 +38,13 @@ namespace BPMM_App
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
+        private string user = "Sebastian";
+        private string password;
+
         public static List<BaseControl> controls = new List<BaseControl>();
         private static List<Link> links = new List<Link>();
 
-        private bool linking;
+        private bool linking = false;
         private Link currentLine;
         private BaseControl sourceControl;
         
@@ -59,7 +64,6 @@ namespace BPMM_App
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
-            linking = false;
             DataContext = this;
         }
 
@@ -91,16 +95,31 @@ namespace BPMM_App
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
             // restore session data
-            if (e.PageState != null && e.PageState.ContainsKey("greetingOutputText"))
+            if (e.PageState != null && e.PageState.ContainsKey("key"))
             {
 
             }
             // restore app data
-            ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
+            //ApplicationDataContainer roaming = ApplicationData.Current.RoamingSettings;
+            //if (roaming.Containers.ContainsKey("user"))
+            //{
+            //    var username = (roaming.Containers["user"].Values.ContainsKey("name")) ? (string)roaming.Containers["user"].Values["name"] : "";
+            //    var passwd = (roaming.Containers["user"].Values.ContainsKey("password")) ? (string)roaming.Containers["user"].Values["name"] : "";
+            //}
         }
 
         private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
         {
+            //ApplicationDataContainer roaming = ApplicationData.Current.RoamingSettings;
+            //var container = roaming.CreateContainer("user", ApplicationDataCreateDisposition.Always);
+            //if (roaming.Containers.ContainsKey("user"))
+            //{
+            //    roaming.Containers["user"].Values["name"] = user;
+            //    var buffer = CryptographicBuffer.ConvertStringToBinary(password, BinaryStringEncoding.Utf8);
+            //    var hasher = HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha256);
+            //    var hash = hasher.HashData(buffer);
+            //    roaming.Containers["user"].Values["password"] = CryptographicBuffer.EncodeToBase64String(hash);
+            //}
         }
 
         #region NavigationHelper-Registrierung
@@ -129,7 +148,7 @@ namespace BPMM_App
                             (BaseControl)new BPMMControl(category);
 
                 control.LinkStartEvent += OnLinkStart;
-                control.LinkEndEvent += OnLinkRequest;
+                control.LinkEndEvent += OnLinkEnd;
                 control.DeleteEvent += DeleteControl;
                 control.MovedEvent += ControlMoved;
                 control.MoveEndEvent += ControlStoppedMoving;
@@ -149,7 +168,19 @@ namespace BPMM_App
                 Point pos = e.GetPosition(workspace);
                 Canvas.SetLeft(control, pos.X);
                 Canvas.SetTop(control, pos.Y);
-                workspace.Children.Add(control);   
+                workspace.Children.Add(control);
+                if (step == TourStep.V1 && category == Category.VISION
+                    || step == TourStep.G1 && category == Category.GOAL
+                    || step == TourStep.O1 && category == Category.OBJECTIVE
+                    || step == TourStep.S1 && category == Category.STRATEGY
+                    || step == TourStep.T1 && category == Category.TACTIC
+                    || step == TourStep.I1 && category == Category.INFLUENCER
+                    || step == TourStep.A1 && category == Category.ASSESSMENT
+                    || step == TourStep.P1 && category == Category.BUSINESS_POLICY
+                    || step == TourStep.R1 && category == Category.BUSINESS_RULE)
+                {
+                    performStep(step + 1);
+                }
             }
         }
 
@@ -234,7 +265,7 @@ namespace BPMM_App
             linking = true;
         }
 
-        public void OnLinkRequest(object sender, EventArgs e)
+        public void OnLinkEnd(object sender, EventArgs e)
         {
             if (currentLine == null)
             { // case: simple click on control
@@ -263,7 +294,7 @@ namespace BPMM_App
                 ((BPMMControl)target).validateNewLink(((BPMMControl)sourceControl).category);
             }
             sourceControl = null;
-            currentLine = null;
+            currentLine = (step == TourStep.None)? null : currentLine;
             linking = false;
         }
         #endregion
@@ -613,6 +644,11 @@ namespace BPMM_App
 
         private async void Clear_Pressed(object sender, PointerRoutedEventArgs e)
         {
+            await clearWorkspace();
+        }
+
+        private async Task<bool> clearWorkspace()
+        {
             MessageDialog confirmDialog = new MessageDialog("", String.Format("Really clear workspace?"));
             confirmDialog.Commands.Add(new UICommand("Yes"));
             confirmDialog.Commands.Add(new UICommand("Cancel"));
@@ -624,7 +660,9 @@ namespace BPMM_App
                 controls.Clear();
                 Warnings.Clear();
                 BaseControl.resetIds();
+                return true;
             }
+            return false;
         }
 
         private void warnings_tab_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)

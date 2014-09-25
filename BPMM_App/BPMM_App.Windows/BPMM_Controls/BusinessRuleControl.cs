@@ -14,27 +14,27 @@ namespace BPMM_App
 {
     public class BusinessRuleControl : BPMMControl
     {
-        private ComboBox enforcementCombo;
+        public ComboBox enforcementCombo;
         private static ObservableCollection<string> enforcementLevels =
             new ObservableCollection<string> { "<Enforcement Lvl>", "Strictly", "Deferred", "Pre-auth Override", "Post-justified Override", "Explained Override", "Guideline" };
 
         public BusinessRuleControl()
             : base(Category.BUSINESS_RULE)
         {
-            enforcementCombo = new ComboBox() { IsEnabled = false };
+            enforcementCombo = new ComboBox();
             enforcementCombo.DataContext = this;
             var levelBinding = new Binding() { Source = EnforcementLevels };
             var defaultBinding = new Binding() { Source = DefaultLevel };
             enforcementCombo.SetBinding(ComboBox.ItemsSourceProperty, levelBinding);
             enforcementCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
             frame.RowDefinitions.Clear();
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.8, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5.3, GridUnitType.Star) });
-            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1.4, GridUnitType.Star) });
-            Grid.SetRow(headerBox, 0);
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(36, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+            frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(28, GridUnitType.Pixel) });
+            Grid.SetRow(headerBorder, 0);
             Grid.SetRow(enforcementCombo, 1);
-            Grid.SetRow(descriptionBox, 2);
+            Grid.SetRow(descriptionBorder, 2);
             Grid.SetRow(stateCombo, 3);
             frame.Children.Add(enforcementCombo);
         }
