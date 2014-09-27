@@ -96,12 +96,12 @@ namespace BPMM_App
             return size;
         }
 
-        public double getWidth()
+        public double GetWidth()
         {
             return frame.ActualWidth;
         }
 
-        public double getHeight()
+        public double GetHeight()
         {
             return frame.ActualHeight;
         }

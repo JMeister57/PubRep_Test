@@ -220,7 +220,20 @@ namespace BPMM_App
         {
             if (movingPoint)
             {
-                Debug.WriteLine("releaseing");
+                if (newPoint == 0 || newPoint == Points.Count - 1)
+                { // snap endpoints back to control edge
+                    var control = (newPoint == 0) ? sourceControl : targetControl;
+                    var p = new Point();
+                    p.X =
+                        (Points[newPoint].X < Canvas.GetLeft(control)) ? Canvas.GetLeft(control) :
+                        (Points[newPoint].X > Canvas.GetLeft(control) + control.GetWidth()) ? Canvas.GetLeft(control) + control.GetWidth() :
+                        Points[newPoint].X;
+                    p.Y =
+                        (Points[newPoint].Y < Canvas.GetTop(control)) ? Canvas.GetTop(control) :
+                        (Points[newPoint].Y > Canvas.GetTop(control) + control.GetHeight()) ? Canvas.GetTop(control) + control.GetHeight() :
+                        Points[newPoint].Y;
+                    Points[newPoint] = p;
+                }
                 movingPoint = false;
                 ReleasePointerCapture(e.Pointer);
             }

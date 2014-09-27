@@ -298,41 +298,39 @@ namespace BPMM_App
 
         private void linkControls(BaseControl source, BaseControl target)
         {
-            source.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var s = new Point(Canvas.GetLeft(source), Canvas.GetTop(source));
-            var s2 = new Point(s.X + source.getWidth(), s.Y + source.getHeight()) ;
+            var s2 = new Point(s.X + source.GetWidth(), s.Y + source.GetHeight()) ;
             var t = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
-            var t2 = new Point(t.X + target.getWidth(), t.Y + target.getHeight());
+            var t2 = new Point(t.X + target.GetWidth(), t.Y + target.GetHeight());
 
             if (s2.X < t.X)
             { // case: target is right from source
-                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth(), s.Y + source.getHeight() / 2));
+                currentLine.updateStartPoint(source, new Point(s.X + source.GetWidth(), s.Y + source.GetHeight() / 2));
                 var targetPoint =
-                    (s.Y > t2.Y) ? new Point(t.X + target.getWidth() / 2, t2.Y) : // target right and above of source
-                    (s2.Y < t.Y) ? new Point(t.X + target.getWidth() / 2, t.Y) : // target right and below source
-                    new Point(t.X, t.Y + target.getHeight() / 2); // target right of source
+                    (s.Y > t2.Y) ? new Point(t.X + target.GetWidth() / 2, t2.Y) : // target right and above of source
+                    (s2.Y < t.Y) ? new Point(t.X + target.GetWidth() / 2, t.Y) : // target right and below source
+                    new Point(t.X, t.Y + target.GetHeight() / 2); // target right of source
                 currentLine.updateEndPoint(target, targetPoint);
                     
             }
             else if (s.X > t2.X)
             { // case: target is left from source
-                currentLine.updateStartPoint(source, new Point(s.X, s.Y + source.getHeight() / 2));
+                currentLine.updateStartPoint(source, new Point(s.X, s.Y + source.GetHeight() / 2));
                 var targetPoint =
-                    (s.Y > t2.Y) ? new Point(t.X + target.getWidth() / 2, t2.Y) : // target left and above of source
-                    (s2.Y < t.Y) ? new Point(t.X + target.getWidth() / 2, t.Y) : // target left and below of source
-                    new Point(t2.X, t.Y + target.getHeight() / 2); // target left of source
+                    (s.Y > t2.Y) ? new Point(t.X + target.GetWidth() / 2, t2.Y) : // target left and above of source
+                    (s2.Y < t.Y) ? new Point(t.X + target.GetWidth() / 2, t.Y) : // target left and below of source
+                    new Point(t2.X, t.Y + target.GetHeight() / 2); // target left of source
                 currentLine.updateEndPoint(target, targetPoint);
             }
             else if (s.Y > t2.Y)
             { // case: target is neither left nor right of source, but above of it
-                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth() / 2, s.Y));
-                currentLine.updateEndPoint(target, new Point(t.X + target.getWidth() / 2, t2.Y));
+                currentLine.updateStartPoint(source, new Point(s.X + source.GetWidth() / 2, s.Y));
+                currentLine.updateEndPoint(target, new Point(t.X + target.GetWidth() / 2, t2.Y));
             }
             else
             { // case: target is neither left nor right of source, but below it 
-                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth() / 2, s2.Y));
-                currentLine.updateEndPoint(target, new Point(t.X + target.getWidth() / 2, t.Y));
+                currentLine.updateStartPoint(source, new Point(s.X + source.GetWidth() / 2, s2.Y));
+                currentLine.updateEndPoint(target, new Point(t.X + target.GetWidth() / 2, t.Y));
             }
         }
         #endregion
