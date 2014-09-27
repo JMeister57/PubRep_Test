@@ -445,8 +445,8 @@ namespace BPMM_App
                         bool removeWarning = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category != Category.MISSION && src.category != Category.GOAL && src.category != Category.ASSESSMENT
                                 && trgt.category != Category.MISSION && trgt.category != Category.GOAL && trgt.category != Category.ASSESSMENT)
                             {
@@ -469,8 +469,8 @@ namespace BPMM_App
                         bool warnVision = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnObjective = false;
@@ -502,8 +502,8 @@ namespace BPMM_App
                         bool warn = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY)
                             {
                                 warn = false;
@@ -524,8 +524,8 @@ namespace BPMM_App
                         bool warnResult = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnTactic = false;
@@ -556,8 +556,8 @@ namespace BPMM_App
                         bool warnResult = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.GOAL || trgt.category == Category.GOAL || src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnResult = false;
@@ -580,8 +580,8 @@ namespace BPMM_App
                         bool removeVisionMission = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.BUSINESS_RULE || trgt.category == Category.BUSINESS_RULE)
                             {
                                 warnRule = false;
@@ -622,8 +622,8 @@ namespace BPMM_App
                         bool removeVisionMission = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY || src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnAction = false;
@@ -654,8 +654,8 @@ namespace BPMM_App
                         bool removeAssDir = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (src.category == Category.ASSESSMENT || trgt.category == Category.ASSESSMENT)
                             {
                                 removeAssDir = false;
@@ -689,8 +689,8 @@ namespace BPMM_App
                         bool warnInfluencer = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.source;
-                            var trgt = (BPMMControl)link.target;
+                            var src = (BPMMControl)link.sourceControl;
+                            var trgt = (BPMMControl)link.targetControl;
                             if (linkedType == Category.VISION || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE
                                 || linkedType == Category.MISSION || linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                             {

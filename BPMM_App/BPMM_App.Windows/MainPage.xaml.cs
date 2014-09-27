@@ -273,17 +273,15 @@ namespace BPMM_App
             }
 
             BaseControl target = (BaseControl)sender;
-            Point p = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
 
-            if (currentLine.Points[0].Equals(p))
+            if (target == sourceControl)
             { // case: link to itself
                 Debug.WriteLine("Cannot pull link to itself.");
                 workspace.Children.Remove(currentLine);
                 links.Remove(currentLine);
                 return;
             }
-            currentLine.updateStartPoint(sourceControl, new Point(Canvas.GetLeft(sourceControl), Canvas.GetTop(sourceControl)));
-            currentLine.updateEndPoint(target, p);
+            linkControls(sourceControl, target);
             target.MovedEvent += currentLine.targetMoved;
             sourceControl.anchor.Opacity = 0.4;
             if (sourceControl is BPMMControl && target is BPMMControl)
@@ -296,6 +294,46 @@ namespace BPMM_App
             sourceControl = null;
             currentLine = (step == TourStep.None)? null : currentLine;
             linking = false;
+        }
+
+        private void linkControls(BaseControl source, BaseControl target)
+        {
+            source.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var s = new Point(Canvas.GetLeft(source), Canvas.GetTop(source));
+            var s2 = new Point(s.X + source.getWidth(), s.Y + source.getHeight()) ;
+            var t = new Point(Canvas.GetLeft(target), Canvas.GetTop(target));
+            var t2 = new Point(t.X + target.getWidth(), t.Y + target.getHeight());
+
+            if (s2.X < t.X)
+            { // case: target is right from source
+                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth(), s.Y + source.getHeight() / 2));
+                var targetPoint =
+                    (s.Y > t2.Y) ? new Point(t.X + target.getWidth() / 2, t2.Y) : // target right and above of source
+                    (s2.Y < t.Y) ? new Point(t.X + target.getWidth() / 2, t.Y) : // target right and below source
+                    new Point(t.X, t.Y + target.getHeight() / 2); // target right of source
+                currentLine.updateEndPoint(target, targetPoint);
+                    
+            }
+            else if (s.X > t2.X)
+            { // case: target is left from source
+                currentLine.updateStartPoint(source, new Point(s.X, s.Y + source.getHeight() / 2));
+                var targetPoint =
+                    (s.Y > t2.Y) ? new Point(t.X + target.getWidth() / 2, t2.Y) : // target left and above of source
+                    (s2.Y < t.Y) ? new Point(t.X + target.getWidth() / 2, t.Y) : // target left and below of source
+                    new Point(t2.X, t.Y + target.getHeight() / 2); // target left of source
+                currentLine.updateEndPoint(target, targetPoint);
+            }
+            else if (s.Y > t2.Y)
+            { // case: target is neither left nor right of source, but above of it
+                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth() / 2, s.Y));
+                currentLine.updateEndPoint(target, new Point(t.X + target.getWidth() / 2, t2.Y));
+            }
+            else
+            { // case: target is neither left nor right of source, but below it 
+                currentLine.updateStartPoint(source, new Point(s.X + source.getWidth() / 2, s2.Y));
+                currentLine.updateEndPoint(target, new Point(t.X + target.getWidth() / 2, t.Y));
+            }
         }
         #endregion
 
@@ -430,12 +468,12 @@ namespace BPMM_App
             workspace.Children.Remove(link);
             links.Remove(link);
 
-            if (link.source is BPMMControl && link.target is BPMMControl)
+            if (link.sourceControl is BPMMControl && link.targetControl is BPMMControl)
             {
-                var source = (BPMMControl)link.source;
-                var target = (BPMMControl)link.target;
-                source.validateRemovedLink(target.category, (findLinks(source)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
-                target.validateRemovedLink(source.category, (findLinks(target)).FindAll(x => x.source is BPMMControl && x.target is BPMMControl));
+                var source = (BPMMControl)link.sourceControl;
+                var target = (BPMMControl)link.targetControl;
+                source.validateRemovedLink(target.category, (findLinks(source)).FindAll(x => x.sourceControl is BPMMControl && x.targetControl is BPMMControl));
+                target.validateRemovedLink(source.category, (findLinks(target)).FindAll(x => x.sourceControl is BPMMControl && x.targetControl is BPMMControl));
             }
         }
 
@@ -537,8 +575,8 @@ namespace BPMM_App
                 if (link != null)
                 {
                     workspace.Children.Add(link);
-                    link.source.MovedEvent += link.sourceMoved;
-                    link.target.MovedEvent += link.targetMoved;
+                    link.sourceControl.MovedEvent += link.sourceMoved;
+                    link.targetControl.MovedEvent += link.targetMoved;
                 }
             }
             return true;
@@ -712,7 +750,7 @@ namespace BPMM_App
             var result = new List<Link>();
             foreach (var link in links)
             {
-                if (link.source == control || link.target == control)
+                if (link.sourceControl == control || link.targetControl == control)
                 {
                     result.Add(link);
                 }

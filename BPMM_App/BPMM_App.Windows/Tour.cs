@@ -194,7 +194,7 @@ namespace BPMM_App
                 case TourStep.A3:
                     foreach (var link in findLinks(Influencer))
                     {
-                        if (link.source == Assessment || link.target == Assessment)
+                        if (link.sourceControl == Assessment || link.targetControl == Assessment)
                         {
                             Influencer.LinkEndEvent -= Tour_linkEstablished;
                             return;
@@ -252,7 +252,7 @@ namespace BPMM_App
                 case TourStep.R4:
                     foreach (var link in findLinks(BusinessPolicy))
                     {
-                        if (link.source == BusinessRule || link.target == BusinessRule)
+                        if (link.sourceControl == BusinessRule || link.targetControl == BusinessRule)
                         {
                             BusinessPolicy.LinkEndEvent -= Tour_linkEstablished;
                             return;
@@ -318,15 +318,15 @@ namespace BPMM_App
 
         private void Tour_linkEstablished(object sender, EventArgs e)
         {
-            if (step == TourStep.G2 && currentLine.source == Goal
-                || step == TourStep.O2 && currentLine.source == Objective
-                || step == TourStep.S2 && currentLine.source == Strategy
-                || step == TourStep.T2 && currentLine.source == Tactic
-                || step == TourStep.A2 && currentLine.source == Assessment
-                || step == TourStep.A3 && currentLine.source == Assessment
-                || step == TourStep.P2 && currentLine.source == BusinessPolicy
-                || step == TourStep.R3 && currentLine.source == BusinessRule
-                || step == TourStep.R4 && currentLine.source == BusinessRule)
+            if (step == TourStep.G2 && currentLine.sourceControl == Goal
+                || step == TourStep.O2 && currentLine.sourceControl == Objective
+                || step == TourStep.S2 && currentLine.sourceControl == Strategy
+                || step == TourStep.T2 && currentLine.sourceControl == Tactic
+                || step == TourStep.A2 && currentLine.sourceControl == Assessment
+                || step == TourStep.A3 && currentLine.sourceControl == Assessment
+                || step == TourStep.P2 && currentLine.sourceControl == BusinessPolicy
+                || step == TourStep.R3 && currentLine.sourceControl == BusinessRule
+                || step == TourStep.R4 && currentLine.sourceControl == BusinessRule)
             if (true)
             {
                 currentLine = null;

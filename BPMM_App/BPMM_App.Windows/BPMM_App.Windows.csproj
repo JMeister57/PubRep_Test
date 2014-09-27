@@ -104,13 +104,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BPMM_Controls\AssessmentControl.cs" />
-    <Compile Include="BPMM_Controls\Link.xaml.cs">
-      <DependentUpon>Link.xaml</DependentUpon>
-    </Compile>
     <Compile Include="BPMM_Controls\BaseControl.cs" />
     <Compile Include="BPMM_Controls\BPMMControl.cs" />
     <Compile Include="BPMM_Controls\BusinessRuleControl.cs" />
     <Compile Include="BPMM_Controls\InfluencerControl.cs" />
+    <Compile Include="BPMM_Controls\Link.cs" />
     <Compile Include="BPMM_Controls\NoteControl.cs" />
     <Compile Include="BPMM_Controls\WarningItem.xaml.cs">
       <DependentUpon>WarningItem.xaml</DependentUpon>
@@ -137,10 +135,6 @@
     <Content Include="Assets\StoreLogo.scale-100.png" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="BPMM_Controls\Link.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="BPMM_Controls\WarningItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

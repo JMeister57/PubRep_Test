@@ -96,6 +96,16 @@ namespace BPMM_App
             return size;
         }
 
+        public double getWidth()
+        {
+            return frame.ActualWidth;
+        }
+
+        public double getHeight()
+        {
+            return frame.ActualHeight;
+        }
+
         public abstract void UpdateFontSize(double scale);
 
         public virtual JsonObject serialize()
