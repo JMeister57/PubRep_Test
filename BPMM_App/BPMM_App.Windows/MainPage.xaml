@@ -10,6 +10,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <Style x:Key="toolbarStyle" TargetType="ListView">
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+        <DataTemplate x:Key="HeaderTemplate">
+            <StackPanel>
+                <SymbolIcon Symbol="{Binding}"/>
+                <TextBlock Text="{Binding}"/>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+    
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ChildrenTransitions>
             <TransitionCollection>
@@ -71,57 +83,98 @@
         
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="110"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListView x:Name="toolbar" Grid.Column="0" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                      Header="Toolbar" Background="WhiteSmoke" FontSize="24">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Height" Value="50" />
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <Border BorderThickness="3" x:Name="visionIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Vision"/>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <ListView x:Name="toolbarEnds" Grid.Column="0" Grid.Row="0"  CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                      Background="LightGreen" FontSize="24" Style="{StaticResource toolbarStyle}">
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Background="Gray">
+                            <SymbolIcon Symbol="Flag" Foreground="LightGreen"/>
+                            <TextBlock Text="Ends" FontSize="18" VerticalAlignment="Center" Foreground="LightGreen"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
+                <Border x:Name="visionIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Vision</TextBlock>
                 </Border>
-                <Border BorderThickness="3" x:Name="goalIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Goal"/>
+                <Border x:Name="goalIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Goal</TextBlock>
                 </Border>
-                <Border BorderThickness="3" x:Name="objectiveIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Objective"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="missionIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Mission"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="strategyIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Strategy"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="tacticIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Tactic"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="policyIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Policy"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="ruleIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Business Rule"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="influencerIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Influencer"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="assessmentIcon" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Assessment"/>
-                </Border>
-                <Border BorderThickness="3" x:Name="note" >
-                    <Image Source="Assets/social-003_twitter.png" ToolTipService.ToolTip="Note"/>
+                <Border x:Name="objectiveIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Objective</TextBlock>
                 </Border>
             </ListView>
-            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+            <ListView x:Name="toolbarMeans" Grid.Column="0" Grid.Row="1" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                      Background="LightYellow" FontSize="24" Style="{StaticResource toolbarStyle}">
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Background="Gray">
+                            <SymbolIcon Symbol="Bullets" Foreground="LightYellow"/>
+                            <TextBlock Text="Means" FontSize="18" VerticalAlignment="Center" Foreground="LightYellow"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
+                <Border x:Name="missionIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Mission</TextBlock>
+                </Border>
+                <Border x:Name="strategyIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Strategy</TextBlock>
+                </Border>
+                <Border x:Name="tacticIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Tactic</TextBlock>
+                </Border>
+            </ListView>
+            <ListView x:Name="toolbarDirectives" Grid.Column="0" Grid.Row="2" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                Background="LightBlue" FontSize="24" Style="{StaticResource toolbarStyle}">
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Background="Gray">
+                            <SymbolIcon Symbol="Admin" Foreground="LightBlue"/>
+                            <TextBlock Text="Directives" FontSize="18" VerticalAlignment="Center" Foreground="LightBlue"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
+                <Border x:Name="policyIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Policy</TextBlock>
+                </Border>
+                <Border x:Name="ruleIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Rule</TextBlock>
+                </Border>
+            </ListView>
+            <ListView x:Name="toolbarInfluencer" Grid.Column="0" Grid.Row="3" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                Background="Plum" FontSize="24" Style="{StaticResource toolbarStyle}">
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Background="Gray">
+                            <SymbolIcon Symbol="Important" Foreground="Plum"/>
+                            <TextBlock Text="Influences" FontSize="18" VerticalAlignment="Center" Foreground="Plum"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
+                <Border x:Name="influencerIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Influencer</TextBlock>
+                </Border>
+                <Border x:Name="assessmentIcon" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Assessment</TextBlock>
+                </Border>
+                <Border x:Name="note" Grid.Column="0" Grid.Row="4" Height="50" HorizontalAlignment="Center">
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
+                </Border>
+            </ListView>
+            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="4" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
                         Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
                 </Canvas>
             </ScrollViewer>
-            <Grid x:Name="warnings_grid" Grid.Column="1" VerticalAlignment="Bottom">
+            <Grid x:Name="warnings_grid" Grid.Column="1" Grid.Row="4" VerticalAlignment="Bottom">
                 <Grid.Resources>
                     <Style TargetType="ListViewItem" x:Key="itemStyle">
                         <Setter Property="Height" Value="30"/>
