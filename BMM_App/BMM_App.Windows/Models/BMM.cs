@@ -1,4 +1,4 @@
-﻿using BPMM_App.Common;
+﻿using BMM_App.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,9 +24,9 @@ using Windows.UI.Core;
 using Windows.Data.Json;
 using Windows.UI;
 
-namespace BPMM_App
+namespace BMM_App
 {
-    public class BPMMControl : BaseControl, INotifyPropertyChanged
+    public class BMM : BaseModel, INotifyPropertyChanged
     {
         public static ObservableCollection<string> states = new ObservableCollection<string> { "created", "approved", "denied", "duplicate" };
 
@@ -51,7 +51,7 @@ namespace BPMM_App
         public Border descriptionBorder;
         protected ComboBox stateCombo;
 
-        public BPMMControl(Category category)
+        public BMM(Category category)
             : base(category)
         {
             author = "Tieni";
@@ -445,8 +445,8 @@ namespace BPMM_App
                         bool removeWarning = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category != Category.MISSION && src.category != Category.GOAL && src.category != Category.ASSESSMENT
                                 && trgt.category != Category.MISSION && trgt.category != Category.GOAL && trgt.category != Category.ASSESSMENT)
                             {
@@ -469,8 +469,8 @@ namespace BPMM_App
                         bool warnVision = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnObjective = false;
@@ -502,8 +502,8 @@ namespace BPMM_App
                         bool warn = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY)
                             {
                                 warn = false;
@@ -524,8 +524,8 @@ namespace BPMM_App
                         bool warnResult = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnTactic = false;
@@ -556,8 +556,8 @@ namespace BPMM_App
                         bool warnResult = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.GOAL || trgt.category == Category.GOAL || src.category == Category.OBJECTIVE || trgt.category == Category.OBJECTIVE)
                             {
                                 warnResult = false;
@@ -580,8 +580,8 @@ namespace BPMM_App
                         bool removeVisionMission = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.BUSINESS_RULE || trgt.category == Category.BUSINESS_RULE)
                             {
                                 warnRule = false;
@@ -622,8 +622,8 @@ namespace BPMM_App
                         bool removeVisionMission = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.STRATEGY || trgt.category == Category.STRATEGY || src.category == Category.TACTIC || trgt.category == Category.TACTIC)
                             {
                                 warnAction = false;
@@ -654,8 +654,8 @@ namespace BPMM_App
                         bool removeAssDir = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (src.category == Category.ASSESSMENT || trgt.category == Category.ASSESSMENT)
                             {
                                 removeAssDir = false;
@@ -689,8 +689,8 @@ namespace BPMM_App
                         bool warnInfluencer = true;
                         foreach (var link in remainingLinks)
                         {
-                            var src = (BPMMControl)link.sourceControl;
-                            var trgt = (BPMMControl)link.targetControl;
+                            var src = (BMM)link.sourceModel;
+                            var trgt = (BMM)link.targetModel;
                             if (linkedType == Category.VISION || linkedType == Category.GOAL || linkedType == Category.OBJECTIVE
                                 || linkedType == Category.MISSION || linkedType == Category.STRATEGY || linkedType == Category.TACTIC)
                             {
@@ -759,25 +759,25 @@ namespace BPMM_App
             return controlEntry;
         }
 
-        public static BPMMControl deserialize(JsonObject input)
+        public static BMM deserialize(JsonObject input)
         {
-            var control = BaseControl.deserialize(input);
+            var control = BaseModel.deserialize(input);
             var title = input.GetNamedString("title", "");
             if (title.Length > 0)
             {
-                ((BPMMControl)control).Title = title;
+                ((BMM)control).Title = title;
             }
             var description = input.GetNamedString("description", "");
             if (description.Length > 0)
             {
-                ((BPMMControl)control).Description = description;
+                ((BMM)control).Description = description;
             }
             var state = input.GetNamedNumber("state", -1);
             if (state != -1)
             {
-                ((BPMMControl)control).stateCombo.SelectedIndex = (int)state;
+                ((BMM)control).stateCombo.SelectedIndex = (int)state;
             }
-            return (BPMMControl)control;
+            return (BMM)control;
         }     
     }
 }

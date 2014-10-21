@@ -103,14 +103,14 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BPMM_Controls\AssessmentControl.cs" />
-    <Compile Include="BPMM_Controls\BaseControl.cs" />
-    <Compile Include="BPMM_Controls\BPMMControl.cs" />
-    <Compile Include="BPMM_Controls\BusinessRuleControl.cs" />
-    <Compile Include="BPMM_Controls\InfluencerControl.cs" />
-    <Compile Include="BPMM_Controls\Link.cs" />
-    <Compile Include="BPMM_Controls\NoteControl.cs" />
-    <Compile Include="BPMM_Controls\WarningItem.xaml.cs">
+    <Compile Include="Models\AssessmentModel.cs" />
+    <Compile Include="Models\BaseModel.cs" />
+    <Compile Include="Models\BMM.cs" />
+    <Compile Include="Models\BusinessRuleModel.cs" />
+    <Compile Include="Models\InfluencerModel.cs" />
+    <Compile Include="Models\Link.cs" />
+    <Compile Include="Models\NoteModel.cs" />
+    <Compile Include="Models\WarningItem.xaml.cs">
       <DependentUpon>WarningItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainPage.xaml.cs">
@@ -123,7 +123,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="BPMM_Controls\BPMM_App.Windows_TemporaryKey.pfx" />
+    <None Include="Models\BMM_App.Windows_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.scale-100.png" />
@@ -135,7 +135,7 @@
     <Content Include="Assets\StoreLogo.scale-100.png" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="BPMM_Controls\WarningItem.xaml">
+    <Page Include="Models\WarningItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

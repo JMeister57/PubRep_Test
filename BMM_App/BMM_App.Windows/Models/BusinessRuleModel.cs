@@ -10,15 +10,15 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 
-namespace BPMM_App
+namespace BMM_App
 {
-    public class BusinessRuleControl : BPMMControl
+    public class BusinessRuleModel : BMM
     {
         public ComboBox enforcementCombo;
         private static ObservableCollection<string> enforcementLevels =
             new ObservableCollection<string> { "<Enforcement Lvl>", "Strictly", "Deferred", "Pre-auth Override", "Post-justified Override", "Explained Override", "Guideline" };
 
-        public BusinessRuleControl()
+        public BusinessRuleModel()
             : base(Category.BUSINESS_RULE)
         {
             enforcementCombo = new ComboBox();
@@ -66,15 +66,15 @@ namespace BPMM_App
             return controlEntry;
         }
 
-        public static new BusinessRuleControl deserialize(JsonObject input)
+        public static new BusinessRuleModel deserialize(JsonObject input)
         {
-            var control = (BusinessRuleControl)BPMMControl.deserialize(input);
+            var model = (BusinessRuleModel)BMM.deserialize(input);
             var level = input.GetNamedNumber("enforcement-level", -1);
             if (level != -1)
             {
-                control.enforcementCombo.SelectedIndex = (int)level;
+                model.enforcementCombo.SelectedIndex = (int)level;
             }
-            return control;
+            return model;
         }
     }
 }

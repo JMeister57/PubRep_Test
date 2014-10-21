@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 // Die Vorlage "Leere Anwendung" ist unter http://go.microsoft.com/fwlink/?LinkId=234227 dokumentiert.
 
-namespace BPMM_App
+namespace BMM_App
 {
     /// <summary>
     /// Stellt das anwendungsspezifische Verhalten bereit, um die Standardanwendungsklasse zu ergänzen.
@@ -62,13 +62,13 @@ namespace BPMM_App
             {
                 // Einen Rahmen erstellen, der als Navigationskontext fungiert und zum Parameter der ersten Seite navigieren
                 rootFrame = new Frame();
-                BPMM_App.Common.SuspensionManager.RegisterFrame(rootFrame, "appFrame");
+                BMM_App.Common.SuspensionManager.RegisterFrame(rootFrame, "appFrame");
                 // TODO: diesen Wert auf eine Cachegröße ändern, die für Ihre Anwendung geeignet ist
                 rootFrame.CacheSize = 1;
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
-                    await BPMM_App.Common.SuspensionManager.RestoreAsync();
+                    await BMM_App.Common.SuspensionManager.RestoreAsync();
                 }
 
                 // Den Rahmen im aktuellen Fenster platzieren
@@ -129,7 +129,7 @@ namespace BPMM_App
         private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-            await BPMM_App.Common.SuspensionManager.SaveAsync();
+            await BMM_App.Common.SuspensionManager.SaveAsync();
             deferral.Complete();
         }
     }

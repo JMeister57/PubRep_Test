@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation.Collections;
 
-namespace BPMM_App.Common
+namespace BMM_App.Common
 {
     /// <summary>
     /// Implementierung von IObservableMap, die ein erneutes Eintreten zur Verwendung als Standardanzeigemodell

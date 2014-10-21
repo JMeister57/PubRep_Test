@@ -17,13 +17,13 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
-namespace BPMM_App
+namespace BMM_App
 {
     public enum Category
     {
         VISION, GOAL, OBJECTIVE, MISSION, STRATEGY, TACTIC, BUSINESS_POLICY, BUSINESS_RULE, INFLUENCER, ASSESSMENT, NOTE
     }
-    public abstract class BaseControl : UserControl
+    public abstract class BaseModel : UserControl
     {
         private const int MIN_SIZE = 100;
         private static int max_id = 0;
@@ -42,18 +42,18 @@ namespace BPMM_App
         public event EventHandler LinkEndEvent;
         public event EventHandler DeleteEvent;
 
-        public BaseControl(Category category)
+        public BaseModel(Category category)
         {
             id = ++max_id;
             this.category = category;
-            AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseControl_RightTapped), false);
+            AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseModel_RightTapped), false);
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.Linen)};
             frame.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseControl_ManipulationDelta), false);
-            frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseControl_PointerPressed), false);
-            frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseControl_PointerReleased), false);
-            frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseControl_ManipulationComplete), false);
+            frame.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(BaseModel_ManipulationDelta), false);
+            frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(BaseModel_PointerPressed), false);
+            frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(BaseModel_PointerReleased), false);
+            frame.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BaseModel_ManipulationComplete), false);
 
             anchor = new Border() { Opacity = 0.4 };
             var linkIcon = new SymbolIcon(Symbol.Go) { Foreground = new SolidColorBrush(Colors.White) };
@@ -110,16 +110,16 @@ namespace BPMM_App
 
         public virtual JsonObject serialize()
         {
-            var controlEntry = new JsonObject();
-            controlEntry.Add("category", JsonValue.CreateNumberValue((int)category));
-            controlEntry.Add("x", JsonValue.CreateNumberValue(Canvas.GetLeft(this)));
-            controlEntry.Add("y", JsonValue.CreateNumberValue(Canvas.GetTop(this)));
-            controlEntry.Add("width", JsonValue.CreateNumberValue(ActualWidth));
-            controlEntry.Add("height", JsonValue.CreateNumberValue(ActualHeight));
-            return controlEntry;
+            var modelEntry = new JsonObject();
+            modelEntry.Add("category", JsonValue.CreateNumberValue((int)category));
+            modelEntry.Add("x", JsonValue.CreateNumberValue(Canvas.GetLeft(this)));
+            modelEntry.Add("y", JsonValue.CreateNumberValue(Canvas.GetTop(this)));
+            modelEntry.Add("width", JsonValue.CreateNumberValue(ActualWidth));
+            modelEntry.Add("height", JsonValue.CreateNumberValue(ActualHeight));
+            return modelEntry;
         }
 
-        public static BaseControl deserialize(JsonObject input)
+        public static BaseModel deserialize(JsonObject input)
         {
             var value = input.GetNamedNumber("category", -1);
             if (value == -1)
@@ -129,15 +129,15 @@ namespace BPMM_App
             try
             {
                 Category newType = (Category)value;
-                var control =
-                    (newType == Category.NOTE) ? (BaseControl)new NoteControl() :
-                    (newType == Category.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl() :
-                    (newType == Category.INFLUENCER) ? (BaseControl)new InfluencerControl() :
-                    (newType == Category.ASSESSMENT) ? (BaseControl)new AssessmentControl() :
-                    new BPMMControl(newType);
-                Canvas.SetLeft(control, input.GetNamedNumber("x", 0));
-                Canvas.SetTop(control, input.GetNamedNumber("y", 0));
-                return control;
+                var model =
+                    (newType == Category.NOTE) ? (BaseModel)new NoteModel() :
+                    (newType == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel() :
+                    (newType == Category.INFLUENCER) ? (BaseModel)new InfluencerModel() :
+                    (newType == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel() :
+                    new BMM(newType);
+                Canvas.SetLeft(model, input.GetNamedNumber("x", 0));
+                Canvas.SetTop(model, input.GetNamedNumber("y", 0));
+                return model;
             }
             catch (InvalidCastException)
             {
@@ -149,11 +149,11 @@ namespace BPMM_App
             max_id = 0;
         }
 
-        private void BaseControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void BaseModel_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             pointerPressPos = e.GetCurrentPoint((UIElement)Parent).Position;
         }
-        private async void BaseControl_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        private async void BaseModel_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             if (e.GetPosition((UIElement)Parent).X - pointerPressPos.X > 1 || e.GetPosition((UIElement)Parent).Y - pointerPressPos.Y > 1)
             {
@@ -186,7 +186,7 @@ namespace BPMM_App
             return new Rect(pointTransformed.X, pointTransformed.Y, ActualWidth, ActualHeight);
         }
 
-        private void BaseControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void BaseModel_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (e.Delta.Scale != 1)
             { // Scaling
@@ -204,7 +204,7 @@ namespace BPMM_App
             e.Handled = true;
         }
 
-        private void BaseControl_ManipulationComplete(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void BaseModel_ManipulationComplete(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             if (e.Cumulative.Translation.X != 0 || e.Cumulative.Translation.Y != 0)
             {
@@ -223,7 +223,7 @@ namespace BPMM_App
             Arrange(new Rect(0, 0, DesiredSize.Width, DesiredSize.Height));
         }
 
-        private void BaseControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void BaseModel_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (LinkEndEvent != null)
             {

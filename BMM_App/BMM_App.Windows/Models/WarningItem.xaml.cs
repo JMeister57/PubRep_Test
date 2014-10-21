@@ -16,11 +16,11 @@ using Windows.UI.Xaml.Navigation;
 
 // Die Elementvorlage "Benutzersteuerelement" ist unter http://go.microsoft.com/fwlink/?LinkId=234236 dokumentiert.
 
-namespace BPMM_App
+namespace BMM_App
 {
     public sealed partial class WarningItem : UserControl, INotifyPropertyChanged
     {
-        public BPMMControl control;
+        public BMM model;
         public Codes code;
         private string warningShort;
         private string warningLong;
@@ -52,15 +52,15 @@ namespace BPMM_App
                 { Codes.W_VISION_NOT_MISSION_GOAL_ASSESSMENT, new KeyValuePair<string, string>( "Wrong Link to something else than Mission, Goal or Assessment:", "A Vision's attainability can be affected by Assessments. Its realization should be formulated in a Mission and Goals, which in turn are concretized by Courses of Action and Objectives.") },
             };
 
-        public WarningItem(BPMMControl control, Codes code)
+        public WarningItem(BMM model, Codes code)
         {
             this.InitializeComponent();
             DataContext = this;
-            this.control = control;
+            this.model = model;
             this.code = code;
             var entry = new KeyValuePair<string, string>();
             catalogue.TryGetValue(code, out entry);
-            Warning_Short = String.Format("Model {0} \"{1}\": {2}.", control.id, control.Title, entry.Key);
+            Warning_Short = String.Format("Model {0} \"{1}\": {2}.", model.id, model.Title, entry.Key);
             Warning_Long = entry.Value;
         }
 

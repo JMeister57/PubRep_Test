@@ -16,13 +16,13 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace BPMM_App
+namespace BMM_App
 {
-    public class NoteControl : BaseControl
+    public class NoteModel : BaseModel
     {
         private TextBox textField;
 
-        public NoteControl() : base(Category.NOTE)
+        public NoteModel() : base(Category.NOTE)
         {
             textField = new BPMM_TextBox()
             {
@@ -63,9 +63,9 @@ namespace BPMM_App
             return noteEntry;
         }
 
-        public static NoteControl deserialize(JsonObject input)
+        public static NoteModel deserialize(JsonObject input)
         {
-            var note = (NoteControl)BaseControl.deserialize(input);
+            var note = (NoteModel)BaseModel.deserialize(input);
             var description = input.GetNamedString("description", "");
             note.textField.Text = description;
             return note;

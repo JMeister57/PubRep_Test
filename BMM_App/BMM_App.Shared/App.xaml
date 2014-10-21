@@ -1,8 +1,8 @@
 ﻿<Application
-    x:Class="BPMM_App.App"
+    x:Class="BMM_App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:BPMM_App"
+    xmlns:local="using:BMM_App"
     RequestedTheme="Light">
     <Application.Resources>
         <Style x:Key="BigGreenTextStyle" TargetType="TextBlock">
@@ -19,6 +19,6 @@
             <Setter Property="TextLineBounds" Value="TrimToBaseline"/>
             <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings"/>
         </Style>
-        <x:String x:Key="AppName">BPMM</x:String>
+        <x:String x:Key="AppName">BMM</x:String>
     </Application.Resources>
 </Application>

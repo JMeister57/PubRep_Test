@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace BPMM_App.Common
+namespace BMM_App.Common
 {
     /// <summary>
     /// Ein Befehl mit dem einzigen Zweck, seine Funktionalität zu vermitteln 

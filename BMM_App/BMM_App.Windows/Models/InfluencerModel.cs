@@ -10,9 +10,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 
-namespace BPMM_App
+namespace BMM_App
 {
-    class InfluencerControl : BPMMControl
+    class InfluencerModel : BMM
     {
         public ComboBox influencerCombo;
         private ObservableCollection<String> influencerTypes;
@@ -24,7 +24,7 @@ namespace BPMM_App
         public const String externalSep = "--- External: ---";
         public const String internalSep = "--- Internal: ---";
 
-        public InfluencerControl()
+        public InfluencerModel()
             : base(Category.INFLUENCER)
         {
             List<String> types = new List<String>();
@@ -81,16 +81,16 @@ namespace BPMM_App
             return controlEntry;
         }
 
-        public static new InfluencerControl deserialize(JsonObject input)
+        public static new InfluencerModel deserialize(JsonObject input)
         {
-            var control = (InfluencerControl)BPMMControl.deserialize(input);
+            var model = (InfluencerModel)BMM.deserialize(input);
             var influencer = input.GetNamedNumber("influencer", -1);
             if (influencer != -1)
             {
-                control.influencerCombo.SelectedIndex = (int)influencer;
+                model.influencerCombo.SelectedIndex = (int)influencer;
             }
 
-            return control;
+            return model;
         }
 
         private void influencerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)

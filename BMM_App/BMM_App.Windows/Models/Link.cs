@@ -1,4 +1,4 @@
-﻿using BPMM_App.Common;
+﻿using BMM_App.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,7 +24,7 @@ using Windows.UI;
 using System.Globalization;
 using System.Collections.Specialized;
 
-namespace BPMM_App
+namespace BMM_App
 {
     public class Link : UserControl, INotifyPropertyChanged
     {
@@ -32,8 +32,8 @@ namespace BPMM_App
         public String description;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public BaseControl sourceControl;
-        public BaseControl targetControl;
+        public BaseModel sourceModel;
+        public BaseModel targetModel;
 
         private Polyline line;
         private Border descriptionBorder;
@@ -48,7 +48,7 @@ namespace BPMM_App
 
         public event EventHandler DeleteEvent;
 
-        public Link(BaseControl sourceControl, Point source, Point target)
+        public Link(BaseModel sourceModel, Point source, Point target)
         {
             descriptionBox = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, HorizontalAlignment = HorizontalAlignment.Center, TextWrapping = TextWrapping.Wrap };
             var binding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
@@ -68,9 +68,9 @@ namespace BPMM_App
             line.ManipulationDelta += line_ManipulationDelta;
             line.LostFocus += line_LostFocus;
 
-            AddHandler(PointerPressedEvent, new PointerEventHandler(control_PointerPressed), true);
-            PointerMoved += control_PointerMoved;
-            PointerReleased += control_PointerReleased;
+            AddHandler(PointerPressedEvent, new PointerEventHandler(model_PointerPressed), true);
+            PointerMoved += model_PointerMoved;
+            PointerReleased += model_PointerReleased;
             
             container = new Canvas();
             container.Children.Add(descriptionBorder);
@@ -81,7 +81,7 @@ namespace BPMM_App
             Points.Add(target);
             Description = descriptionBox.PlaceholderText = "[relation]";
 
-            this.sourceControl = sourceControl;
+            this.sourceModel = sourceModel;
             DataContext = this;
         }
 
@@ -139,20 +139,20 @@ namespace BPMM_App
         }
         # endregion
 
-        public void updateStartPoint(BaseControl sourceControl, Point p)
+        public void updateStartPoint(BaseModel sourceModel, Point p)
         {
-            if (sourceControl != null)
+            if (sourceModel != null)
             {
-                this.sourceControl = sourceControl;
+                this.sourceModel = sourceModel;
             }
             Points[0] = p;
         }
 
-        public void updateEndPoint(BaseControl targetControl, Point p)
+        public void updateEndPoint(BaseModel targetModel, Point p)
         {
-            if (targetControl != null)
+            if (targetModel != null)
             {
-                this.targetControl = targetControl;
+                this.targetModel = targetModel;
             }
             Points[Points.Count - 1] = p;
         }
@@ -201,14 +201,14 @@ namespace BPMM_App
             ShowCircles = true;
         }
 
-        private void control_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void model_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (movingPoint)
             {
                 CapturePointer(e.Pointer);
             }
         }
-        private void control_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void model_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (movingPoint)
             {
@@ -216,21 +216,21 @@ namespace BPMM_App
             }
         }
 
-        private void control_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void model_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (movingPoint)
             {
                 if (newPoint == 0 || newPoint == Points.Count - 1)
-                { // snap endpoints back to control edge
-                    var control = (newPoint == 0) ? sourceControl : targetControl;
+                { // snap endpoints back to model edge
+                    var model = (newPoint == 0) ? sourceModel : targetModel;
                     var p = new Point();
                     p.X =
-                        (Points[newPoint].X < Canvas.GetLeft(control)) ? Canvas.GetLeft(control) :
-                        (Points[newPoint].X > Canvas.GetLeft(control) + control.GetWidth()) ? Canvas.GetLeft(control) + control.GetWidth() :
+                        (Points[newPoint].X < Canvas.GetLeft(model)) ? Canvas.GetLeft(model) :
+                        (Points[newPoint].X > Canvas.GetLeft(model) + model.GetWidth()) ? Canvas.GetLeft(model) + model.GetWidth() :
                         Points[newPoint].X;
                     p.Y =
-                        (Points[newPoint].Y < Canvas.GetTop(control)) ? Canvas.GetTop(control) :
-                        (Points[newPoint].Y > Canvas.GetTop(control) + control.GetHeight()) ? Canvas.GetTop(control) + control.GetHeight() :
+                        (Points[newPoint].Y < Canvas.GetTop(model)) ? Canvas.GetTop(model) :
+                        (Points[newPoint].Y > Canvas.GetTop(model) + model.GetHeight()) ? Canvas.GetTop(model) + model.GetHeight() :
                         Points[newPoint].Y;
                     Points[newPoint] = p;
                 }
@@ -367,8 +367,8 @@ namespace BPMM_App
         {
             var linkEntry = new JsonObject();
             linkEntry.Add("relation", JsonValue.CreateStringValue(Description));
-            linkEntry.Add("source", JsonValue.CreateNumberValue(sourceControl.id));
-            linkEntry.Add("target", JsonValue.CreateNumberValue(targetControl.id));
+            linkEntry.Add("source", JsonValue.CreateNumberValue(sourceModel.id));
+            linkEntry.Add("target", JsonValue.CreateNumberValue(targetModel.id));
             JsonArray pointsEntry = new JsonArray();
             int i = 0;
             foreach (var point in Points)
@@ -391,8 +391,8 @@ namespace BPMM_App
             {
                 return null;
             }
-            var source = MainPage.getControl(sourceId);
-            var target = MainPage.getControl(targetId);
+            var source = MainPage.getModel(sourceId);
+            var target = MainPage.getModel(targetId);
             if (source == null || target == null)
             {
                 return null;
@@ -421,7 +421,7 @@ namespace BPMM_App
                 points.Add(new Point(x, y));
             }
             var link = new Link(source, points[0], points[points.Count - 1]);
-            link.targetControl = target;
+            link.targetModel = target;
 
             link.Description = input.GetNamedString("relation", "");
 

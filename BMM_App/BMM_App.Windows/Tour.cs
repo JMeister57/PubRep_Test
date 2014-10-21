@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
-namespace BPMM_App
+namespace BMM_App
 {
     public enum TourStep { None, V1, V2, V3, G1, G2, O1, O2, S1, S2, T1, T2, I1, I2, A1, A2, A3, A4, P1, P2, R1, R2, R3, R4, R5 }
 
@@ -24,15 +24,15 @@ namespace BPMM_App
 
         private string guideText;
         private SolidColorBrush highlightedBrush;
-        private BPMMControl Vision;
-        private BPMMControl Goal;
-        private BPMMControl Objective;
-        private BPMMControl Strategy;
-        private BPMMControl Tactic;
-        private BPMMControl BusinessPolicy;
-        private BusinessRuleControl BusinessRule;
-        private InfluencerControl Influencer;
-        private AssessmentControl Assessment;
+        private BMM Vision;
+        private BMM Goal;
+        private BMM Objective;
+        private BMM Strategy;
+        private BMM Tactic;
+        private BMM BusinessPolicy;
+        private BusinessRuleModel BusinessRule;
+        private InfluencerModel Influencer;
+        private AssessmentModel Assessment;
 
         private async void startTour(object sender, PointerRoutedEventArgs e)
         {
@@ -85,7 +85,7 @@ namespace BPMM_App
                     guideBubble.Visibility = Visibility.Visible;
                     break;
                 case TourStep.V2:
-                    Vision = (BPMMControl)workspace.Children.Last();
+                    Vision = (BMM)workspace.Children.Last();
                     Vision.headerBorder.Background = highlightBrush();
                     Vision.headerBox.KeyUp += Tour_TextBoxEdited;
                     Guide = "Good job! Next, we should give our Vision a descriptive name. Double-tap its header and enter e.g.:\"Cancer Research\". To finish editing, press [Enter].";
@@ -104,7 +104,7 @@ namespace BPMM_App
                         + "\nSo let's place a Goal on our workspace, next.";
                     break;
                 case TourStep.G2:
-                    Goal = (BPMMControl)workspace.Children.Last();
+                    Goal = (BMM)workspace.Children.Last();
                     Goal.Title = "Attractive Employer";
                     Goal.Description = "Become an attractive employer for young academics, especially for PhD students.";
                     Goal.anchor.Background = highlightBrush();
@@ -119,7 +119,7 @@ namespace BPMM_App
                     Guide = "The next step is to state concrete and realizable Objectives to achieve our Goal. Please add an Objective to the workspace.";
                     break;
                 case TourStep.O2:
-                    Objective = (BPMMControl)workspace.Children.Last();
+                    Objective = (BMM)workspace.Children.Last();
                     Objective.anchor.Background = highlightBrush();
                     Objective.Title = "Known by PhDs";
                     Objective.Description = "Within the next two years become familiar to at least 90% of the PhD students in the field of Medicine and Biology.";
@@ -136,7 +136,7 @@ namespace BPMM_App
                         + "\nPlease drag a Strategy to the workspace.";
                     break;
                 case TourStep.S2:
-                    Strategy = (BPMMControl)workspace.Children.Last();
+                    Strategy = (BMM)workspace.Children.Last();
                     Strategy.Title = "Excellent Working Conditions";
                     Strategy.Description = "Establish excellent working conditions for young academics, for PhD students in particular.";
                     Strategy.anchor.Background = highlightBrush();
@@ -151,7 +151,7 @@ namespace BPMM_App
                         + " Organizations sometimes choose to not make this distinction, but for the sake of completeness,\nplease add a Tactic to your workspace.";
                     break;
                 case TourStep.T2:
-                    Tactic = (BPMMControl)workspace.Children.Last();
+                    Tactic = (BMM)workspace.Children.Last();
                     Tactic.Title = "Annual Festival";
                     Tactic.Description = "Celebrate annual festivals to which employees can also contribute.";
                     Tactic.anchor.Background = highlightBrush();
@@ -165,7 +165,7 @@ namespace BPMM_App
                         + "\nThe next important concept are Influencers.\nDrag an Influencer onto the workspace.";
                     break;
                 case TourStep.I2:
-                    Influencer = (InfluencerControl)workspace.Children.Last();
+                    Influencer = (InfluencerModel)workspace.Children.Last();
                     Influencer.Title = "Survey on Research Money";
                     Influencer.Description = "According to a survey of institute X, 35% of the society believe that taxpayer's money is not used effectively in research institutes.";
                     Influencer.influencerCombo.Background = highlightBrush();
@@ -181,7 +181,7 @@ namespace BPMM_App
                         + " Instead, in order to evaluate its impact on the organization, an Assessment can be made.\nPlease add an Assessment to the workspace.";
                     break;
                 case TourStep.A2:
-                    Assessment = (AssessmentControl)workspace.Children.Last();
+                    Assessment = (AssessmentModel)workspace.Children.Last();
                     Assessment.Title = "Festivals Reputation";
                     Assessment.Description = "The annual festivals of the institute might lead to negative public perception.";
                     Assessment.anchor.Background = highlightBrush();
@@ -194,7 +194,7 @@ namespace BPMM_App
                 case TourStep.A3:
                     foreach (var link in findLinks(Influencer))
                     {
-                        if (link.sourceControl == Assessment || link.targetControl == Assessment)
+                        if (link.sourceModel == Assessment || link.targetModel == Assessment)
                         {
                             Influencer.LinkEndEvent -= Tour_linkEstablished;
                             return;
@@ -217,7 +217,7 @@ namespace BPMM_App
                         + " Let's create a Business Policy to counter the Threat to our cancer research institute.\nDrag a Business Policy onto the workspace.";
                     break;
                 case TourStep.P2:
-                    BusinessPolicy = (BPMMControl)workspace.Children.Last();
+                    BusinessPolicy = (BMM)workspace.Children.Last();
                     BusinessPolicy.Title = "Thrifty Budget";
                     BusinessPolicy.Description = "The institute shall use its budget task-oriented and thrifty.";
                     BusinessPolicy.anchor.Background = highlightBrush();
@@ -233,7 +233,7 @@ namespace BPMM_App
                         + "so that the Policy is not directly enforceable.\nAdd a Business Rule to the workspace to see an example of an enforceable Directive.";
                     break;
                 case TourStep.R2:
-                    BusinessRule = (BusinessRuleControl)workspace.Children.Last();
+                    BusinessRule = (BusinessRuleModel)workspace.Children.Last();
                     BusinessRule.Title = "Student Salary";
                     BusinessRule.Description = "Undergraduates and students with Master's degree shall receive an ordinary research assistant salary at most.";
                     BusinessRule.enforcementCombo.Background = highlightBrush();
@@ -252,7 +252,7 @@ namespace BPMM_App
                 case TourStep.R4:
                     foreach (var link in findLinks(BusinessPolicy))
                     {
-                        if (link.sourceControl == BusinessRule || link.targetControl == BusinessRule)
+                        if (link.sourceModel == BusinessRule || link.targetModel == BusinessRule)
                         {
                             BusinessPolicy.LinkEndEvent -= Tour_linkEstablished;
                             return;
@@ -318,15 +318,15 @@ namespace BPMM_App
 
         private void Tour_linkEstablished(object sender, EventArgs e)
         {
-            if (step == TourStep.G2 && currentLine.sourceControl == Goal
-                || step == TourStep.O2 && currentLine.sourceControl == Objective
-                || step == TourStep.S2 && currentLine.sourceControl == Strategy
-                || step == TourStep.T2 && currentLine.sourceControl == Tactic
-                || step == TourStep.A2 && currentLine.sourceControl == Assessment
-                || step == TourStep.A3 && currentLine.sourceControl == Assessment
-                || step == TourStep.P2 && currentLine.sourceControl == BusinessPolicy
-                || step == TourStep.R3 && currentLine.sourceControl == BusinessRule
-                || step == TourStep.R4 && currentLine.sourceControl == BusinessRule)
+            if (step == TourStep.G2 && currentLine.sourceModel == Goal
+                || step == TourStep.O2 && currentLine.sourceModel == Objective
+                || step == TourStep.S2 && currentLine.sourceModel == Strategy
+                || step == TourStep.T2 && currentLine.sourceModel == Tactic
+                || step == TourStep.A2 && currentLine.sourceModel == Assessment
+                || step == TourStep.A3 && currentLine.sourceModel == Assessment
+                || step == TourStep.P2 && currentLine.sourceModel == BusinessPolicy
+                || step == TourStep.R3 && currentLine.sourceModel == BusinessRule
+                || step == TourStep.R4 && currentLine.sourceModel == BusinessRule)
             if (true)
             {
                 currentLine = null;

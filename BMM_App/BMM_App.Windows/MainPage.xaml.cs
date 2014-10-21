@@ -1,4 +1,4 @@
-﻿using BPMM_App.Common;
+﻿using BMM_App.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,7 +30,7 @@ using Windows.UI.Text;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 
-namespace BPMM_App
+namespace BMM_App
 {
 
     public sealed partial class MainPage : Page, INotifyPropertyChanged
@@ -41,12 +41,12 @@ namespace BPMM_App
         private string user = "Sebastian";
         private string password;
 
-        public static List<BaseControl> controls = new List<BaseControl>();
+        public static List<BaseModel> models = new List<BaseModel>();
         private static List<Link> links = new List<Link>();
 
         private bool linking = false;
         private Link currentLine;
-        private BaseControl sourceControl;
+        private BaseModel sourceModel;
         
         private bool selecting;
         private Point selectionStartPoint;
@@ -140,22 +140,22 @@ namespace BPMM_App
             if (e.Data.Properties.TryGetValue("Item", out item))
             {
                 Category category = (Category)item;
-                BaseControl control =
-                            (category == Category.NOTE) ? (BaseControl)new NoteControl() :
-                            (category == Category.ASSESSMENT) ? (BaseControl)new AssessmentControl() :
-                            (category == Category.BUSINESS_RULE) ? (BaseControl)new BusinessRuleControl() :
-                            (category == Category.INFLUENCER) ? (BaseControl)new InfluencerControl() :
-                            (BaseControl)new BPMMControl(category);
+                BaseModel model =
+                            (category == Category.NOTE) ? (BaseModel)new NoteModel() :
+                            (category == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel() :
+                            (category == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel() :
+                            (category == Category.INFLUENCER) ? (BaseModel)new InfluencerModel() :
+                            (BaseModel)new BMM(category);
 
-                control.LinkStartEvent += OnLinkStart;
-                control.LinkEndEvent += OnLinkEnd;
-                control.DeleteEvent += DeleteControl;
-                control.MovedEvent += ControlMoved;
-                control.MoveEndEvent += ControlStoppedMoving;
-                controls.Add(control);
-                if (control is BPMMControl)
+                model.LinkStartEvent += OnLinkStart;
+                model.LinkEndEvent += OnLinkEnd;
+                model.DeleteEvent += DeleteModel;
+                model.MovedEvent += ModelMoved;
+                model.MoveEndEvent += ModelStoppedMoving;
+                models.Add(model);
+                if (model is BMM)
                 {
-                    BPMMControl bpmm = (BPMMControl)control;
+                    BMM bpmm = (BMM)model;
                     bpmm.WarningsAddedEvent += AddWarnings;
                     bpmm.WarningsRemovedEvent += RemoveWarnings;
 
@@ -166,9 +166,9 @@ namespace BPMM_App
                     }
                 }
                 Point pos = e.GetPosition(workspace);
-                Canvas.SetLeft(control, pos.X);
-                Canvas.SetTop(control, pos.Y);
-                workspace.Children.Add(control);
+                Canvas.SetLeft(model, pos.X);
+                Canvas.SetTop(model, pos.Y);
+                workspace.Children.Add(model);
                 if (step == TourStep.V1 && category == Category.VISION
                     || step == TourStep.G1 && category == Category.GOAL
                     || step == TourStep.O1 && category == Category.OBJECTIVE
@@ -184,13 +184,13 @@ namespace BPMM_App
             }
         }
 
-        public static BaseControl getControl(int id)
+        public static BaseModel getModel(int id)
         {
-            foreach (var control in controls)
+            foreach (var model in models)
             {
-                if (control.id == id)
+                if (model.id == id)
                 {
-                    return control;
+                    return model;
                 }
             }
             return null;
@@ -199,10 +199,10 @@ namespace BPMM_App
         private double maxX()
         {
             double maxX = 0;
-            foreach (var control in controls)
+            foreach (var model in models)
             {
-                control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                maxX = Math.Max(maxX, Canvas.GetLeft(control) + control.ActualWidth);
+                model.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                maxX = Math.Max(maxX, Canvas.GetLeft(model) + model.ActualWidth);
             }
             return maxX;
         }
@@ -210,9 +210,9 @@ namespace BPMM_App
         private double minX()
         {
             double minX = double.PositiveInfinity;
-            foreach (var control in controls)
+            foreach (var model in models)
             {
-                minX = Math.Min(minX, Canvas.GetLeft(control));
+                minX = Math.Min(minX, Canvas.GetLeft(model));
             }
             return minX;
         }
@@ -220,10 +220,10 @@ namespace BPMM_App
         private double maxY()
         {
             double maxY = 0;
-            foreach (var control in controls)
+            foreach (var model in models)
             {
-                control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                maxY = Math.Max(maxY, Canvas.GetTop(control) + control.ActualHeight);
+                model.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                maxY = Math.Max(maxY, Canvas.GetTop(model) + model.ActualHeight);
             }
             return maxY;
         }
@@ -231,9 +231,9 @@ namespace BPMM_App
         private double minY()
         {
             double minY = double.PositiveInfinity;
-            foreach (var control in controls)
+            foreach (var model in models)
             {
-                minY = Math.Min(minY, Canvas.GetTop(control));
+                minY = Math.Min(minY, Canvas.GetTop(model));
             }
             return minY;
         }
@@ -255,10 +255,10 @@ namespace BPMM_App
         #region link drawing
         public void OnLinkStart(object sender, PointerRoutedEventArgs e)
         {
-            sourceControl = (BaseControl)sender;
+            sourceModel = (BaseModel)sender;
             Point p = e.GetCurrentPoint(workspace).Position;
-            currentLine = new Link(sourceControl, p, p);
-            sourceControl.MovedEvent += currentLine.sourceMoved;
+            currentLine = new Link(sourceModel, p, p);
+            sourceModel.MovedEvent += currentLine.sourceMoved;
             currentLine.DeleteEvent += DeleteLink;
             links.Add(currentLine);
             workspace.Children.Add(currentLine);
@@ -268,35 +268,35 @@ namespace BPMM_App
         public void OnLinkEnd(object sender, EventArgs e)
         {
             if (currentLine == null)
-            { // case: simple click on control
+            { // case: simple click on model
                 return;
             }
 
-            BaseControl target = (BaseControl)sender;
+            BaseModel target = (BaseModel)sender;
 
-            if (target == sourceControl)
+            if (target == sourceModel)
             { // case: link to itself
                 Debug.WriteLine("Cannot pull link to itself.");
                 workspace.Children.Remove(currentLine);
                 links.Remove(currentLine);
                 return;
             }
-            linkControls(sourceControl, target);
+            linkModels(sourceModel, target);
             target.MovedEvent += currentLine.targetMoved;
-            sourceControl.anchor.Opacity = 0.4;
-            if (sourceControl is BPMMControl && target is BPMMControl)
+            sourceModel.anchor.Opacity = 0.4;
+            if (sourceModel is BMM && target is BMM)
             {
-                ((BPMMControl)target).WarningsAddedEvent += AddWarnings;
-                ((BPMMControl)target).WarningsRemovedEvent += RemoveWarnings;
-                ((BPMMControl)sourceControl).validateNewLink(((BPMMControl)target).category);
-                ((BPMMControl)target).validateNewLink(((BPMMControl)sourceControl).category);
+                ((BMM)target).WarningsAddedEvent += AddWarnings;
+                ((BMM)target).WarningsRemovedEvent += RemoveWarnings;
+                ((BMM)sourceModel).validateNewLink(((BMM)target).category);
+                ((BMM)target).validateNewLink(((BMM)sourceModel).category);
             }
-            sourceControl = null;
+            sourceModel = null;
             currentLine = (step == TourStep.None)? null : currentLine;
             linking = false;
         }
 
-        private void linkControls(BaseControl source, BaseControl target)
+        private void linkModels(BaseModel source, BaseModel target)
         {
             var s = new Point(Canvas.GetLeft(source), Canvas.GetTop(source));
             var s2 = new Point(s.X + source.GetWidth(), s.Y + source.GetHeight()) ;
@@ -351,11 +351,11 @@ namespace BPMM_App
             }
             else if (e.Delta.Scale != 0)
             {
-                foreach (var control in controls)
+                foreach (var model in models)
                 {
 
-                    control.Resize(e.Delta.Scale);
-                    control.UpdateFontSize(e.Delta.Scale);
+                    model.Resize(e.Delta.Scale);
+                    model.UpdateFontSize(e.Delta.Scale);
                 }
                 foreach (var link in links)
                 {
@@ -446,18 +446,18 @@ namespace BPMM_App
             //}
         }
         
-        public void DeleteControl(object sender, EventArgs e)
+        public void DeleteModel(object sender, EventArgs e)
         {
-            foreach (var link in findLinks((BaseControl)sender))
+            foreach (var link in findLinks((BaseModel)sender))
             {
                 DeleteLink(link, e);
             }
-            if(sender is BPMMControl)
+            if(sender is BMM)
             {
-                RemoveWarnings(sender, ((BPMMControl)sender).warnings);
+                RemoveWarnings(sender, ((BMM)sender).warnings);
             }
-            workspace.Children.Remove((BaseControl)sender);
-            controls.Remove((BaseControl)sender);
+            workspace.Children.Remove((BaseModel)sender);
+            models.Remove((BaseModel)sender);
         }
 
         public void DeleteLink(object linkObj, EventArgs e)
@@ -466,72 +466,72 @@ namespace BPMM_App
             workspace.Children.Remove(link);
             links.Remove(link);
 
-            if (link.sourceControl is BPMMControl && link.targetControl is BPMMControl)
+            if (link.sourceModel is BMM && link.targetModel is BMM)
             {
-                var source = (BPMMControl)link.sourceControl;
-                var target = (BPMMControl)link.targetControl;
-                source.validateRemovedLink(target.category, (findLinks(source)).FindAll(x => x.sourceControl is BPMMControl && x.targetControl is BPMMControl));
-                target.validateRemovedLink(source.category, (findLinks(target)).FindAll(x => x.sourceControl is BPMMControl && x.targetControl is BPMMControl));
+                var source = (BMM)link.sourceModel;
+                var target = (BMM)link.targetModel;
+                source.validateRemovedLink(target.category, (findLinks(source)).FindAll(x => x.sourceModel is BMM && x.targetModel is BMM));
+                target.validateRemovedLink(source.category, (findLinks(target)).FindAll(x => x.sourceModel is BMM && x.targetModel is BMM));
             }
         }
 
-        private void ControlMoved(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void ModelMoved(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var control = (BaseControl)sender;
-            Point p = new Point(Canvas.GetLeft(control), Canvas.GetTop(control));
-            control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var model = (BaseModel)sender;
+            Point p = new Point(Canvas.GetLeft(model), Canvas.GetTop(model));
+            model.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             workspace.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             if (p.X < 0)
             {
                 workspace.Width = workspace.ActualWidth + Math.Abs(p.X);
                 workspace.UpdateLayout();
-                Canvas.SetLeft(control, 0);
+                Canvas.SetLeft(model, 0);
             }
-            else if (p.X + control.DesiredSize.Width > workspace.ActualWidth)
+            else if (p.X + model.DesiredSize.Width > workspace.ActualWidth)
             {
-                workspace.Width = p.X + control.DesiredSize.Width;
-                workspaceScroll.ChangeView(p.X + control.DesiredSize.Width, null, null);
+                workspace.Width = p.X + model.DesiredSize.Width;
+                workspaceScroll.ChangeView(p.X + model.DesiredSize.Width, null, null);
             }
             if (p.Y < 0)
             {
                 workspace.Height = workspace.DesiredSize.Height + Math.Abs(p.Y);
                 workspace.UpdateLayout();
-                Canvas.SetTop(control, 0);
+                Canvas.SetTop(model, 0);
             }
-            else if (p.Y + control.DesiredSize.Height > workspace.ActualHeight)
+            else if (p.Y + model.DesiredSize.Height > workspace.ActualHeight)
             {
-                workspace.Height = p.Y + control.DesiredSize.Height;
-                workspaceScroll.ChangeView(null, p.Y + control.DesiredSize.Height, null);
+                workspace.Height = p.Y + model.DesiredSize.Height;
+                workspaceScroll.ChangeView(null, p.Y + model.DesiredSize.Height, null);
             }
         }
-        private void ControlStoppedMoving(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void ModelStoppedMoving(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            var control = (BaseControl)sender;
-            control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var model = (BaseModel)sender;
+            model.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             double xBound = maxX();
             double yBound = maxY();
             workspace.Width = Math.Max(xBound, workspaceScroll.ActualWidth);
             workspace.Height = Math.Max(yBound, workspaceScroll.ActualHeight);
-            workspaceScroll.ChangeView(Canvas.GetLeft(control), Canvas.GetTop(control), null);
+            workspaceScroll.ChangeView(Canvas.GetLeft(model), Canvas.GetTop(model), null);
         }
 
         private string serialize()
         {
             var root = new JsonObject();
-            var controlArray = new JsonArray();
+            var modelArray = new JsonArray();
             var linkArray = new JsonArray();
             foreach (var child in workspace.Children)
             {
-                if (child is BaseControl)
+                if (child is BaseModel)
                 {
-                    controlArray.Add(((BaseControl)child).serialize());
+                    modelArray.Add(((BaseModel)child).serialize());
                 }
                 else if (child is Link)
                 {
                     linkArray.Add(((Link)child).serialize());
                 }
             }
-            root.Add("controls", controlArray);
+            root.Add("models", modelArray);
             root.Add("links", linkArray);
             Debug.WriteLine(root.Stringify());
             return root.Stringify();
@@ -545,8 +545,8 @@ namespace BPMM_App
                 return false;
             }
 
-            var controlArray = data.GetNamedArray("controls", null);
-            foreach(var entry in controlArray)
+            var modelArray = data.GetNamedArray("models", null);
+            foreach(var entry in modelArray)
             {
                 var value = entry.GetObject().GetNamedNumber("category", -1);
                 if (value == -1)
@@ -554,16 +554,16 @@ namespace BPMM_App
                     return false;
                 }
                 var type = (Category)value;
-                BaseControl control =
-                    (type == Category.NOTE) ? (BaseControl)NoteControl.deserialize(entry.GetObject()) :
-                    (type == Category.BUSINESS_RULE) ? BusinessRuleControl.deserialize(entry.GetObject()) :
-                    (type == Category.INFLUENCER) ? InfluencerControl.deserialize(entry.GetObject()) :
-                    (type == Category.ASSESSMENT) ? AssessmentControl.deserialize(entry.GetObject()) :
-                    BPMMControl.deserialize(entry.GetObject());
-                if (control != null)
+                BaseModel model =
+                    (type == Category.NOTE) ? (BaseModel)NoteModel.deserialize(entry.GetObject()) :
+                    (type == Category.BUSINESS_RULE) ? BusinessRuleModel.deserialize(entry.GetObject()) :
+                    (type == Category.INFLUENCER) ? InfluencerModel.deserialize(entry.GetObject()) :
+                    (type == Category.ASSESSMENT) ? AssessmentModel.deserialize(entry.GetObject()) :
+                    BMM.deserialize(entry.GetObject());
+                if (model != null)
                 {
-                    workspace.Children.Add(control);
-                    controls.Add(control);
+                    workspace.Children.Add(model);
+                    models.Add(model);
                 }
             }
             var linkArray = data.GetNamedArray("links", null);
@@ -573,8 +573,8 @@ namespace BPMM_App
                 if (link != null)
                 {
                     workspace.Children.Add(link);
-                    link.sourceControl.MovedEvent += link.sourceMoved;
-                    link.targetControl.MovedEvent += link.targetMoved;
+                    link.sourceModel.MovedEvent += link.sourceMoved;
+                    link.targetModel.MovedEvent += link.targetMoved;
                 }
             }
             return true;
@@ -693,9 +693,9 @@ namespace BPMM_App
             {
                 workspace.Children.Clear();
                 links.Clear();
-                controls.Clear();
+                models.Clear();
                 Warnings.Clear();
-                BaseControl.resetIds();
+                BaseModel.resetIds();
                 return true;
             }
             return false;
@@ -743,12 +743,12 @@ namespace BPMM_App
             }
         }
 
-        private List<Link> findLinks(BaseControl control)
+        private List<Link> findLinks(BaseModel model)
         {
             var result = new List<Link>();
             foreach (var link in links)
             {
-                if (link.sourceControl == control || link.targetControl == control)
+                if (link.sourceModel == model || link.targetModel == model)
                 {
                     result.Add(link);
                 }
@@ -763,7 +763,7 @@ namespace BPMM_App
                 var selected = (WarningItem)e.AddedItems[0];
                 if (selected != null)
                 {
-                    selected.control.HighLight();
+                    selected.model.HighLight();
                 }
             }
 
@@ -772,7 +772,7 @@ namespace BPMM_App
                 var released = (WarningItem)e.RemovedItems[0];
                 if (released != null)
                 {
-                    released.control.LowLight();
+                    released.model.LowLight();
                 }
             }
         }

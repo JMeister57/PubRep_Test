@@ -1,11 +1,11 @@
 ﻿<Page
     x:Name="pageRoot"
-    x:Class="BPMM_App.MainPage"
+    x:Class="BMM_App.MainPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:BPMM_App"
-    xmlns:common="using:BPMM_App.Common"
+    xmlns:local="using:BMM_App"
+    xmlns:common="using:BMM_App.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -165,7 +165,7 @@
                 <Border x:Name="assessmentIcon" >
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Assessment</TextBlock>
                 </Border>
-                <Border x:Name="note" Grid.Column="0" Grid.Row="4" Height="50" HorizontalAlignment="Center">
+                <Border x:Name="note">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
                 </Border>
             </ListView>

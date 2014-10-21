@@ -11,15 +11,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 
-namespace BPMM_App
+namespace BMM_App
 {
-    class AssessmentControl : BPMMControl
+    class AssessmentModel : BMM
     {
         public ComboBox swotControl;
         private static ObservableCollection<string> swot =
             new ObservableCollection<string> { "<SWOT>", "Strength", "Weakness", "Opportunity", "Threat" };
 
-        public AssessmentControl()
+        public AssessmentModel()
             : base(Category.ASSESSMENT)
         {
             swotControl = new ComboBox();
@@ -67,15 +67,15 @@ namespace BPMM_App
             return controlEntry;
         }
 
-        public static new AssessmentControl deserialize(JsonObject input)
+        public static new AssessmentModel deserialize(JsonObject input)
         {
-            var control = (AssessmentControl)BPMMControl.deserialize(input);
+            var model = (AssessmentModel)BMM.deserialize(input);
             var swot = input.GetNamedNumber("swot", -1);
             if (swot != -1)
             {
-                control.swotControl.SelectedIndex = (int)swot;
+                model.swotControl.SelectedIndex = (int)swot;
             }
-            return control;
+            return model;
         }
     }
 }

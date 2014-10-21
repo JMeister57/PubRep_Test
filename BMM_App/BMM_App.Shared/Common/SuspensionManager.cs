@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace BPMM_App.Common
+namespace BMM_App.Common
 {
     /// <summary>
     /// SuspensionManager erfasst den globalen Sitzungszustand, um die Verwaltung der Prozesslebensdauer
