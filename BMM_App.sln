@@ -1,18 +1,17 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BMM_App", "BMM_App", "{CC662C7B-1797-47ED-B196-5563C799E567}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BMM_App.Shared", "BPMM_App\BPMM_App.Shared\BMM_App.Shared.shproj", "{B6E187B3-1334-4787-8951-11E1A065FE6F}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BMM_App.Shared", "BMM_App\BMM_App.Shared\BMM_App.Shared.shproj", "{B6E187B3-1334-4787-8951-11E1A065FE6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMM_App.Windows", "BPMM_App\BPMM_App.Windows\BMM_App.Windows.csproj", "{D10E77E1-C5A4-4F73-BECD-69C29F7D77E1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BMM_App.Windows", "BMM_App\BMM_App.Windows\BMM_App.Windows.csproj", "{D10E77E1-C5A4-4F73-BECD-69C29F7D77E1}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		BPMM_App\BPMM_App.Shared\BPMM_App.Shared.projitems*{b6e187b3-1334-4787-8951-11e1a065fe6f}*SharedItemsImports = 13
-		BPMM_App\BPMM_App.Shared\BPMM_App.Shared.projitems*{d10e77e1-c5a4-4f73-becd-69c29f7d77e1}*SharedItemsImports = 4
+		BMM_App\BMM_App.Shared\BPMM_App.Shared.projitems*{b6e187b3-1334-4787-8951-11e1a065fe6f}*SharedItemsImports = 13
+		BMM_App\BMM_App.Shared\BMM_App.Shared.projitems*{d10e77e1-c5a4-4f73-becd-69c29f7d77e1}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
