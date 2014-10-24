@@ -14,7 +14,7 @@
             <ColumnDefinition Width="30"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <SymbolIcon Grid.Column="0" Name="warning_icon" Symbol="Flag"/>
+        <SymbolIcon Grid.Column="0" Name="warning_icon" Symbol="ReportHacked"/>
         <TextBlock Grid.Column="1" TextTrimming="CharacterEllipsis" LineHeight="1" VerticalAlignment="Center">
             <Run Text="{Binding Path=Warning_Short}" FontWeight="Bold"/>
             <Run Text="{Binding Path=Warning_Long}"/>

@@ -91,6 +91,7 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition Height="60"/>
             </Grid.RowDefinitions>
             <ListView x:Name="toolbarEnds" Grid.Column="0" Grid.Row="0"  CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
                       Background="LightGreen" FontSize="24" Style="{StaticResource toolbarStyle}">
@@ -165,16 +166,28 @@
                 <Border x:Name="assessmentIcon" >
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Assessment</TextBlock>
                 </Border>
+            </ListView>
+            <ListView x:Name="toolbarOther" Grid.Column="0" Grid.Row="4" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                Background="LightGray" FontSize="24" Style="{StaticResource toolbarStyle}">
+                <ListView.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Background="Gray">
+                            <SymbolIcon Symbol="More" Foreground="LightGray"/>
+                            <TextBlock Text="Other" FontSize="18" VerticalAlignment="Center" Foreground="LightGray"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.HeaderTemplate>
                 <Border x:Name="note">
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
                 </Border>
             </ListView>
-            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="4" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+           
+            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="5" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
                         Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
                 </Canvas>
             </ScrollViewer>
-            <Grid x:Name="warnings_grid" Grid.Column="1" Grid.Row="4" VerticalAlignment="Bottom">
+            <Grid x:Name="warnings_grid" Grid.Column="1" Grid.RowSpan="5" VerticalAlignment="Bottom">
                 <Grid.Resources>
                     <Style TargetType="ListViewItem" x:Key="itemStyle">
                         <Setter Property="Height" Value="30"/>
