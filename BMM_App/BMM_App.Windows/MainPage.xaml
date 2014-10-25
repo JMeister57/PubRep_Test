@@ -22,7 +22,16 @@
             </StackPanel>
         </DataTemplate>
     </Page.Resources>
-    
+    <Page.TopAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Save" Label="Save diagram" Click="Save_Pressed"/>
+            <AppBarButton Icon="OpenFile" Label="Load diagram" Click="Load_Pressed"/>
+            <AppBarButton Icon="SaveLocal" Label="Export to image" Click="Export_Pressed"/>
+            <AppBarButton Icon="Delete" Label="Clear workspace" Click="Clear_Pressed"/>
+            <AppBarButton x:Name="tourButton" Icon="MapPin" Label="Start the tour" Click="startTour"/>
+        </CommandBar>
+    </Page.TopAppBar>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ChildrenTransitions>
             <TransitionCollection>
@@ -53,27 +62,7 @@
                         AutomationProperties.AutomationId="BackButton"
                         AutomationProperties.ItemType="Navigation Button" />
             <TextBlock Grid.Row="0" Grid.Column="1" x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" 
-                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" />
-            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10, 5" PointerReleased="Save_Pressed">
-                <SymbolIcon Symbol="Save" ToolTipService.ToolTip="Save diagram"/>
-            </Border>
-            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60, 5" PointerReleased="Load_Pressed">
-                <SymbolIcon Symbol="OpenFile" ToolTipService.ToolTip="Load Diagram"/>
-            </Border>
-            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="110, 5" PointerReleased="Export_Pressed">
-                <SymbolIcon Symbol="SaveLocal" ToolTipService.ToolTip="Export to image"/>
-            </Border>
-            <Border Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160, 5" PointerReleased="Clear_Pressed">
-                <SymbolIcon Symbol="Delete" ToolTipService.ToolTip="Clear workspace"/>
-            </Border>
-            <Border x:Name="tourBorder" Grid.Row="1" Grid.Column="1" CornerRadius="30" Width="35" Height="35" BorderBrush="Black" BorderThickness="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="210, 5" PointerReleased="startTour">
-                <SymbolIcon x:Name="tourIcon" Symbol="Help" ToolTipService.ToolTip="Start the tour"/>
-            </Border>
+                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" />            
 
             <Border x:Name="guideBubble" Grid.Column="2" Grid.RowSpan="2" BorderThickness="5" BorderBrush="GreenYellow" Visibility="Collapsed">
                 <ScrollViewer>

@@ -570,7 +570,7 @@ namespace BMM_App
             return true;
         }
 
-        private async void Save_Pressed(object sender, PointerRoutedEventArgs e)
+        private async void Save_Pressed(object sender, RoutedEventArgs e)
         {
             var fileSaver = new FileSavePicker();
             fileSaver.FileTypeChoices.Add("BPMM", new List<String>{ ".json" });
@@ -597,7 +597,7 @@ namespace BMM_App
             }
         }
 
-        private async void Load_Pressed(object sender, PointerRoutedEventArgs e )
+        private async void Load_Pressed(object sender, RoutedEventArgs e )
         {
             var fileOpener = new FileOpenPicker();
             fileOpener.FileTypeFilter.Add(".json");
@@ -658,7 +658,7 @@ namespace BMM_App
             return null;
         }
 
-        private async void Export_Pressed(object sender, PointerRoutedEventArgs e)
+        private async void Export_Pressed(object sender, RoutedEventArgs e)
         {
             var path = await ExportPNG();
             if (path != null)
@@ -668,7 +668,7 @@ namespace BMM_App
             }
         }
 
-        private async void Clear_Pressed(object sender, PointerRoutedEventArgs e)
+        private async void Clear_Pressed(object sender, RoutedEventArgs e)
         {
             await clearWorkspace();
         }

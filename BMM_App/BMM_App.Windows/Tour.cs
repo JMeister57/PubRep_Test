@@ -34,7 +34,7 @@ namespace BMM_App
         private InfluencerModel Influencer;
         private AssessmentModel Assessment;
 
-        private async void startTour(object sender, PointerRoutedEventArgs e)
+        private async void startTour(object sender, RoutedEventArgs e)
         {
             if (await clearWorkspace())
             {
@@ -47,10 +47,10 @@ namespace BMM_App
                 var result = await greetings.ShowAsync();
                 if (result.Label == "Start Tour")
                 {
-                    tourIcon.Symbol = Symbol.Clear;
-                    ToolTipService.SetToolTip(tourIcon, "End Tour");
-                    tourBorder.PointerReleased -= startTour;
-                    tourBorder.PointerReleased += endTour;
+                    tourButton.Icon = new SymbolIcon(Symbol.Clear);
+                    ToolTipService.SetToolTip(tourButton, "End Tour");
+                    tourButton.Click -= startTour;
+                    tourButton.Click += endTour;
                     storyboard = new Storyboard();
                     performStep(TourStep.V1);
                 }
@@ -73,10 +73,10 @@ namespace BMM_App
                     Guide = "";
                     step = TourStep.None;
                     
-                    tourIcon.Symbol = Symbol.Help;
-                    ToolTipService.SetToolTip(tourIcon, "Start Tour");
-                    tourBorder.PointerReleased -= endTour;
-                    tourBorder.PointerReleased += startTour;
+                    tourButton.Icon = new SymbolIcon(Symbol.Help);
+                    ToolTipService.SetToolTip(tourButton, "Start Tour");
+                    tourButton.Click -= endTour;
+                    tourButton.Click += startTour;
                     break;
                 case TourStep.V1:
                     visionIcon.Background = highlightBrush();
@@ -269,11 +269,11 @@ namespace BMM_App
                     guideBubble.Visibility = Visibility.Collapsed;
                     Guide = "";
                     step = TourStep.None;
-                    
-                    tourIcon.Symbol = Symbol.Help;
-                    ToolTipService.SetToolTip(tourIcon, "Start Tour");
-                    tourBorder.PointerReleased -= endTour;
-                    tourBorder.PointerReleased += startTour;
+
+                    tourButton.Icon = new SymbolIcon(Symbol.MapPin);
+                    ToolTipService.SetToolTip(tourButton, "Start Tour");
+                    tourButton.Click -= endTour;
+                    tourButton.Click += startTour;
 
                     MessageDialog tourEnd =
                     new MessageDialog("You have learnt the most important concepts of the Business Motivation Model. For further reading explore our documentation. "
@@ -339,7 +339,7 @@ namespace BMM_App
             performStep(step + 1);
         }
 
-        private void endTour(object sender, PointerRoutedEventArgs e)
+        private void endTour(object sender, RoutedEventArgs e)
         {
             performStep(TourStep.None);
         }
