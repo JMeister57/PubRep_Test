@@ -243,11 +243,11 @@ namespace BMM_App
         }
     }
 
-    public class BPMM_TextBox : TextBox
+    public class BMM_TextBox : TextBox
     {
         public bool shiftPressed;
 
-        public BPMM_TextBox()
+        public BMM_TextBox()
             : base()
         {
             shiftPressed = false;

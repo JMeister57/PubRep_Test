@@ -8,6 +8,7 @@
     xmlns:common="using:BMM_App.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:custom="using:BMM_App"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -80,17 +81,17 @@
                 </ScrollViewer>
             </Border>
         </Grid>
-        
+
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition Height="130"/>
+                <RowDefinition Height="110"/>
                 <RowDefinition Height="60"/>
             </Grid.RowDefinitions>
             <ListView x:Name="toolbarEnds" Grid.Column="0" Grid.Row="0"  CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
@@ -181,36 +182,13 @@
                     <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
                 </Border>
             </ListView>
-           
+
             <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="5" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
                 <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
                         Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
                 </Canvas>
             </ScrollViewer>
-            <Grid x:Name="warnings_grid" Grid.Column="1" Grid.RowSpan="5" VerticalAlignment="Bottom">
-                <Grid.Resources>
-                    <Style TargetType="ListViewItem" x:Key="itemStyle">
-                        <Setter Property="Height" Value="30"/>
-                    </Style>
-                </Grid.Resources>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="160"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid x:Name="warnings_tab" Background="Aqua"
-                        ManipulationDelta="warnings_tab_ManipulationDelta" ManipulationMode="TranslateY">
-                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Left" Margin="10, 0">Warnings</TextBlock>
-                    <SymbolIcon x:Name="minimize_button" Symbol="Sort" HorizontalAlignment="Right" Margin="10, 0" Tapped="minimize_button_Tapped"/>
-                </Grid>
-
-                <ListView x:Name="warnings_listview" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Aqua" BorderThickness="3" Background="WhiteSmoke" ItemContainerStyle="{StaticResource itemStyle}" ItemsSource="{Binding Path=Warnings, Mode=TwoWay}" SelectionChanged="warnings_listview_SelectionChanged">
-                    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto"/>
-                </ListView>
-            </Grid>
+            <custom:InfoBar x:Name="infobar" Grid.Column="1" Grid.RowSpan="5" VerticalAlignment="Bottom"/>
         </Grid>
     </Grid>
 </Page>

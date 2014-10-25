@@ -30,26 +30,27 @@ namespace BMM_App
     {
         public static ObservableCollection<string> states = new ObservableCollection<string> { "created", "approved", "denied", "duplicate" };
 
-        string author;
-        DateTime creationDate;
+        public string author;
+        public DateTime creationDate;
         public string title;
         public string description;
-        List<string> references;
-        string state;
+        public string references;
+        public object state;
 
         public ObservableCollection<WarningItem> warnings = new ObservableCollection<WarningItem>();
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public event TappedEventHandler BMMTappedEvent;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsAddedEvent;
         public event EventHandler<ObservableCollection<WarningItem>> WarningsRemovedEvent;
 
-        public BPMM_TextBox headerBox;
+        public BMM_TextBox headerBox;
         protected TextBlock headerBlock;
         public Border headerBorder;
-        public BPMM_TextBox descriptionBox;
+        public BMM_TextBox descriptionBox;
         protected TextBlock descriptionBlock;
         public Border descriptionBorder;
-        protected ComboBox stateCombo;
+        public ComboBox stateCombo;
 
         public BMM(Category category)
             : base(category)
@@ -61,7 +62,15 @@ namespace BMM_App
             this.category = category;
             DataContext = this;
 
-            headerBox = new BPMM_TextBox() { Margin = new Thickness(0, 0, 0, 2)};
+            AddHandler(UIElement.TappedEvent, new TappedEventHandler(delegate(object elem, TappedRoutedEventArgs args)
+            {
+                if (BMMTappedEvent != null)
+                {
+                    BMMTappedEvent(this, args);
+                }
+            }), true);
+
+            headerBox = new BMM_TextBox() { Margin = new Thickness(0, 0, 0, 2)};
             headerBox.DataContext = this;
             var headerBinding = new Binding() { Path = new PropertyPath("Title"), Mode = BindingMode.TwoWay };
             headerBox.SetBinding(TextBox.TextProperty, headerBinding);
@@ -72,7 +81,7 @@ namespace BMM_App
             headerBlock.DoubleTapped += headerBlock_DoubleTapped;
             headerBorder = new Border() { Child = headerBlock };
 
-            descriptionBox = new BPMM_TextBox() { TextWrapping = TextWrapping.Wrap };
+            descriptionBox = new BMM_TextBox() { TextWrapping = TextWrapping.Wrap };
             descriptionBox.DataContext = this;
             var descriptionBinding = new Binding() { Path = new PropertyPath("Description"), Mode = BindingMode.TwoWay };
             descriptionBox.SetBinding(TextBox.TextProperty, descriptionBinding);
@@ -83,10 +92,11 @@ namespace BMM_App
             descriptionBorder = new Border() { Child = descriptionBlock };
 
             stateCombo = new ComboBox();
-            Binding statesBinding = new Binding() { Source = States };
-            Binding defaultBinding = new Binding() { Source = DefaultState };
+            Binding statesBinding = new Binding() { Source = States, Mode = BindingMode.TwoWay };
+            State = States[0];
+            Binding stateBinding = new Binding() { Path = new PropertyPath("State"), Mode = BindingMode.TwoWay };
             stateCombo.SetBinding(ComboBox.ItemsSourceProperty, statesBinding);
-            stateCombo.SetBinding(ComboBox.SelectedItemProperty, defaultBinding);
+            stateCombo.SetBinding(ComboBox.SelectedItemProperty, stateBinding);
 
             frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(40, GridUnitType.Pixel) });
             frame.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
@@ -207,9 +217,30 @@ namespace BMM_App
             }
         }
 
-        public string DefaultState
+        public string References
         {
-            get { return states[0]; }
+            get { return references; }
+            set
+            {
+                references = value;
+                OnPropertyChanged("References");
+            }
+        }
+
+        public string Author
+        {
+            get { return author; }
+        }
+
+        public DateTime CreationDate
+        {
+            get { return creationDate; }
+        }
+
+        public object State
+        {
+            get { return state; }
+            set { state = value; OnPropertyChanged("State"); }
         }
 
         public ObservableCollection<WarningItem> getWarnings()

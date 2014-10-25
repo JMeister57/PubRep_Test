@@ -24,7 +24,7 @@ namespace BMM_App
 
         public NoteModel() : base(Category.NOTE)
         {
-            textField = new BPMM_TextBox()
+            textField = new BMM_TextBox()
             {
                 TextWrapping = TextWrapping.Wrap,
                 PlaceholderText = "A Note... ",

@@ -54,8 +54,6 @@ namespace BMM_App
 
         private bool dragging; 
 
-        double warningsPaneSize = 100;
-        private ObservableCollection<WarningItem> warnings = new ObservableCollection<WarningItem>();
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainPage()
@@ -75,12 +73,6 @@ namespace BMM_App
         public NavigationHelper NavigationHelper
         {
             get { return navigationHelper; }
-        }
-
-        public ObservableCollection<WarningItem> Warnings
-        {
-            get { return warnings; }
-            set { warnings = value; OnPropertyChanged("Warnings"); }
         }
 
         public void OnPropertyChanged(string name)
@@ -156,13 +148,13 @@ namespace BMM_App
                 if (model is BMM)
                 {
                     BMM bpmm = (BMM)model;
-                    bpmm.WarningsAddedEvent += AddWarnings;
-                    bpmm.WarningsRemovedEvent += RemoveWarnings;
-
+                    bpmm.BMMTappedEvent += infobar.BMMTapped;
+                    bpmm.WarningsAddedEvent += infobar.AddWarnings;
+                    bpmm.WarningsRemovedEvent += infobar.RemoveWarnings;
 
                     foreach (var warnItem in bpmm.getWarnings())
                     {
-                        Warnings.Add(warnItem);
+                        infobar.Warnings.Add(warnItem);
                     }
                 }
                 Point pos = e.GetPosition(workspace);
@@ -286,8 +278,6 @@ namespace BMM_App
             sourceModel.anchor.Opacity = 0.4;
             if (sourceModel is BMM && target is BMM)
             {
-                ((BMM)target).WarningsAddedEvent += AddWarnings;
-                ((BMM)target).WarningsRemovedEvent += RemoveWarnings;
                 ((BMM)sourceModel).validateNewLink(((BMM)target).category);
                 ((BMM)target).validateNewLink(((BMM)sourceModel).category);
             }
@@ -454,7 +444,7 @@ namespace BMM_App
             }
             if(sender is BMM)
             {
-                RemoveWarnings(sender, ((BMM)sender).warnings);
+                infobar.RemoveWarnings(sender, ((BMM)sender).warnings);
             }
             workspace.Children.Remove((BaseModel)sender);
             models.Remove((BaseModel)sender);
@@ -694,53 +684,11 @@ namespace BMM_App
                 workspace.Children.Clear();
                 links.Clear();
                 models.Clear();
-                Warnings.Clear();
+                infobar.Warnings.Clear();
                 BaseModel.resetIds();
                 return true;
             }
             return false;
-        }
-
-        private void warnings_tab_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var warningsRow = warnings_grid.RowDefinitions[1];
-            var newHeight = Math.Min(Math.Max(warningsRow.ActualHeight - e.Delta.Translation.Y, 0), workspace.ActualHeight - warnings_tab.ActualHeight);
-            warningsRow.Height = new GridLength(newHeight, GridUnitType.Pixel);
-            warningsPaneSize = newHeight;
-        }
-
-        private void minimize_button_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (warnings_grid.RowDefinitions[1].ActualHeight != 0)
-            {
-                warnings_grid.RowDefinitions[1].Height = new GridLength(0, GridUnitType.Pixel);
-            }
-            else
-            {
-                warnings_grid.RowDefinitions[1].Height = new GridLength(warningsPaneSize, GridUnitType.Pixel);
-            }
-        }
-
-        private void AddWarnings(object sender, ObservableCollection<WarningItem> added)
-        {
-            foreach (var item in added)
-            {
-                if (Warnings.Contains(item) == false)
-                { // TODO: filter out duplicate warnings at validation time
-                    Warnings.Add(item);
-                }
-            }
-        }
-
-        private void RemoveWarnings(object sender, ObservableCollection<WarningItem> removed)
-        {
-            foreach (var item in removed)
-            {
-                if (Warnings.Contains(item))
-                {
-                    Warnings.Remove(item);
-                }
-            }
         }
 
         private List<Link> findLinks(BaseModel model)
@@ -754,27 +702,6 @@ namespace BMM_App
                 }
             }
             return result;
-        }
-
-        private void warnings_listview_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0)
-            {
-                var selected = (WarningItem)e.AddedItems[0];
-                if (selected != null)
-                {
-                    selected.model.HighLight();
-                }
-            }
-
-            if (e.RemovedItems.Count > 0)
-            {
-                var released = (WarningItem)e.RemovedItems[0];
-                if (released != null)
-                {
-                    released.model.LowLight();
-                }
-            }
         }
     }
 }
