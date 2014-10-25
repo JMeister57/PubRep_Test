@@ -22,7 +22,7 @@ namespace BMM_App
     {
         private TextBox textField;
 
-        public NoteModel() : base(Category.NOTE)
+        public NoteModel(string author) : base(Category.NOTE, author)
         {
             textField = new BMM_TextBox()
             {

@@ -38,146 +38,137 @@
                 <EntranceThemeTransition/>
             </TransitionCollection>
         </Grid.ChildrenTransitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="140"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
-        <!-- Back button and page title -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="6*"/>
-                <ColumnDefinition Width="4*"/>
-            </Grid.ColumnDefinitions>
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="38"/>
+                <RowDefinition />
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" x:Name="backButton" Command="{Binding NavigationHelper.GoBackCommand, ElementName=pageRoot}"
-                        Style="{StaticResource NavigationBackButtonNormalStyle}"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        AutomationProperties.Name="Back"
-                        AutomationProperties.AutomationId="BackButton"
-                        AutomationProperties.ItemType="Navigation Button" />
-            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" 
-                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" />            
+            <Grid Grid.Row="0" Background="DarkGray">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="10,0,0,0" Style="{StaticResource TitleTextBlockStyle}" Foreground="WhiteSmoke" VerticalAlignment="Center" Text="{Binding Path=Header}"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Margin="0,0,10,5" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="WhiteSmoke" Style="{StaticResource TitleTextBlockStyle}" Text="Current User: "/>
+                    <TextBox Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" PlaceholderText="Username" MinWidth="200" Text="{Binding Path=Username, Mode=TwoWay}"/>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition Height="60"/>
+                </Grid.RowDefinitions>
+                <ListView x:Name="toolbarEnds" Grid.Column="0" Grid.Row="0"  CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                          Background="LightGreen" FontSize="24" Style="{StaticResource toolbarStyle}">
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Background="Gray">
+                                <SymbolIcon Symbol="Flag" Foreground="LightGreen"/>
+                                <TextBlock Text="Ends" FontSize="18" VerticalAlignment="Center" Foreground="LightGreen"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <Border x:Name="visionIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Vision</TextBlock>
+                    </Border>
+                    <Border x:Name="goalIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Goal</TextBlock>
+                    </Border>
+                    <Border x:Name="objectiveIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Objective</TextBlock>
+                    </Border>
+                </ListView>
+                <ListView x:Name="toolbarMeans" Grid.Column="0" Grid.Row="1" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                          Background="LightYellow" FontSize="24" Style="{StaticResource toolbarStyle}">
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Background="Gray">
+                                <SymbolIcon Symbol="Bullets" Foreground="LightYellow"/>
+                                <TextBlock Text="Means" FontSize="18" VerticalAlignment="Center" Foreground="LightYellow"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <Border x:Name="missionIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Mission</TextBlock>
+                    </Border>
+                    <Border x:Name="strategyIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Strategy</TextBlock>
+                    </Border>
+                    <Border x:Name="tacticIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Tactic</TextBlock>
+                    </Border>
+                </ListView>
+                <ListView x:Name="toolbarDirectives" Grid.Column="0" Grid.Row="2" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                    Background="LightBlue" FontSize="24" Style="{StaticResource toolbarStyle}">
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Background="Gray">
+                                <SymbolIcon Symbol="Admin" Foreground="LightBlue"/>
+                                <TextBlock Text="Directives" FontSize="18" VerticalAlignment="Center" Foreground="LightBlue"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <Border x:Name="policyIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Policy</TextBlock>
+                    </Border>
+                    <Border x:Name="ruleIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Rule</TextBlock>
+                    </Border>
+                </ListView>
+                <ListView x:Name="toolbarInfluencer" Grid.Column="0" Grid.Row="3" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                    Background="Plum" FontSize="24" Style="{StaticResource toolbarStyle}">
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Background="Gray">
+                                <SymbolIcon Symbol="Important" Foreground="Plum"/>
+                                <TextBlock Text="Influences" FontSize="18" VerticalAlignment="Center" Foreground="Plum"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <Border x:Name="influencerIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Influencer</TextBlock>
+                    </Border>
+                    <Border x:Name="assessmentIcon" >
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Assessment</TextBlock>
+                    </Border>
+                </ListView>
+                <ListView x:Name="toolbarOther" Grid.Column="0" Grid.Row="4" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
+                    Background="LightGray" FontSize="24" Style="{StaticResource toolbarStyle}">
+                    <ListView.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Background="Gray">
+                                <SymbolIcon Symbol="More" Foreground="LightGray"/>
+                                <TextBlock Text="Other" FontSize="18" VerticalAlignment="Center" Foreground="LightGray"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.HeaderTemplate>
+                    <Border x:Name="note">
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
+                    </Border>
+                </ListView>
 
-            <Border x:Name="guideBubble" Grid.Column="2" Grid.RowSpan="2" BorderThickness="5" BorderBrush="GreenYellow" Visibility="Collapsed">
-                <ScrollViewer>
-                    <TextBlock Text="{Binding Path=Guide}" FontSize="18" Margin="10" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="5" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
+                            Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
+                    </Canvas>
+                </ScrollViewer>
+                <custom:InfoBar x:Name="infobar" Grid.Column="1" Grid.RowSpan="5" VerticalAlignment="Bottom"/>
+            </Grid>
+
+            <Border x:Name="guideBubble" BorderThickness="5" BorderBrush="GreenYellow" Background="DimGray" HorizontalAlignment="Right" VerticalAlignment="Top" Width="300" Height="150" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Visible">
+                    <TextBlock Text="{Binding Path=Guide}" FontSize="18" Foreground="WhiteSmoke" Margin="10" TextWrapping="Wrap" VerticalAlignment="Center"/>
                 </ScrollViewer>
             </Border>
-        </Grid>
-
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="110"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition Height="130"/>
-                <RowDefinition Height="110"/>
-                <RowDefinition Height="60"/>
-            </Grid.RowDefinitions>
-            <ListView x:Name="toolbarEnds" Grid.Column="0" Grid.Row="0"  CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                      Background="LightGreen" FontSize="24" Style="{StaticResource toolbarStyle}">
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="Gray">
-                            <SymbolIcon Symbol="Flag" Foreground="LightGreen"/>
-                            <TextBlock Text="Ends" FontSize="18" VerticalAlignment="Center" Foreground="LightGreen"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <Border x:Name="visionIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Vision</TextBlock>
-                </Border>
-                <Border x:Name="goalIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Goal</TextBlock>
-                </Border>
-                <Border x:Name="objectiveIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Objective</TextBlock>
-                </Border>
-            </ListView>
-            <ListView x:Name="toolbarMeans" Grid.Column="0" Grid.Row="1" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                      Background="LightYellow" FontSize="24" Style="{StaticResource toolbarStyle}">
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="Gray">
-                            <SymbolIcon Symbol="Bullets" Foreground="LightYellow"/>
-                            <TextBlock Text="Means" FontSize="18" VerticalAlignment="Center" Foreground="LightYellow"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <Border x:Name="missionIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Mission</TextBlock>
-                </Border>
-                <Border x:Name="strategyIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Strategy</TextBlock>
-                </Border>
-                <Border x:Name="tacticIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Tactic</TextBlock>
-                </Border>
-            </ListView>
-            <ListView x:Name="toolbarDirectives" Grid.Column="0" Grid.Row="2" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                Background="LightBlue" FontSize="24" Style="{StaticResource toolbarStyle}">
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="Gray">
-                            <SymbolIcon Symbol="Admin" Foreground="LightBlue"/>
-                            <TextBlock Text="Directives" FontSize="18" VerticalAlignment="Center" Foreground="LightBlue"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <Border x:Name="policyIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Policy</TextBlock>
-                </Border>
-                <Border x:Name="ruleIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Business Rule</TextBlock>
-                </Border>
-            </ListView>
-            <ListView x:Name="toolbarInfluencer" Grid.Column="0" Grid.Row="3" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                Background="Plum" FontSize="24" Style="{StaticResource toolbarStyle}">
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="Gray">
-                            <SymbolIcon Symbol="Important" Foreground="Plum"/>
-                            <TextBlock Text="Influences" FontSize="18" VerticalAlignment="Center" Foreground="Plum"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <Border x:Name="influencerIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Influencer</TextBlock>
-                </Border>
-                <Border x:Name="assessmentIcon" >
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Assessment</TextBlock>
-                </Border>
-            </ListView>
-            <ListView x:Name="toolbarOther" Grid.Column="0" Grid.Row="4" CanDragItems="True" DragItemsStarting="ListView_DragItemsStarting"
-                Background="LightGray" FontSize="24" Style="{StaticResource toolbarStyle}">
-                <ListView.HeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="Gray">
-                            <SymbolIcon Symbol="More" Foreground="LightGray"/>
-                            <TextBlock Text="Other" FontSize="18" VerticalAlignment="Center" Foreground="LightGray"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.HeaderTemplate>
-                <Border x:Name="note">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Note</TextBlock>
-                </Border>
-            </ListView>
-
-            <ScrollViewer x:Name="workspaceScroll" Grid.Column="1" Grid.RowSpan="5" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
-                <Canvas x:Name="workspace" Background="DimGray" AllowDrop="True" 
-                        Drop="StackPanel_Drop" ManipulationDelta="workspace_ManipulationDelta" ManipulationMode="TranslateInertia,TranslateX,TranslateY,Scale" PointerPressed="workspace_PointerPressed" PointerMoved="workspace_PointerMoved" PointerReleased="workspace_PointerReleased">
-                </Canvas>
-            </ScrollViewer>
-            <custom:InfoBar x:Name="infobar" Grid.Column="1" Grid.RowSpan="5" VerticalAlignment="Bottom"/>
         </Grid>
     </Grid>
 </Page>

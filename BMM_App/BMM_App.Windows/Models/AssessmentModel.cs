@@ -19,8 +19,8 @@ namespace BMM_App
         private static ObservableCollection<string> swot =
             new ObservableCollection<string> { "<SWOT>", "Strength", "Weakness", "Opportunity", "Threat" };
 
-        public AssessmentModel()
-            : base(Category.ASSESSMENT)
+        public AssessmentModel(string author)
+            : base(Category.ASSESSMENT, author)
         {
             swotControl = new ComboBox();
             swotControl.DataContext = this;

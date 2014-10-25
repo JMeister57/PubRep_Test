@@ -30,8 +30,6 @@ namespace BMM_App
     {
         public static ObservableCollection<string> states = new ObservableCollection<string> { "created", "approved", "denied", "duplicate" };
 
-        public string author;
-        public DateTime creationDate;
         public string title;
         public string description;
         public string references;
@@ -52,11 +50,9 @@ namespace BMM_App
         public Border descriptionBorder;
         public ComboBox stateCombo;
 
-        public BMM(Category category)
-            : base(category)
+        public BMM(Category category, string author)
+            : base(category, author)
         {
-            author = "Tieni";
-            creationDate = DateTime.Now;
             States = states;
             state = States[0];
             this.category = category;
@@ -225,16 +221,6 @@ namespace BMM_App
                 references = value;
                 OnPropertyChanged("References");
             }
-        }
-
-        public string Author
-        {
-            get { return author; }
-        }
-
-        public DateTime CreationDate
-        {
-            get { return creationDate; }
         }
 
         public object State

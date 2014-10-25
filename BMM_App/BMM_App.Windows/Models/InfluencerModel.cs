@@ -24,8 +24,8 @@ namespace BMM_App
         public const String externalSep = "--- External: ---";
         public const String internalSep = "--- Internal: ---";
 
-        public InfluencerModel()
-            : base(Category.INFLUENCER)
+        public InfluencerModel(string author)
+            : base(Category.INFLUENCER, author)
         {
             List<String> types = new List<String>();
             types.Add("Influence Type");

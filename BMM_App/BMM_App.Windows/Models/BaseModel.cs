@@ -31,6 +31,9 @@ namespace BMM_App
         public int id;
         public Category category;
 
+        public string author;
+        public DateTime creationDate;
+
         protected Grid frame;
         private Grid container;
         public Border anchor;
@@ -42,10 +45,13 @@ namespace BMM_App
         public event EventHandler LinkEndEvent;
         public event EventHandler DeleteEvent;
 
-        public BaseModel(Category category)
+        public BaseModel(Category category, string author)
         {
             id = ++max_id;
             this.category = category;
+            this.author = author;
+            creationDate = DateTime.Now;
+
             AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(BaseModel_RightTapped), false);
 
             frame = new Grid() { Width = 200, Height = 200, Background = new SolidColorBrush(Colors.Linen)};
@@ -70,6 +76,17 @@ namespace BMM_App
             Canvas canvas = new Canvas();
             canvas.Children.Add(container);
             Content = canvas;
+        }
+
+        public string Author
+        {
+            get { return author; }
+        }
+
+        public DateTime CreationDate
+        {
+            get { return creationDate; }
+            set { creationDate = value; }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -111,6 +128,8 @@ namespace BMM_App
         public virtual JsonObject serialize()
         {
             var modelEntry = new JsonObject();
+            modelEntry.Add("author", JsonValue.CreateStringValue(author));
+            modelEntry.Add("creationDate", JsonValue.CreateStringValue(creationDate.ToString()));
             modelEntry.Add("category", JsonValue.CreateNumberValue((int)category));
             modelEntry.Add("x", JsonValue.CreateNumberValue(Canvas.GetLeft(this)));
             modelEntry.Add("y", JsonValue.CreateNumberValue(Canvas.GetTop(this)));
@@ -126,15 +145,17 @@ namespace BMM_App
             {
                 return null;
             }
+            var author = input.GetNamedString("author", "");
             try
             {
                 Category newType = (Category)value;
                 var model =
-                    (newType == Category.NOTE) ? (BaseModel)new NoteModel() :
-                    (newType == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel() :
-                    (newType == Category.INFLUENCER) ? (BaseModel)new InfluencerModel() :
-                    (newType == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel() :
-                    new BMM(newType);
+                    (newType == Category.NOTE) ? (BaseModel)new NoteModel(author) :
+                    (newType == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel(author) :
+                    (newType == Category.INFLUENCER) ? (BaseModel)new InfluencerModel(author) :
+                    (newType == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel(author) :
+                    new BMM(newType, author);
+                model.CreationDate = DateTime.Parse(input.GetNamedString("creationDate", DateTime.Now.ToString()));
                 Canvas.SetLeft(model, input.GetNamedNumber("x", 0));
                 Canvas.SetTop(model, input.GetNamedNumber("y", 0));
                 return model;

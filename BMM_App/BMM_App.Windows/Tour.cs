@@ -41,14 +41,14 @@ namespace BMM_App
                 MessageDialog greetings =
                     new MessageDialog("Step by step we will create a business motivation model for a fictional cancer research institute."
                         + " You can cancel the tour at any time by tapping the 'End Tour' symbol. Have fun!",
-                        String.Format("Welcome to our guided tour, {0}!", user));
+                        String.Format("Welcome to our guided tour, {0}!", username));
                 greetings.Commands.Add(new UICommand("Start Tour"));
                 greetings.Commands.Add(new UICommand("Cancel"));
                 var result = await greetings.ShowAsync();
                 if (result.Label == "Start Tour")
                 {
                     tourButton.Icon = new SymbolIcon(Symbol.Clear);
-                    ToolTipService.SetToolTip(tourButton, "End Tour");
+                    tourButton.Label = "End Tour";
                     tourButton.Click -= startTour;
                     tourButton.Click += endTour;
                     storyboard = new Storyboard();
@@ -74,13 +74,13 @@ namespace BMM_App
                     step = TourStep.None;
                     
                     tourButton.Icon = new SymbolIcon(Symbol.Help);
-                    ToolTipService.SetToolTip(tourButton, "Start Tour");
+                    tourButton.Label = "Start Tour";
                     tourButton.Click -= endTour;
                     tourButton.Click += startTour;
                     break;
                 case TourStep.V1:
                     visionIcon.Background = highlightBrush();
-                    Guide = "Business Motivation Models need Ends to justify any planned Means. The highest End is an organization's Vision."
+                    Guide = "Business Motivation Models need Ends to justify any planned Means. The highest End is an organization's Vision. "
                         + "So, let's start by formulating a Vision for our cancer research institute.\nSimply drag a Vision element onto the workspace.";
                     guideBubble.Visibility = Visibility.Visible;
                     break;
@@ -271,7 +271,7 @@ namespace BMM_App
                     step = TourStep.None;
 
                     tourButton.Icon = new SymbolIcon(Symbol.MapPin);
-                    ToolTipService.SetToolTip(tourButton, "Start Tour");
+                    tourButton.Label = "Start Tour";
                     tourButton.Click -= endTour;
                     tourButton.Click += startTour;
 

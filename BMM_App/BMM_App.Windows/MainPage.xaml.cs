@@ -38,9 +38,9 @@ namespace BMM_App
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
-        private string user = "Sebastian";
-        private string password;
+        private string username = "Sebastian";
 
+        private string filename = "unsaved diagram";
         public static List<BaseModel> models = new List<BaseModel>();
         private static List<Link> links = new List<Link>();
 
@@ -73,6 +73,18 @@ namespace BMM_App
         public NavigationHelper NavigationHelper
         {
             get { return navigationHelper; }
+        }
+
+        public string Username
+        {
+            get { return username; }
+            set { username = value; OnPropertyChanged("Username"); }
+        }
+
+        public string Header
+        {
+            get { return "Business Motivation Model: " + filename; }
+            set { filename = value; OnPropertyChanged("Header"); }
         }
 
         public void OnPropertyChanged(string name)
@@ -133,11 +145,11 @@ namespace BMM_App
             {
                 Category category = (Category)item;
                 BaseModel model =
-                            (category == Category.NOTE) ? (BaseModel)new NoteModel() :
-                            (category == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel() :
-                            (category == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel() :
-                            (category == Category.INFLUENCER) ? (BaseModel)new InfluencerModel() :
-                            (BaseModel)new BMM(category);
+                            (category == Category.NOTE) ? (BaseModel)new NoteModel(username) :
+                            (category == Category.ASSESSMENT) ? (BaseModel)new AssessmentModel(username) :
+                            (category == Category.BUSINESS_RULE) ? (BaseModel)new BusinessRuleModel(username) :
+                            (category == Category.INFLUENCER) ? (BaseModel)new InfluencerModel(username) :
+                            (BaseModel)new BMM(category, username);
 
                 model.LinkStartEvent += OnLinkStart;
                 model.LinkEndEvent += OnLinkEnd;
@@ -592,6 +604,7 @@ namespace BMM_App
                         await outputStream.FlushAsync();
                     }
                 }
+                Header = file.Path;
                 MessageDialog infoPopup = new MessageDialog(String.Format("Saved to file {0}", file.Path), "Saved successfully!");
                 await infoPopup.ShowAsync();
             }
@@ -623,6 +636,7 @@ namespace BMM_App
                         inputStream.Dispose();
                     }
                 }
+                Header = file.Path;
             }
         }
 
@@ -681,6 +695,7 @@ namespace BMM_App
             var result = await confirmDialog.ShowAsync();
             if (result.Label == "Yes")
             {
+                Header = "unsaved diagram";
                 workspace.Children.Clear();
                 links.Clear();
                 models.Clear();
