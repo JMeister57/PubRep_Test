@@ -35,7 +35,6 @@ namespace BMM_App
 
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {      
-        private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
         private string username = "Sebastian";
@@ -58,21 +57,13 @@ namespace BMM_App
 
         public MainPage()
         {
-            this.InitializeComponent();
-            this.navigationHelper = new NavigationHelper(this);
-            this.navigationHelper.LoadState += navigationHelper_LoadState;
-            this.navigationHelper.SaveState += navigationHelper_SaveState;
+            InitializeComponent();
             DataContext = this;
         }
 
         public ObservableDictionary DefaultViewModel
         {
             get { return defaultViewModel; }
-        }
-
-        public NavigationHelper NavigationHelper
-        {
-            get { return navigationHelper; }
         }
 
         public string Username
@@ -94,49 +85,6 @@ namespace BMM_App
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
-
-
-        private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
-        {
-            // restore session data
-            if (e.PageState != null && e.PageState.ContainsKey("key"))
-            {
-
-            }
-            // restore app data
-            //ApplicationDataContainer roaming = ApplicationData.Current.RoamingSettings;
-            //if (roaming.Containers.ContainsKey("user"))
-            //{
-            //    var username = (roaming.Containers["user"].Values.ContainsKey("name")) ? (string)roaming.Containers["user"].Values["name"] : "";
-            //    var passwd = (roaming.Containers["user"].Values.ContainsKey("password")) ? (string)roaming.Containers["user"].Values["name"] : "";
-            //}
-        }
-
-        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
-        {
-            //ApplicationDataContainer roaming = ApplicationData.Current.RoamingSettings;
-            //var container = roaming.CreateContainer("user", ApplicationDataCreateDisposition.Always);
-            //if (roaming.Containers.ContainsKey("user"))
-            //{
-            //    roaming.Containers["user"].Values["name"] = user;
-            //    var buffer = CryptographicBuffer.ConvertStringToBinary(password, BinaryStringEncoding.Utf8);
-            //    var hasher = HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha256);
-            //    var hash = hasher.HashData(buffer);
-            //    roaming.Containers["user"].Values["password"] = CryptographicBuffer.EncodeToBase64String(hash);
-            //}
-        }
-
-        #region NavigationHelper-Registrierung
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            navigationHelper.OnNavigatedTo(e);
-        }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            navigationHelper.OnNavigatedFrom(e);
-        }
-        #endregion
 
         private void StackPanel_Drop(object sender, DragEventArgs e)
         {
